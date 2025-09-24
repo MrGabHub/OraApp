@@ -58,9 +58,24 @@
   height: 60px;
   border-radius: 14px;
   background: var(--eye-color);
+  animation: glowPulse 3s infinite;
 }
 
 @keyframes blink {
   0%, 92%, 100% { transform: scaleY(1); }
   95% { transform: scaleY(0.1); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(0, 255, 213, 0.6); 
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(0, 255, 213, 1); 
+  }
+}
+
+
+.pupil-shape {
+  animation: glowPulse 3s infinite;
 }
