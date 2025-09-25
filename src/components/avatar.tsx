@@ -90,12 +90,12 @@ function Eye({
 
       // Déplacement des yeux
       const angle = Math.atan2(dy, dx);
-      const maxDistX = rect.width / 2 - 10;
-      const maxDistY = rect.height / 2 - 10;
+      const maxDistX = rect.width / 2 - 40;
+      const maxDistY = rect.height / 2 - 40;
 
       setOffset({
-        x: Math.cos(angle) * maxDistX * 0.3,
-        y: Math.sin(angle) * maxDistY * 0.3,
+        x: Math.cos(angle) * maxDistX * 0.4,
+        y: Math.sin(angle) * maxDistY * 0.6,
       });
 
       // --- SCALING ---
@@ -113,14 +113,14 @@ function Eye({
           // souris à gauche
           setScale(
             side === "left"
-              ? { x: 1, y: 1 + intensity * 0.5 }
+              ? { x: 1, y: 1 + intensity * 0.4 }
               : { x: 1, y: 1 }
           );
         } else {
           // souris à droite
           setScale(
             side === "right"
-              ? { x: 1, y: 1 + intensity * 0.5 }
+              ? { x: 1, y: 1 + intensity * 0.4 }
               : { x: 1, y: 1 }
           );
         }
@@ -151,6 +151,7 @@ function Eye({
       ref={socketRef}
       style={{
         transform: `scale(${scale.x}, ${scale.y})`,
+        transition: "transform 0.5s ease", // transition fluide
       }}
     >
       <div
