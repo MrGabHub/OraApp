@@ -1,68 +1,86 @@
 import { useEffect, useRef, useState } from "react";
 import "./avatar.css";
 
+type Point = { x: number; y: number };
+type Mode = "normal" | "error";
+
 export default function Avatar() {
-  const [target, setTarget] = useState<{ x: number; y: number } | null>(null);
+  const [target, setTarget] = useState<Point | null>(null);
   const [idle, setIdle] = useState(true);
-  const [idleTarget, setIdleTarget] = useState<{ x: number; y: number } | null>(
-    null
-  );
+  const [idleTarget, setIdleTarget] = useState<Point | null>(null);
+  const [mode, setMode] = useState<Mode>("normal");
 
   useEffect(() => {
-    let idleTimer: NodeJS.Timeout;
-    let idleMoveTimer: NodeJS.Timeout;
+    let idleTimer: ReturnType<typeof setTimeout>;
+    let idleMoveTimer: ReturnType<typeof setInterval>;
 
     const pickNewIdleTarget = () => {
-      const rect = document
-        .querySelector(".avatar-wrapper")!
-        .getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+      const wrap = document.querySelector(".avatar-wrapper") as HTMLElement | null;
+      if (!wrap) return;
+      const r = wrap.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
 
+      // Nouvel objectif idle (aligné horizontalement, pas de louchage)
       setIdleTarget({
-        x: centerX + (Math.random() - 0.5) * window.innerWidth * 0.4,
-        y: centerY + (Math.random() - 0.5) * window.innerHeight * 0.3,
+        x: cx + (Math.random() - 0.5) * window.innerWidth * 0.4,
+        y: cy,
       });
     };
 
-    const resetIdleTimer = () => {
-      clearTimeout(idleTimer);
-      clearInterval(idleMoveTimer);
-      setIdle(false);
-
-      idleTimer = setTimeout(() => {
-        setIdle(true);
-        setTarget(null);
-        pickNewIdleTarget();
-        idleMoveTimer = setInterval(pickNewIdleTarget, 3000); // 👈 toutes les 3s
-      }, 1000);
-    };
-
-    const handleMove = (e: MouseEvent) => {
-      setTarget({ x: e.clientX, y: e.clientY });
-      resetIdleTimer();
-    };
-
-    const handleTouch = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      if (touch) {
-        setTarget({ x: touch.clientX, y: touch.clientY });
-        resetIdleTimer();
-      }
-    };
-
-    const handleLeave = () => {
+    const startIdle = () => {
       setIdle(true);
       setTarget(null);
       pickNewIdleTarget();
       idleMoveTimer = setInterval(pickNewIdleTarget, 3000);
     };
 
+    const stopIdle = () => {
+      setIdle(false);
+      clearInterval(idleMoveTimer);
+    };
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      clearInterval(idleMoveTimer);
+      stopIdle();
+      idleTimer = setTimeout(startIdle, 1000); // 1s sans activité => idle
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      if (mode !== "normal") return;
+      setTarget({ x: e.clientX, y: e.clientY });
+      resetIdleTimer();
+    };
+
+    const handleTouch = (e: TouchEvent) => {
+      if (mode !== "normal") return;
+      const t = e.touches[0];
+      if (!t) return;
+      setTarget({ x: t.clientX, y: t.clientY });
+      resetIdleTimer();
+    };
+
+    const handleLeave = () => {
+      if (mode !== "normal") return;
+      startIdle();
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        startIdle();
+      } else {
+        resetIdleTimer();
+      }
+    };
+
     window.addEventListener("mousemove", handleMove);
-    window.addEventListener("touchmove", handleTouch);
+    window.addEventListener("touchmove", handleTouch, { passive: true });
     window.addEventListener("mouseleave", handleLeave);
     window.addEventListener("touchend", handleLeave);
+    document.addEventListener("visibilitychange", handleVisibility);
 
+    // Démarre le cycle au montage
     resetIdleTimer();
 
     return () => {
@@ -72,31 +90,54 @@ export default function Avatar() {
       window.removeEventListener("touchmove", handleTouch);
       window.removeEventListener("mouseleave", handleLeave);
       window.removeEventListener("touchend", handleLeave);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, []);
+  }, [mode]);
 
   return (
-    <div className="avatar-wrapper">
-      {/* Squircle */}
-      <svg
-        className="avatar-frame"
-        viewBox="0 0 300 225"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M 150,0
-             C 285,0 300,20 300,112
-             C 300,205 285,225 150,225
-             C 15,225 0,205 0,112
-             C 0,20 15,0 150,0 Z"
-        />
-      </svg>
+    <div className="app-container">
+      <div className="avatar-wrapper">
+        {/* Squircle 4:3 */}
+        <svg
+          className="avatar-frame"
+          viewBox="0 0 300 225"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+        >
+          <path
+            d="M 150,0
+               C 285,0 300,20 300,112
+               C 300,205 285,225 150,225
+               C 15,225 0,205 0,112
+               C 0,20 15,0 150,0 Z"
+          />
+        </svg>
 
-      {/* Eyes */}
-      <div className="avatar-eyes">
-        <Eye target={target} idle={idle} idleTarget={idleTarget} side="left" />
-        <Eye target={target} idle={idle} idleTarget={idleTarget} side="right" />
+        {/* Yeux */}
+        <div className="avatar-eyes">
+          <Eye
+            side="left"
+            mode={mode}
+            target={target}
+            idle={idle}
+            idleTarget={idleTarget}
+          />
+          <Eye
+            side="right"
+            mode={mode}
+            target={target}
+            idle={idle}
+            idleTarget={idleTarget}
+          />
+        </div>
       </div>
+
+      <button
+        className="toggle-button"
+        onClick={() => setMode((m) => (m === "normal" ? "error" : "normal"))}
+      >
+        {mode === "normal" ? "Passer en Erreur" : "Revenir en Normal"}
+      </button>
     </div>
   );
 }
@@ -106,78 +147,76 @@ function Eye({
   idle,
   idleTarget,
   side,
+  mode,
 }: {
-  target: { x: number; y: number } | null;
+  target: Point | null;
   idle: boolean;
-  idleTarget: { x: number; y: number } | null;
+  idleTarget: Point | null;
   side: "left" | "right";
+  mode: Mode;
 }) {
   const socketRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState({ x: 1, y: 1 });
 
   useEffect(() => {
-    if (!socketRef.current) return;
-
-    const rect = document
-      .querySelector(".avatar-wrapper")!
-      .getBoundingClientRect();
-
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    if (target && !idle) {
-      const dx = target.x - centerX;
-      const dy = target.y - centerY;
-
-      const angle = Math.atan2(dy, dx);
-      const maxDistX = rect.width / 2 - 40;
-      const maxDistY = rect.height / 2 - 40;
-
-      setOffset({
-        x: Math.cos(angle) * maxDistX * 0.4,
-        y: Math.sin(angle) * maxDistY * 0.6,
-      });
-
-      const halfWidth = rect.width / 2;
-      if (Math.abs(dx) <= halfWidth) {
-        setScale({ x: 1, y: 1 });
-      } else {
-        const excessX = Math.abs(dx) - halfWidth;
-        const viewportWidth = window.innerWidth;
-        const intensity = Math.min(excessX / (viewportWidth / 2), 1);
-
-        if (dx < 0) {
-          setScale(
-            side === "left"
-              ? { x: 1, y: 1 + intensity * 0.4 }
-              : { x: 1, y: 1 }
-          );
-        } else {
-          setScale(
-            side === "right"
-              ? { x: 1, y: 1 + intensity * 0.4 }
-              : { x: 1, y: 1 }
-          );
-        }
-      }
-    } else if (idle && idleTarget) {
-      const dx = idleTarget.x - centerX;
-      const dy = idleTarget.y - centerY;
-      const angle = Math.atan2(dy, dx);
-
-      setOffset({
-        x: Math.cos(angle) * 10,
-        y: Math.sin(angle) * 4,
-      });
-
+    // En mode erreur : fixe, centré, pas de blink ni de suivi
+    if (mode === "error") {
+      setOffset({ x: 0, y: 0 });
       setScale({ x: 1, y: 1 });
+      return;
     }
-  }, [target, idle, idleTarget, side]);
+
+    const wrap = document.querySelector(".avatar-wrapper") as HTMLElement | null;
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    const active: Point | null =
+      target && !idle ? target : idle ? idleTarget : null;
+
+    if (!active) {
+      // Recentrage doux si rien à suivre
+      setOffset({ x: 0, y: 0 });
+      setScale({ x: 1, y: 1 });
+      return;
+    }
+
+    const dx = active.x - cx;
+    const dy = active.y - cy;
+
+    // Déplacement des pupilles (amplitudes douces)
+    const angle = Math.atan2(dy, dx);
+    const maxX = rect.width / 2 - 40;
+    const maxY = rect.height / 2 - 40;
+
+    setOffset({
+      x: Math.cos(angle) * maxX * 0.4,
+      y: Math.sin(angle) * maxY * 0.6,
+    });
+
+    // Scaling vertical progressif uniquement si on sort à gauche/droite du visage
+    const half = rect.width / 2;
+    if (Math.abs(dx) <= half) {
+      setScale({ x: 1, y: 1 });
+    } else {
+      const excessX = Math.abs(dx) - half;
+      const intensity = Math.min(excessX / (window.innerWidth / 2), 1); // 0 → 1
+
+      if (dx < 0) {
+        // regard à gauche → œil gauche s’étire
+        setScale(side === "left" ? { x: 1, y: 1 + 0.4 * intensity } : { x: 1, y: 1 });
+      } else {
+        // regard à droite → œil droit s’étire
+        setScale(side === "right" ? { x: 1, y: 1 + 0.4 * intensity } : { x: 1, y: 1 });
+      }
+    }
+  }, [target, idle, idleTarget, side, mode]);
 
   return (
-    <div
-      className="eye-socket"
+   <div
+      className={`eye-socket ${mode}`}
       ref={socketRef}
       style={{
         transform: `scale(${scale.x}, ${scale.y})`,
@@ -188,8 +227,15 @@ function Eye({
         className="pupil-wrapper"
         style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       >
-        <div className="pupil-inner">
-          <div className="pupil-shape" />
+        <div className={`pupil-inner ${mode === "error" ? "no-blink" : ""}`}>
+          {mode === "normal" ? (
+            <div className="pupil-shape normal" />
+          ) : (
+            <div className={`pupil-shape error ${side}`}>
+              <span></span>
+              <span></span>
+            </div>
+          )}
         </div>
       </div>
     </div>
