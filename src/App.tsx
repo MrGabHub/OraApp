@@ -1,8 +1,18 @@
+import React from "react";
 import Avatar from "./components/avatar";
+import "./index.css";
 
 export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "white",
+      }}
+    >
       <Avatar />
     </div>
   );

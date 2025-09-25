@@ -1,40 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./avatar.css";
 
 export default function Avatar() {
   const [target, setTarget] = useState<{ x: number; y: number } | null>(null);
   const [idle, setIdle] = useState(true);
-  const [isBlinking, setIsBlinking] = useState(false);
-  const [idleTarget, setIdleTarget] = useState<{ x: number; y: number } | null>(
-    null
-  );
 
-  // 👁 Gestion du blink global (2–6s, doux ou sec)
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    const triggerBlink = () => {
-      const blinkDuration = Math.random() < 0.3 ? 100 : 250; // sec ou doux
-      setIsBlinking(true);
-
-      setTimeout(() => {
-        setIsBlinking(false);
-        const nextBlink = 2000 + Math.random() * 4000; // 2–6s
-        timeout = setTimeout(triggerBlink, nextBlink);
-      }, blinkDuration);
-    };
-
-    timeout = setTimeout(triggerBlink, 2000 + Math.random() * 4000);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  // 👆 Gestion des mouvements souris/touch + idle
-  useEffect(() => {
-    const resetIdle = () => {
-      setTarget(null);
-      setIdle(true);
-    };
-
     const handleMove = (e: MouseEvent) => {
       setTarget({ x: e.clientX, y: e.clientY });
       setIdle(false);
@@ -48,63 +19,28 @@ export default function Avatar() {
       }
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) resetIdle();
-    };
-
-    // ✅ Détection sortie de fenêtre
-    const handleMouseOut = (e: MouseEvent) => {
-      if (!e.relatedTarget && !e.toElement) {
-        resetIdle();
-      }
-    };
+    const handleLeave = () => setIdle(true);
 
     window.addEventListener("mousemove", handleMove);
     window.addEventListener("touchmove", handleTouch);
-    window.addEventListener("touchend", resetIdle);
-    window.addEventListener("mouseout", handleMouseOut);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("mouseleave", handleLeave);
+    window.addEventListener("touchend", handleLeave);
 
     return () => {
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("touchmove", handleTouch);
-      window.removeEventListener("touchend", resetIdle);
-      window.removeEventListener("mouseout", handleMouseOut);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("mouseleave", handleLeave);
+      window.removeEventListener("touchend", handleLeave);
     };
   }, []);
 
-  // 🎯 Idle : génère un point "virtuel" aléatoire toutes les 3–5s
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (idle) {
-      const changeIdleTarget = () => {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        const newX = Math.random() * viewportWidth;
-        const newY = Math.random() * viewportHeight;
-
-        setIdleTarget({ x: newX, y: newY });
-      };
-
-      changeIdleTarget();
-      interval = setInterval(changeIdleTarget, 3000 + Math.random() * 2000);
-    }
-    return () => clearInterval(interval);
-  }, [idle]);
-
-  const activeTarget = idle ? idleTarget : target;
-
   return (
     <div className="avatar-wrapper">
-      {/* Squircle en fond */}
+      {/* Squircle */}
       <svg
-        width="300"
-        height="225"
+        className="avatar-frame"
         viewBox="0 0 300 225"
         xmlns="http://www.w3.org/2000/svg"
-        className="avatar-frame"
       >
         <path
           d="M 150,0
@@ -116,20 +52,10 @@ export default function Avatar() {
         />
       </svg>
 
-      {/* Yeux synchronisés */}
+      {/* Eyes */}
       <div className="avatar-eyes">
-        <Eye
-          target={activeTarget}
-          idle={idle}
-          side="left"
-          isBlinking={isBlinking}
-        />
-        <Eye
-          target={activeTarget}
-          idle={idle}
-          side="right"
-          isBlinking={isBlinking}
-        />
+        <Eye target={target} idle={idle} side="left" />
+        <Eye target={target} idle={idle} side="right" />
       </div>
     </div>
   );
@@ -139,19 +65,17 @@ function Eye({
   target,
   idle,
   side,
-  isBlinking,
 }: {
   target: { x: number; y: number } | null;
   idle: boolean;
   side: "left" | "right";
-  isBlinking: boolean;
 }) {
   const socketRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState({ x: 1, y: 1 });
 
   useEffect(() => {
-    if (!socketRef.current || !target) return;
+    if (!socketRef.current) return;
 
     const rect = document
       .querySelector(".avatar-wrapper")!
@@ -160,41 +84,63 @@ function Eye({
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    const dx = target.x - centerX;
-    const dy = target.y - centerY;
+    if (target && !idle) {
+      const dx = target.x - centerX;
+      const dy = target.y - centerY;
 
-    const angle = Math.atan2(dy, dx);
+      // Déplacement des yeux
+      const angle = Math.atan2(dy, dx);
+      const maxDistX = rect.width / 2 - 10;
+      const maxDistY = rect.height / 2 - 10;
 
-    const maxDistX = rect.width / 2 - 10;
-    const maxDistY = rect.height / 2 - 10;
-    const followFactor = idle ? 0.15 : 0.3;
+      setOffset({
+        x: Math.cos(angle) * maxDistX * 0.3,
+        y: Math.sin(angle) * maxDistY * 0.3,
+      });
 
-    setOffset({
-      x: Math.cos(angle) * maxDistX * followFactor,
-      y: Math.sin(angle) * maxDistY * followFactor,
-    });
-
-    if (!idle) {
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const maxDist = Math.sqrt(
-        (rect.width / 2) ** 2 + (rect.height / 2) ** 2
-      );
-      const intensity = Math.min(dist / maxDist, 1);
-
-      if (dx < 0) {
-        setScale(
-          side === "left"
-            ? { x: 1, y: 1 + 0.1 * intensity }
-            : { x: 1, y: 1 - 0.1 * intensity }
-        );
+      // --- SCALING ---
+      const halfWidth = rect.width / 2;
+      if (Math.abs(dx) <= halfWidth) {
+        // Zone neutre → pas de scaling
+        setScale({ x: 1, y: 1 });
       } else {
-        setScale(
-          side === "right"
-            ? { x: 1, y: 1 + 0.1 * intensity }
-            : { x: 1, y: 1 - 0.1 * intensity }
-        );
+        // Zone horizontale (gauche/droite)
+        const excessX = Math.abs(dx) - halfWidth;
+        const viewportWidth = window.innerWidth;
+        const intensity = Math.min(excessX / (viewportWidth / 2), 1);
+
+        if (dx < 0) {
+          // souris à gauche
+          setScale(
+            side === "left"
+              ? { x: 1, y: 1 + intensity * 0.5 }
+              : { x: 1, y: 1 }
+          );
+        } else {
+          // souris à droite
+          setScale(
+            side === "right"
+              ? { x: 1, y: 1 + intensity * 0.5 }
+              : { x: 1, y: 1 }
+          );
+        }
       }
-    } else {
+    } else if (idle) {
+      // Mode idle : les yeux restent synchronisés
+      const idleTarget = {
+        x: centerX + (Math.random() - 0.5) * rect.width * 0.6,
+        y: centerY,
+      };
+
+      const dx = idleTarget.x - centerX;
+      const dy = idleTarget.y - centerY;
+      const angle = Math.atan2(dy, dx);
+
+      setOffset({
+        x: Math.cos(angle) * 10,
+        y: Math.sin(angle) * 4,
+      });
+
       setScale({ x: 1, y: 1 });
     }
   }, [target, idle, side]);
@@ -205,17 +151,13 @@ function Eye({
       ref={socketRef}
       style={{
         transform: `scale(${scale.x}, ${scale.y})`,
-        transition: "transform 0.5s ease",
       }}
     >
       <div
         className="pupil-wrapper"
-        style={{
-          transform: `translate(${offset.x}px, ${offset.y}px)`,
-          transition: idle ? "transform 1s ease" : "transform 0.25s ease",
-        }}
+        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       >
-        <div className={`pupil-inner ${isBlinking ? "blinking" : ""}`}>
+        <div className="pupil-inner">
           <div className="pupil-shape" />
         </div>
       </div>

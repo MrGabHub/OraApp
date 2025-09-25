@@ -1,75 +1,83 @@
 :root {
   --frame-bg: #0b0f1a;
   --eye-color: #00ffd5;
+
+  /* Taille de référence : 300px de large = 30vw */
+  --avatar-width: 50vw;              /* largeur globale */
+  --avatar-height: calc(50vw * 0.75);/* hauteur (225/300 = 0.75) */
+  --eyes-zone-width: calc(50vw * 0.55);  /* 180/300 = 0.6 */
+  --eyes-zone-height: calc(50vw * 0.33);/* 100/300 ≈ 0.33 */
+  --eye-size: calc(50vw * 0.2);         /* 60/300 = 0.2 */
 }
 
+/* Conteneur global */
 .avatar-wrapper {
   position: relative;
-  width: 300px;
-  height: 225px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--avatar-width);
+  height: var(--avatar-height);
 }
 
+/* Squircle en fond */
 .avatar-frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
+  fill: var(--frame-bg);
 }
 
+/* Zone des yeux */
 .avatar-eyes {
   position: absolute;
-  top: 0;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 190px; /* distance entre les yeux */
-  height: 100%;
+  transform: translate(-50%, -50%);
+  width: var(--eyes-zone-width);
+  height: var(--eyes-zone-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 2;
 }
 
-/* Zone de l’œil */
+/* Socket (orbite de l'œil) */
 .eye-socket {
-  width: 80px;
-  height: 80px;
+  width: var(--eye-size);
+  height: var(--eye-size);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
-/* Déplacement */
 .pupil-wrapper {
-  transition: transform 0.25s ease;
-}
-
-/* Pupille + glow */
-.pupil-shape {
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  background: var(--eye-color);
-  animation: glowPulse 3s infinite;
-}
-
-@keyframes glowPulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(0, 255, 213, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(0, 255, 213, 1);
-  }
-}
-
-/* Clignement contrôlé par JS */
-.pupil-inner {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.1s ease;
+  transition: transform 0.25s ease;
 }
 
-.pupil-inner.blinking {
-  transform: scaleY(0.1);
-  transition: transform 0.25s ease;
+.pupil-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: blink 6s infinite;
+}
+
+.pupil-shape {
+  width: 100%;
+  height: 100%;
+  border-radius: 30%;
+  background: var(--eye-color);
+  box-shadow: 0 0 3vw rgba(0, 255, 213, 0.6); /* Glow aussi en relatif */
+}
+
+/* Clignement */
+@keyframes blink {
+  0%, 95%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1) scaleX(1.5); }
 }
