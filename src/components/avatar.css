@@ -67,8 +67,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.25s ease;
+
 }
+.pupil-wrapper.tracking {
+  transition: transform 0.2s ease; /* rapide quand la souris bouge */
+}
+
+.pupil-wrapper.idle {
+  transition: transform 2s ease; /* lent quand idle */
+}
+
 
 .pupil-inner {
   width: 100%;

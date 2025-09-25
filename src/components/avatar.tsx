@@ -23,8 +23,8 @@ export default function Avatar() {
 
       // Nouvel objectif idle (aligné horizontalement, pas de louchage)
       setIdleTarget({
-        x: cx + (Math.random() - 0.5) * window.innerWidth * 0.4,
-        y: cy,
+        x: Math.random() * window.innerWidth,   // 👈 n’importe où en largeur
+        y: Math.random() * window.innerHeight,  // 👈 n’importe où en hauteur
       });
     };
 
@@ -32,7 +32,7 @@ export default function Avatar() {
       setIdle(true);
       setTarget(null);
       pickNewIdleTarget();
-      idleMoveTimer = setInterval(pickNewIdleTarget, 3000);
+      idleMoveTimer = setInterval(pickNewIdleTarget, 6000);
     };
 
     const stopIdle = () => {
@@ -224,7 +224,7 @@ function Eye({
       }}
     >
       <div
-        className="pupil-wrapper"
+        className={`pupil-wrapper ${idle ? "idle" : "tracking"}`}
         style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       >
         <div className={`pupil-inner ${mode === "error" ? "no-blink" : ""}`}>
