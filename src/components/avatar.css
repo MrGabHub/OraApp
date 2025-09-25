@@ -2,12 +2,11 @@
   --frame-bg: #0b0f1a;
   --eye-color: #00ffd5;
 
-  /* Taille de référence : 300px de large = 30vw */
-  --avatar-width: 50vw;              /* largeur globale */
-  --avatar-height: calc(50vw * 0.75);/* hauteur (225/300 = 0.75) */
-  --eyes-zone-width: calc(50vw * 0.55);  /* 180/300 = 0.6 */
-  --eyes-zone-height: calc(50vw * 0.33);/* 100/300 ≈ 0.33 */
-  --eye-size: calc(50vw * 0.2);         /* 60/300 = 0.2 */
+  --avatar-width: 50vw;
+  --avatar-height: calc(50vw * 0.75);
+  --eyes-zone-width: calc(50vw * 0.55);
+  --eyes-zone-height: calc(50vw * 0.33);
+  --eye-size: calc(50vw * 0.2);
 }
 
 /* Conteneur global */
@@ -73,7 +72,7 @@
   height: 100%;
   border-radius: 30%;
   background: var(--eye-color);
-  box-shadow: 0 0 3vw rgba(0, 255, 213, 0.6); /* Glow aussi en relatif */
+  box-shadow: 0 0 3vw rgba(0, 255, 213, 0.6);
 }
 
 /* Clignement */
