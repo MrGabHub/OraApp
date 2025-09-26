@@ -102,9 +102,6 @@
   97% { transform: scaleY(0.1) scaleX(1.5); }
 }
 
-/* Désactive le blink (mode erreur) 
-.no-blink { animation: none !important; }*/
-
 /* Mode erreur : chevrons rouges */
 .pupil-shape.error {
   position: relative;
