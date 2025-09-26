@@ -1,4 +1,3 @@
-import React from "react";
 import Avatar from "./components/avatar";
 import "./index.css";
 

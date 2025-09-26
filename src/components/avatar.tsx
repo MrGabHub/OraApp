@@ -17,9 +17,6 @@ export default function Avatar() {
     const pickNewIdleTarget = () => {
       const wrap = document.querySelector(".avatar-wrapper") as HTMLElement | null;
       if (!wrap) return;
-      const r = wrap.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
 
       // Nouvel objectif idle (aligné horizontalement, pas de louchage)
       setIdleTarget({
