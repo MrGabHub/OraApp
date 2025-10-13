@@ -1,4 +1,4 @@
-const CACHE_NAME = "oraapp-cache-v1";
+const CACHE_NAME = "oraapp-cache-v0.1.0";
 const ASSETS = [
   "/",
   "/index.html",
