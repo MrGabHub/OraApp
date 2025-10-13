@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./avatar.css";
 
 type Point = { x: number; y: number };
-type Mode = "normal" | "error";
+type Mode = "normal" | "error" | "success";
 
 export default function Avatar() {
   const [target, setTarget] = useState<Point | null>(null);
@@ -131,9 +131,15 @@ export default function Avatar() {
 
       <button
         className="toggle-button"
-        onClick={() => setMode((m) => (m === "normal" ? "error" : "normal"))}
+        onClick={() =>
+          setMode((m) => (m === "normal" ? "error" : m === "error" ? "success" : "normal"))
+        }
       >
-        {mode === "normal" ? "Passer en Erreur" : "Revenir en Normal"}
+        {mode === "normal"
+          ? "Passer en Erreur"
+          : mode === "error"
+          ? "Passer en Succès"
+          : "Revenir en Normal"}
       </button>
     </div>
   );
@@ -158,7 +164,7 @@ function Eye({
 
   useEffect(() => {
     // En mode erreur : fixe, centré, pas de blink ni de suivi
-    if (mode === "error") {
+    if (mode === "error" || mode === "success") {
       setOffset({ x: 0, y: 0 });
       setScale({ x: 1, y: 1 });
       return;
@@ -224,13 +230,19 @@ function Eye({
         className={`pupil-wrapper ${idle ? "idle" : "tracking"}`}
         style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
       >
-        <div className={`pupil-inner ${mode === "error" ? "no-blink" : ""}`}>
-          {mode === "normal" ? (
-            <div className="pupil-shape normal" />
-          ) : (
+        <div className={`pupil-inner ${mode !== "normal" ? "no-blink" : ""}`}>
+          {mode === "normal" && <div className="pupil-shape normal" />}
+          {mode === "error" && (
             <div className={`pupil-shape error ${side}`}>
               <span></span>
               <span></span>
+            </div>
+          )}
+          {mode === "success" && (
+            <div className="pupil-shape success">
+              <svg viewBox="0 0 48 48" aria-hidden>
+                <path d="M20.687,38.332c-2.072,2.072-5.434,2.072-7.505,0L1.554,26.704c-2.072-2.071-2.072-5.433,0-7.504 c2.071-2.072,5.433-2.072,7.505,0l6.928,6.927c0.523,0.522,1.372,0.522,1.896,0L36.642,7.368c2.071-2.072,5.433-2.072,7.505,0 c0.995,0.995,1.554,2.345,1.554,3.752c0,1.407-0.559,2.757-1.554,3.752L20.687,38.332z" />
+              </svg>
             </div>
           )}
         </div>

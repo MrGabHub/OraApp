@@ -2,6 +2,7 @@
   --frame-bg: #0b0f1a;
   --eye-color: #00ffd5;
   --eye-error: #ff463f;
+  --eye-success: #22c55e;
 
   /* Réactivité (50vw ≈ largeur du visage) */
   --avatar-width: 50vw;
@@ -152,3 +153,21 @@
   box-shadow: 0 8px 24px rgba(11, 15, 26, 0.18);
 }
 .toggle-button:hover { filter: brightness(1.08); }
+
+/* Mode succès : check vert */
+.pupil-shape.success {
+  position: relative;
+  width: 140%;
+  height: 140%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  box-shadow: none;
+}
+.pupil-shape.success svg {
+  width: 80%;
+  height: 80%;
+  fill: var(--eye-success);
+  filter: drop-shadow(0 0 1.2vw var(--eye-success)) drop-shadow(0 0 1.2vw var(--eye-success));
+}
