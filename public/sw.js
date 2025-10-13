@@ -4,7 +4,7 @@ const ASSETS = [
   "/index.html",
   "/manifest.json",
   "/apple-touch-icon.png",
-  "/favicon.ico",
+  "/vite.svg",
 ];
 
 // Installation → mise en cache des assets

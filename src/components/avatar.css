@@ -88,13 +88,22 @@
   animation: blink 5s infinite;
 }
 
-/* Forme normale */
+/* Désactive le clignement en modes non normaux */
+.pupil-inner.no-blink {
+  animation: none;
+}
+
+/* Forme normale (base commune à tous les modes) */
 .pupil-shape {
   width: 100%;
   height: 100%;
-  border-radius: 30%;
   background: var(--eye-color);
-  box-shadow: 0 0 4vw  var(--eye-color);
+  box-shadow: 0 0 4vw var(--eye-color);
+}
+
+/* Mode normal : pupille arrondie et un peu plus haute */
+.pupil-shape.normal {
+  border-radius: 30%;
 }
 
 /* Blink synchrone */
@@ -106,19 +115,16 @@
 /* Mode erreur : chevrons rouges */
 .pupil-shape.error {
   position: relative;
-  width: 150%;
-  height: 300%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: none; /* ✅ enlève le fond bleu-vert */
-  box-shadow: none; /* ✅ enlève l’ombre normale */
+  background: none;
+  box-shadow: none;
 }
-
 .pupil-shape.error span {
   display: block;
-  width: 120%;
-  height: 20%;
+  width: 140%;
+  height: 70%;
   background: var(--eye-error);
   border-radius: 2vw;
   box-shadow: 0 0 3vw var(--eye-error), 0 0 3vw var(--eye-error);
@@ -127,18 +133,18 @@
 
 /* chevron gauche "<" */
 .pupil-shape.error.left span:first-child {
-  transform: rotate(45deg) translate(-20%, -20%);
+  transform: rotate(45deg) translate(-15%, -20%);
 }
 .pupil-shape.error.left span:last-child {
-  transform: rotate(-45deg) translate(-20%, 20%);
+  transform: rotate(-45deg) translate(-15%, 20%);
 }
 
 /* chevron droit ">" */
 .pupil-shape.error.right span:first-child {
-  transform: rotate(-45deg) translate(20%, -20%);
+  transform: rotate(-45deg) translate(15%, -20%);
 }
 .pupil-shape.error.right span:last-child {
-  transform: rotate(45deg) translate(20%, 20%);
+  transform: rotate(45deg) translate(15%, 20%);
 }
 
 /* Bouton de bascule */
@@ -157,17 +163,26 @@
 /* Mode succès : check vert */
 .pupil-shape.success {
   position: relative;
-  width: 140%;
-  height: 140%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   background: none;
   box-shadow: none;
 }
-.pupil-shape.success svg {
-  width: 80%;
-  height: 80%;
-  fill: var(--eye-success);
-  filter: drop-shadow(0 0 1.2vw var(--eye-success)) drop-shadow(0 0 1.2vw var(--eye-success));
+.pupil-shape.success span {
+  position: absolute;
+  background: var(--eye-success);
+  border-radius: 2vw;
+  box-shadow: 0 0 3vw var(--eye-success), 0 0 3vw var(--eye-success);
+}
+/* coche "✓" : une barre courte + une longue */
+.pupil-shape.success span:first-child { /* jambage court */
+  width: 100%;
+  height: 70%;
+  transform: rotate(45deg) translate(-10%, 50%);
+}
+.pupil-shape.success span:last-child { /* jambage long */
+  width: 150%;
+  height: 70%;
+  transform: rotate(-45deg) translate(5%, 10%);
 }

@@ -1,5 +1,4 @@
 import Avatar from "./components/avatar";
-import "./index.css";
 
 export default function App() {
   return (
