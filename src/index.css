@@ -2,10 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Styles globaux (optionnel) */
-html, body, #root {
-  height: 100%;
+/* Styles globaux + thème clair chaleureux */
+:root {
+  --bg: #f6e7d3;            /* crème chaude */
+  --surface: #f3e2c9;        /* panneau clair */
+  --card: #f6e7d3;           /* cartes */
+  --card-border: #e6d7c2;    /* bordure douce */
+  --text: #5b3f2e;           /* brun lisible */
+  --muted: #8c6f5a;          /* brun atténué */
+  --accent: #e2842c;         /* orange bouton */
+  --accent-strong: #cf6e1b;  /* orange foncé */
+  --green: #3ba660;          /* succès */
+  --red: #d45a54;            /* erreur */
+  --shadow: 0 10px 36px rgba(150, 120, 90, 0.25);
 }
+
+html, body, #root { height: 100%; }
+
 body {
-  @apply bg-slate-950 text-slate-200 antialiased;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

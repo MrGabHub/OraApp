@@ -1,8 +1,10 @@
 :root {
-  --frame-bg: #0b0f1a;
-  --eye-color: #00ffd5;
-  --eye-error: #ff463f;
-  --eye-success: #22c55e;
+  --frame-bg: #2f2626;
+  --eye-color: #f6b860;   /* doré chaud */
+  --eye-error: #d45a54;
+  --eye-success: #3ba660;
+  --bezel-color: #e0cdb4;  /* bordure écran */
+  --screen-bg: #2b2421;    /* fond derrière les yeux (plus sombre) */
 
   /* Réactivité (50vw ≈ largeur du visage) */
   --avatar-width: 50vw;
@@ -20,23 +22,37 @@
   align-items: center;
   justify-content: flex-start;
   padding-top: min(8vh, 64px);
-  background: #fff;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  background: transparent;
 }
 
 /* Avatar */
 .avatar-wrapper {
-  position: relative;
+  position: sticky;
+  top: 8px;
+  z-index: 20;
   display: flex;
   justify-content: center;
   align-items: center;
   width: var(--avatar-width);
   height: var(--avatar-height);
+  margin-inline: auto;
+  pointer-events: none; /* laisse passer les interactions au scroll */
 }
 
 .avatar-frame {
   width: 100%;
   height: 100%;
-  fill: var(--frame-bg);
+  fill: var(--screen-bg); /* fond d'écran sombre derrière les yeux */
+  overflow: visible; /* évite le rognage de l'épaisseur du trait */
+}
+.avatar-frame path {
+  stroke: var(--bezel-color); /* bordure du squircle (bezel) */
+  stroke-width: 12px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  /* Ombre collée au contour réel du squircle */
+  filter: drop-shadow(0 10px 30px rgba(43, 36, 33, 0.45));
 }
 
 /* Zone des yeux */
@@ -49,7 +65,26 @@
   width: var(--eyes-zone-width);
   height: var(--eyes-zone-height);
   margin: auto;
+  z-index: 2; /* au-dessus des calques de blur */
 }
+
+/* Calque de flou (frosted glass) derrière ORA */
+.avatar-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 28% / 24%; /* approximation d'un squircle 4:3 */
+  /* uniquement l'ombre externe pour le contraste, pas de fond visible */
+  background: transparent;
+  box-shadow: none;
+  z-index: 0;
+  display: none;
+}
+
+/* Calque de verre dépoli dans l'écran (entre l'écran et les yeux) */
+/* Calque flouté retiré à la demande (pas de backdrop-filter) */
 
 /* Orbits */
 .eye-socket {
@@ -98,7 +133,7 @@
   width: 100%;
   height: 100%;
   background: var(--eye-color);
-  box-shadow: 0 0 4vw var(--eye-color);
+  box-shadow: 0 0 3vw rgba(246, 184, 96, 0.6);
 }
 
 /* Mode normal : pupille arrondie et un peu plus haute */
@@ -127,7 +162,7 @@
   height: 70%;
   background: var(--eye-error);
   border-radius: 2vw;
-  box-shadow: 0 0 3vw var(--eye-error), 0 0 3vw var(--eye-error);
+  box-shadow: 0 0 3vw rgba(212, 90, 84, 0.5);
   position: absolute;
 }
 
@@ -173,16 +208,18 @@
   position: absolute;
   background: var(--eye-success);
   border-radius: 2vw;
-  box-shadow: 0 0 3vw var(--eye-success), 0 0 3vw var(--eye-success);
+  box-shadow: 0 0 3vw rgba(59,166,96,0.5);
 }
 /* coche "✓" : une barre courte + une longue */
 .pupil-shape.success span:first-child { /* jambage court */
   width: 100%;
-  height: 70%;
-  transform: rotate(45deg) translate(-10%, 50%);
+  height: 60%;
+  transform: rotate(45deg) translate(-15%, 50%);
 }
 .pupil-shape.success span:last-child { /* jambage long */
   width: 150%;
-  height: 70%;
-  transform: rotate(-45deg) translate(5%, 10%);
+  height: 60%;
+  transform: rotate(-45deg) translate(10%, 10%);
 }
+
+

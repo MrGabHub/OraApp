@@ -1,0 +1,10 @@
+ .assistant { display: grid; grid-template-rows: 1fr auto; height: 60vh; background: var(--surface); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+ .thread { padding: 12px; display: grid; gap: 8px; overflow: auto; }
+ .bubble { max-width: 80%; padding: 8px 10px; border-radius: 12px; font-size: 14px; line-height: 1.35; background: #efe1cc; border: 1px solid var(--card-border); color: var(--text); }
+ .bubble.assistant { justify-self: start; }
+ .bubble.user { justify-self: end; background: #ffd7b3; border-color: #f1caa0; color: #7a4a1e; }
+ .composer { display: flex; gap: 8px; padding: 8px; border-top: 1px solid var(--card-border); background: var(--card); }
+ .composer input { flex: 1; background: #efe1cc; border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; color: var(--text); outline: none; }
+ .composer input::placeholder { color: var(--muted); }
+ .composer button { background: var(--accent); color: #fff; border: 1px solid var(--accent-strong); padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+ .composer button:hover { filter: brightness(1.05); }

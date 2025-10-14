@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import "./avatar.css";
 
 type Point = { x: number; y: number };
-type Mode = "normal" | "error" | "success";
+export type Mode = "normal" | "error" | "success";
 
-export default function Avatar() {
+export default function Avatar({ mode }: { mode: Mode }) {
   const [target, setTarget] = useState<Point | null>(null);
   const [idle, setIdle] = useState(true);
   const [idleTarget, setIdleTarget] = useState<Point | null>(null);
-  const [mode, setMode] = useState<Mode>("normal");
 
   useEffect(() => {
     let idleTimer: ReturnType<typeof setTimeout>;
@@ -20,8 +19,8 @@ export default function Avatar() {
 
       // Nouvel objectif idle (aligné horizontalement, pas de louchage)
       setIdleTarget({
-        x: Math.random() * window.innerWidth,   // 👈 n’importe où en largeur
-        y: Math.random() * window.innerHeight,  // 👈 n’importe où en hauteur
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
       });
     };
 
@@ -92,55 +91,40 @@ export default function Avatar() {
   }, [mode]);
 
   return (
-    <div className="app-container">
-      <div className="avatar-wrapper">
-        {/* Squircle 4:3 */}
-        <svg
-          className="avatar-frame"
-          viewBox="0 0 300 225"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden
-        >
-          <path
-            d="M 150,0
-               C 285,0 300,20 300,112
-               C 300,205 285,225 150,225
-               C 15,225 0,205 0,112
-               C 0,20 15,0 150,0 Z"
-          />
-        </svg>
-
-        {/* Yeux */}
-        <div className="avatar-eyes">
-          <Eye
-            side="left"
-            mode={mode}
-            target={target}
-            idle={idle}
-            idleTarget={idleTarget}
-          />
-          <Eye
-            side="right"
-            mode={mode}
-            target={target}
-            idle={idle}
-            idleTarget={idleTarget}
-          />
-        </div>
-      </div>
-
-      <button
-        className="toggle-button"
-        onClick={() =>
-          setMode((m) => (m === "normal" ? "error" : m === "error" ? "success" : "normal"))
-        }
+    <div className="avatar-wrapper">
+      {/* Squircle 4:3 */}
+      <svg
+        className="avatar-frame"
+        viewBox="-8 -8 316 241"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden
       >
-        {mode === "normal"
-          ? "Passer en Erreur"
-          : mode === "error"
-          ? "Passer en Succès"
-          : "Revenir en Normal"}
-      </button>
+        <path
+          d="M 150,0
+             C 285,0 300,20 300,112
+             C 300,205 285,225 150,225
+             C 15,225 0,205 0,112
+             C 0,20 15,0 150,0 Z"
+        />
+      </svg>
+
+      {/* Yeux */}
+      <div className="avatar-eyes">
+        <Eye
+          side="left"
+          mode={mode}
+          target={target}
+          idle={idle}
+          idleTarget={idleTarget}
+        />
+        <Eye
+          side="right"
+          mode={mode}
+          target={target}
+          idle={idle}
+          idleTarget={idleTarget}
+        />
+      </div>
     </div>
   );
 }
@@ -175,8 +159,7 @@ function Eye({
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
 
-    const active: Point | null =
-      target && !idle ? target : idle ? idleTarget : null;
+    const active: Point | null = target && !idle ? target : idle ? idleTarget : null;
 
     if (!active) {
       // Recentrage doux si rien à suivre
@@ -207,10 +190,10 @@ function Eye({
       const intensity = Math.min(excessX / (window.innerWidth / 2), 1); // 0 → 1
 
       if (dx < 0) {
-        // regard à gauche → œil gauche s’étire
+        // regard à gauche → œil gauche s'étire
         setScale(side === "left" ? { x: 1, y: 1 + 0.4 * intensity } : { x: 1, y: 1 });
       } else {
-        // regard à droite → œil droit s’étire
+        // regard à droite → œil droit s'étire
         setScale(side === "right" ? { x: 1, y: 1 + 0.4 * intensity } : { x: 1, y: 1 });
       }
     }
