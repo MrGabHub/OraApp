@@ -35,10 +35,10 @@ export default function Assistant() {
         { role: "user", content: userText },
       ];
 
-      const resp = await fetch("/api/grok?stream=1", {
+      const resp = await fetch("/api/openai?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "grok-2-mini", messages: chat, temperature: 0.6, stream: true }),
+        body: JSON.stringify({ model: "gpt-4o-mini", messages: chat, temperature: 0.6, stream: true }),
       });
       if (!resp.ok || !resp.body) {
         const err = await resp.text().catch(() => "");
