@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
@@ -8,6 +8,13 @@ export default function Assistant() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const threadRef = useRef<HTMLDivElement | null>(null);
+  const [model, setModel] = useState<string>(() =>
+    localStorage.getItem("hf_model") || "HuggingFaceH4/zephyr-7b-beta"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("hf_model", model);
+  }, [model]);
 
   const system = useMemo(() => (
     "You are ORA, a concise, kind assistant focused on time planning. " +
@@ -38,7 +45,7 @@ export default function Assistant() {
       const resp = await fetch("/api/hf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "HuggingFaceH4/zephyr-7b-beta", messages: chat, temperature: 0.6 }),
+        body: JSON.stringify({ model, messages: chat, temperature: 0.6 }),
       });
       if (!resp.ok) {
         const err = await resp.text().catch(() => "");
@@ -68,6 +75,21 @@ export default function Assistant() {
 
   return (
     <section className="assistant">
+      <div className="toolbar">
+        <label>
+          <span className="label">Model</span>
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            title="Select HF model"
+          >
+            <option value="HuggingFaceH4/zephyr-7b-beta">Zephyr 7B</option>
+            <option value="mistralai/Mistral-7B-Instruct-v0.2">Mistral 7B</option>
+            <option value="google/gemma-7b-it">Gemma 7B</option>
+            <option value="Qwen/Qwen2-7B-Instruct">Qwen2 7B</option>
+          </select>
+        </label>
+      </div>
       <div className="thread" ref={threadRef}>
         {messages.map((m) => (
           <div key={m.id} className={`bubble ${m.role}`}>{m.text}</div>

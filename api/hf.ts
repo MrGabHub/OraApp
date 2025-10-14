@@ -21,14 +21,23 @@ export default async function handler(req: Request): Promise<Response> {
   let payload: any = {};
   try { payload = await req.json(); } catch {}
 
-  const apiKey = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY;
+  const rawKey = (process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.VITE_HUGGINGFACE_API_KEY || process.env.VITE_HF_API_KEY || "").toString();
+  const apiKey = rawKey.trim();
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "Missing HUGGINGFACE_API_KEY/HF_API_KEY" }), {
       status: 500,
       headers: { ...corsHeaders(), "Content-Type": "application/json" },
     });
   }
+  // Validation simple du format (les tokens HF commencent par hf_ et sont assez longs)
+  if (!/^hf_[A-Za-z0-9_-]{20,}$/.test(apiKey)) {
+    return new Response(JSON.stringify({ error: "Invalid HF API key format" }), {
+      status: 401,
+      headers: { ...corsHeaders(), "Content-Type": "application/json" },
+    });
+  }
 
+  // Use a widely-available, no-license-prompt chat model by default
   const model = payload?.model || (process.env.HF_MODEL || "HuggingFaceH4/zephyr-7b-beta");
   const messages: Array<{ role: string; content: string }> = Array.isArray(payload?.messages) ? payload.messages : [];
   const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
@@ -53,6 +62,7 @@ export default async function handler(req: Request): Promise<Response> {
           repetition_penalty: 1.05,
           top_p: 0.9,
         },
+        options: { wait_for_model: true },
       }),
     });
 
@@ -102,4 +112,3 @@ function corsHeaders() {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   } as const;
 }
-

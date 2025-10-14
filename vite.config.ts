@@ -21,9 +21,12 @@ const devHFProxy = {
 
         const url = new URL(req.url, "http://localhost");
         const wantStream = url.searchParams.get("stream") === "1" || payload?.stream === true;
-        const apiKey = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.VITE_HUGGINGFACE_API_KEY || process.env.VITE_HF_API_KEY;
+        const rawKey = (process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.VITE_HUGGINGFACE_API_KEY || process.env.VITE_HF_API_KEY || "").toString();
+        const apiKey = rawKey.trim();
         if (!apiKey) { res.statusCode = 500; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Missing HUGGINGFACE_API_KEY/HF_API_KEY" })); return; }
+        if (!/^hf_[A-Za-z0-9_-]{20,}$/.test(apiKey)) { res.statusCode = 401; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Invalid HF API key format" })); return; }
 
+        // Use an open, readily available model by default in dev
         const model = payload?.model || "HuggingFaceH4/zephyr-7b-beta";
         const messages = Array.isArray(payload?.messages) ? payload.messages : [];
         const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
@@ -42,7 +45,7 @@ const devHFProxy = {
             "Content-Type": "application/json",
             "Accept": "application/json"
           },
-          body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 256, temperature, return_full_text: false, repetition_penalty: 1.05, top_p: 0.9 } })
+          body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 256, temperature, return_full_text: false, repetition_penalty: 1.05, top_p: 0.9 }, options: { wait_for_model: true } })
         });
         const text = await upstream.text();
         if (!upstream.ok) { res.statusCode = 502; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Upstream error", details: text })); return; }
@@ -59,7 +62,7 @@ export default defineConfig(({ mode }) => {
   // Load env (from .env, .env.local). Ensure server middleware can read the key.
   const env = loadEnv(mode, process.cwd(), "");
   if (!process.env.HUGGINGFACE_API_KEY && !process.env.HF_API_KEY) {
-    process.env.HUGGINGFACE_API_KEY = env.HUGGINGFACE_API_KEY || env.VITE_HUGGINGFACE_API_KEY || env.HF_API_KEY || env.VITE_HF_API_KEY || process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY;
+    process.env.HUGGINGFACE_API_KEY = (env.HUGGINGFACE_API_KEY || env.VITE_HUGGINGFACE_API_KEY || env.HF_API_KEY || env.VITE_HF_API_KEY || process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || "").trim();
   }
   return {
   plugins: [
