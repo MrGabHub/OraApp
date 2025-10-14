@@ -38,7 +38,7 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const model = payload?.model || "grok-2-mini"; // lightweight Grok
+  const model = payload?.model || (process.env.XAI_MODEL || "grok-2-latest");
   const messages = Array.isArray(payload?.messages) ? payload.messages : [];
   const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.7;
   const wantStream = (new URL(req.url).searchParams.get("stream") === "1") || payload?.stream === true;
@@ -49,6 +49,7 @@ export default async function handler(req: Request): Promise<Response> {
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
+        ...(wantStream ? { Accept: "text/event-stream" } : { Accept: "application/json" }),
       },
       body: JSON.stringify({ model, messages, temperature, stream: wantStream }),
     });

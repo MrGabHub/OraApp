@@ -33,7 +33,11 @@ const devGrokProxy = {
 
         const upstream = await fetch("https://api.x.ai/v1/chat/completions", {
           method: "POST",
-          headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            ...(wantStream ? { Accept: "text/event-stream" } : { Accept: "application/json" })
+          },
           body: JSON.stringify({ model, messages, temperature, stream: wantStream })
         });
         if (!upstream.ok) {

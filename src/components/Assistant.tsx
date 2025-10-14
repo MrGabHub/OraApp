@@ -4,11 +4,7 @@ import "./assistant.css";
 type Msg = { id: string; role: "user" | "assistant"; text: string };
 
 export default function Assistant() {
-  const [messages, setMessages] = useState<Msg[]>([
-    { id: "m1", role: "assistant", text: "Hi! I’m ORA. Need help planning today?" },
-    { id: "m2", role: "user", text: "Find a 45min slot before 3pm meeting." },
-    { id: "m3", role: "assistant", text: "Got it. 13:45–14:30 looks free. Book it?" },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const threadRef = useRef<HTMLDivElement | null>(null);
@@ -45,8 +41,10 @@ export default function Assistant() {
         body: JSON.stringify({ model: "grok-2-mini", messages: chat, temperature: 0.6, stream: true }),
       });
       if (!resp.ok || !resp.body) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err?.error || `HTTP ${resp.status}`);
+        const err = await resp.text().catch(() => "");
+        let msg = `HTTP ${resp.status}`;
+        try { const j = JSON.parse(err); msg = j?.error + (j?.details ? `: ${j.details}` : "") || msg; } catch {}
+        throw new Error(msg);
       }
       const reader = resp.body.getReader();
       const decoder = new TextDecoder();
