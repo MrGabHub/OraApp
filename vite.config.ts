@@ -2,11 +2,11 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Dev-only proxy for /api/openai so `npm run dev` works without `vercel dev`.
-const devOpenAIProxy = {
-  name: "dev-openai-proxy",
+// Dev-only proxy for /api/hf so `npm run dev` works without `vercel dev`.
+const devHFProxy = {
+  name: "dev-hf-proxy",
   configureServer(server: any) {
-    server.middlewares.use("/api/openai", async (req: any, res: any, next: any) => {
+    server.middlewares.use("/api/hf", async (req: any, res: any, next: any) => {
       if (req.method !== "POST" && req.method !== "OPTIONS") return next();
 
       res.setHeader("Access-Control-Allow-Origin", "*");
@@ -21,50 +21,32 @@ const devOpenAIProxy = {
 
         const url = new URL(req.url, "http://localhost");
         const wantStream = url.searchParams.get("stream") === "1" || payload?.stream === true;
-        const apiKey = process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
-        if (!apiKey) { res.statusCode = 500; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Missing OPENAI_API_KEY" })); return; }
+        const apiKey = process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.VITE_HUGGINGFACE_API_KEY || process.env.VITE_HF_API_KEY;
+        if (!apiKey) { res.statusCode = 500; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Missing HUGGINGFACE_API_KEY/HF_API_KEY" })); return; }
 
-        const model = payload?.model || "gpt-4o-mini";
+        const model = payload?.model || "HuggingFaceH4/zephyr-7b-beta";
         const messages = Array.isArray(payload?.messages) ? payload.messages : [];
         const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
 
-        const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
+        const buildPrompt = (msgs: any[]) => {
+          let sys = "You are ORA, a concise time-planning assistant."; const parts: string[] = [];
+          for (const m of msgs) { if (m.role === 'system') { sys = m.content; continue; } if (m.role==='user') parts.push(`User: ${m.content}`); if (m.role==='assistant') parts.push(`Assistant: ${m.content}`); }
+          return `${sys}\n${parts.join("\n")}\nAssistant:`;
+        };
+        const prompt = buildPrompt(messages);
+
+        const upstream = await fetch(`https://api-inference.huggingface.co/models/${encodeURIComponent(model)}`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
-            ...(wantStream ? { Accept: "text/event-stream" } : { Accept: "application/json" })
+            "Accept": "application/json"
           },
-          body: JSON.stringify({ model, messages, temperature, stream: wantStream })
+          body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 256, temperature, return_full_text: false, repetition_penalty: 1.05, top_p: 0.9 } })
         });
-        if (!upstream.ok) {
-          const text = await upstream.text();
-          res.statusCode = 502; res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ error: "Upstream error", details: text })); return;
-        }
-
-        if (wantStream) {
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-          res.setHeader("Cache-Control", "no-cache, no-transform");
-          res.setHeader("Connection", "keep-alive");
-          // Pipe chunks
-          const reader: any = (upstream as any).body?.getReader?.();
-          if (reader) {
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              res.write(Buffer.from(value));
-            }
-            res.end();
-          } else {
-            (upstream as any).body?.pipe(res);
-          }
-        } else {
-          const text = await upstream.text();
-          res.statusCode = 200; res.setHeader("Content-Type", "application/json");
-          res.end(text);
-        }
+        const text = await upstream.text();
+        if (!upstream.ok) { res.statusCode = 502; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Upstream error", details: text })); return; }
+        res.statusCode = 200; res.setHeader("Content-Type", "application/json"); res.end(text);
       } catch (err: any) {
         res.statusCode = 500; res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ error: "Request failed", details: String(err) }));
@@ -76,13 +58,13 @@ const devOpenAIProxy = {
 export default defineConfig(({ mode }) => {
   // Load env (from .env, .env.local). Ensure server middleware can read the key.
   const env = loadEnv(mode, process.cwd(), "");
-  if (!process.env.OPENAI_API_KEY) {
-    process.env.OPENAI_API_KEY = env.OPENAI_API_KEY || env.VITE_OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY;
+  if (!process.env.HUGGINGFACE_API_KEY && !process.env.HF_API_KEY) {
+    process.env.HUGGINGFACE_API_KEY = env.HUGGINGFACE_API_KEY || env.VITE_HUGGINGFACE_API_KEY || env.HF_API_KEY || env.VITE_HF_API_KEY || process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY;
   }
   return {
   plugins: [
     react(),
-    devOpenAIProxy as any,
+    devHFProxy as any,
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [

@@ -35,42 +35,20 @@ export default function Assistant() {
         { role: "user", content: userText },
       ];
 
-      const resp = await fetch("/api/openai?stream=1", {
+      const resp = await fetch("/api/hf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "gpt-4o-mini", messages: chat, temperature: 0.6, stream: true }),
+        body: JSON.stringify({ model: "HuggingFaceH4/zephyr-7b-beta", messages: chat, temperature: 0.6 }),
       });
-      if (!resp.ok || !resp.body) {
+      if (!resp.ok) {
         const err = await resp.text().catch(() => "");
         let msg = `HTTP ${resp.status}`;
         try { const j = JSON.parse(err); msg = j?.error + (j?.details ? `: ${j.details}` : "") || msg; } catch {}
         throw new Error(msg);
       }
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          const line = part.trim();
-          if (!line) continue;
-          const raw = line.split("\n").find((l) => l.startsWith("data:"));
-          if (!raw) continue;
-          const dataStr = raw.slice(5).trim();
-          if (dataStr === "[DONE]") continue;
-          try {
-            const evt = JSON.parse(dataStr);
-            const delta = evt?.choices?.[0]?.delta?.content ?? "";
-            if (delta) {
-              setMessages((m) => m.map((msg) => msg.id === aid ? { ...msg, text: msg.text + delta } : msg));
-            }
-          } catch {}
-        }
-      }
+      const data = await resp.json();
+      const content = data?.content?.toString?.() ?? "(no reply)";
+      setMessages((m) => m.map((msg) => msg.id === aid ? { ...msg, text: content } : msg));
     } catch (e: any) {
       setMessages((m) => m.map((msg) =>
         msg.role === "assistant" && msg.text === "" ? { ...msg, text: `Error: ${String(e?.message || e)}` } : msg
