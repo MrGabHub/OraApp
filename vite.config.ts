@@ -2,11 +2,11 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Dev-only proxy for /api/hf so `npm run dev` works without `vercel dev`.
-const devHFProxy = {
-  name: "dev-hf-proxy",
+// Dev-only proxy for /api/groq so `npm run dev` works without `vercel dev`.
+const devGroqProxy = {
+  name: "dev-groq-proxy",
   configureServer(server: any) {
-    server.middlewares.use("/api/hf", async (req: any, res: any, next: any) => {
+    server.middlewares.use("/api/groq", async (req: any, res: any, next: any) => {
       if (req.method !== "POST" && req.method !== "OPTIONS") return next();
 
       res.setHeader("Access-Control-Allow-Origin", "*");
@@ -21,90 +21,100 @@ const devHFProxy = {
 
         const url = new URL(req.url, "http://localhost");
         const wantStream = url.searchParams.get("stream") === "1" || payload?.stream === true;
-        const rawKey = (process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || process.env.VITE_HUGGINGFACE_API_KEY || process.env.VITE_HF_API_KEY || "").toString();
+        const rawKey = (process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || "").toString();
         const apiKey = rawKey.trim();
-        if (!apiKey) { res.statusCode = 500; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Missing HUGGINGFACE_API_KEY/HF_API_KEY" })); return; }
-        if (!/^hf_[A-Za-z0-9_-]{20,}$/.test(apiKey)) { res.statusCode = 401; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Invalid HF API key format" })); return; }
+        if (!apiKey) {
+          res.statusCode = 500; res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "Missing GROQ_API_KEY" }));
+          return;
+        }
 
-        // Use an open, readily available model by default in dev
-        const model = payload?.model || "HuggingFaceH4/zephyr-7b-beta";
+        const model = payload?.model || "llama3-8b-8192";
         const messages = Array.isArray(payload?.messages) ? payload.messages : [];
         const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
 
-        const buildPrompt = (msgs: any[]) => {
-          let sys = "You are ORA, a concise time-planning assistant."; const parts: string[] = [];
-          for (const m of msgs) { if (m.role === 'system') { sys = m.content; continue; } if (m.role==='user') parts.push(`User: ${m.content}`); if (m.role==='assistant') parts.push(`Assistant: ${m.content}`); }
-          return `${sys}\n${parts.join("\n")}\nAssistant:`;
-        };
-        const prompt = buildPrompt(messages);
-
-        const upstream = await fetch(`https://api-inference.huggingface.co/models/${encodeURIComponent(model)}`, {
+        const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            ...(wantStream ? { Accept: "text/event-stream" } : { Accept: "application/json" }),
           },
-          body: JSON.stringify({ inputs: prompt, parameters: { max_new_tokens: 256, temperature, return_full_text: false, repetition_penalty: 1.05, top_p: 0.9 }, options: { wait_for_model: true } })
+          body: JSON.stringify({ model, messages, temperature, stream: wantStream }),
         });
-        const text = await upstream.text();
-        if (!upstream.ok) { res.statusCode = 502; res.setHeader("Content-Type","application/json"); res.end(JSON.stringify({ error: "Upstream error", details: text })); return; }
-        res.statusCode = 200; res.setHeader("Content-Type", "application/json"); res.end(text);
+
+        if (!upstream.ok) {
+          const text = await upstream.text();
+          res.statusCode = 502; res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: "Upstream error", details: text }));
+          return;
+        }
+
+        if (wantStream) {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+          res.setHeader("Cache-Control", "no-cache, no-transform");
+          res.setHeader("Connection", "keep-alive");
+          const reader: any = (upstream as any).body?.getReader?.();
+          if (reader) {
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              res.write(Buffer.from(value));
+            }
+            res.end();
+          } else {
+            (upstream as any).body?.pipe(res);
+          }
+        } else {
+          const text = await upstream.text();
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(text);
+        }
       } catch (err: any) {
         res.statusCode = 500; res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ error: "Request failed", details: String(err) }));
       }
     });
-  }
+  },
 };
 
 export default defineConfig(({ mode }) => {
-  // Load env (from .env, .env.local). Ensure server middleware can read the key.
   const env = loadEnv(mode, process.cwd(), "");
-  if (!process.env.HUGGINGFACE_API_KEY && !process.env.HF_API_KEY) {
-    process.env.HUGGINGFACE_API_KEY = (env.HUGGINGFACE_API_KEY || env.VITE_HUGGINGFACE_API_KEY || env.HF_API_KEY || env.VITE_HF_API_KEY || process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY || "").trim();
+  if (!process.env.GROQ_API_KEY) {
+    process.env.GROQ_API_KEY = (env.GROQ_API_KEY || env.VITE_GROQ_API_KEY || "").trim();
   }
+
   return {
-  plugins: [
-    react(),
-    devHFProxy as any,
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: [
-        "favicon.ico",
-        "favicon.svg",
-        "apple-touch-icon.png",
-        "robots.txt"
-      ],
-      manifest: {
-        name: "OraApp",
-        short_name: "Ora",
-        description: "Mascotte interactive avec suivi du regard",
-        theme_color: "#f6e7d3",
-        background_color: "#f6e7d3",
-        display: "standalone",
-        orientation: "portrait",
-        start_url: "/",
-        icons: [
-          {
-            src: "/pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png"
-          },
-          {
-            src: "/pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png"
-          },
-          {
-            src: "/pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable"
-          }
-        ]
-      }
-    })
-  ]
+    plugins: [
+      react(),
+      devGroqProxy as any,
+      VitePWA({
+        registerType: "autoUpdate",
+        includeAssets: ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "robots.txt"],
+        manifest: {
+          name: "OraApp",
+          short_name: "Ora",
+          description: "Mascotte interactive avec suivi du regard",
+          theme_color: "#f6e7d3",
+          background_color: "#f6e7d3",
+          display: "standalone",
+          orientation: "portrait",
+          start_url: "/",
+          icons: [
+            { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+            { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+            {
+              src: "/pwa-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any maskable",
+            },
+          ],
+        },
+      }),
+    ],
   };
 });
+

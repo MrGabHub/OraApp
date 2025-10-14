@@ -3,23 +3,27 @@ import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
 
+const STORAGE_KEY = "groq_model";
+
 export default function Assistant() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const threadRef = useRef<HTMLDivElement | null>(null);
   const [model, setModel] = useState<string>(() =>
-    localStorage.getItem("hf_model") || "HuggingFaceH4/zephyr-7b-beta"
+    localStorage.getItem(STORAGE_KEY) || "llama3-8b-8192"
   );
 
   useEffect(() => {
-    localStorage.setItem("hf_model", model);
+    localStorage.setItem(STORAGE_KEY, model);
   }, [model]);
 
-  const system = useMemo(() => (
-    "You are ORA, a concise, kind assistant focused on time planning. " +
-    "Prefer short answers with concrete actions, propose times, and avoid verbosity."
-  ), []);
+  const system = useMemo(
+    () =>
+      "You are ORA, a concise, kind assistant focused on time planning. " +
+      "Prefer short answers with concrete actions, propose times, and avoid verbosity.",
+    []
+  );
 
   const send = async () => {
     if (!input.trim()) return;
@@ -35,36 +39,70 @@ export default function Assistant() {
     setLoading(true);
 
     try {
-      // Build OpenAI-compatible messages
       const chat = [
         { role: "system", content: system },
         ...messages.map((m) => ({ role: m.role, content: m.text })),
         { role: "user", content: userText },
       ];
 
-      const resp = await fetch("/api/hf", {
+      const resp = await fetch("/api/groq?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model, messages: chat, temperature: 0.6 }),
+        body: JSON.stringify({ model, messages: chat, temperature: 0.6, stream: true }),
       });
-      if (!resp.ok) {
-        const err = await resp.text().catch(() => "");
+
+      if (!resp.ok || !resp.body) {
+        const errText = await resp.text().catch(() => "");
         let msg = `HTTP ${resp.status}`;
-        try { const j = JSON.parse(err); msg = j?.error + (j?.details ? `: ${j.details}` : "") || msg; } catch {}
+        try {
+          const j = JSON.parse(errText);
+          msg = j?.error + (j?.details ? `: ${j.details}` : "") || msg;
+        } catch {}
         throw new Error(msg);
       }
-      const data = await resp.json();
-      const content = data?.content?.toString?.() ?? "(no reply)";
-      setMessages((m) => m.map((msg) => msg.id === aid ? { ...msg, text: content } : msg));
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line) continue;
+          const raw = line.split("\n").find((l) => l.startsWith("data:"));
+          if (!raw) continue;
+          const dataStr = raw.slice(5).trim();
+          if (!dataStr || dataStr === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(dataStr);
+            const delta = evt?.choices?.[0]?.delta?.content ?? "";
+            if (delta) {
+              setMessages((m) =>
+                m.map((msg) => (msg.id === aid ? { ...msg, text: msg.text + delta } : msg))
+              );
+            }
+          } catch {}
+        }
+      }
     } catch (e: any) {
-      setMessages((m) => m.map((msg) =>
-        msg.role === "assistant" && msg.text === "" ? { ...msg, text: `Error: ${String(e?.message || e)}` } : msg
-      ));
+      setMessages((m) =>
+        m.map((msg) =>
+          msg.role === "assistant" && msg.text === ""
+            ? { ...msg, text: `Error: ${String(e?.message || e)}` }
+            : msg
+        )
+      );
     } finally {
       setLoading(false);
-      // Scroll to bottom of thread
       requestAnimationFrame(() => {
-        threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+        threadRef.current?.scrollTo({
+          top: threadRef.current.scrollHeight,
+          behavior: "smooth",
+        });
       });
     }
   };
@@ -81,18 +119,20 @@ export default function Assistant() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            title="Select HF model"
+            title="Select Groq model"
           >
-            <option value="HuggingFaceH4/zephyr-7b-beta">Zephyr 7B</option>
-            <option value="mistralai/Mistral-7B-Instruct-v0.2">Mistral 7B</option>
-            <option value="google/gemma-7b-it">Gemma 7B</option>
-            <option value="Qwen/Qwen2-7B-Instruct">Qwen2 7B</option>
+            <option value="llama3-8b-8192">Llama3 8B</option>
+            <option value="llama3-70b-8192">Llama3 70B</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+            <option value="gemma2-9b-it">Gemma2 9B</option>
           </select>
         </label>
       </div>
       <div className="thread" ref={threadRef}>
         {messages.map((m) => (
-          <div key={m.id} className={`bubble ${m.role}`}>{m.text}</div>
+          <div key={m.id} className={`bubble ${m.role}`}>
+            {m.text}
+          </div>
         ))}
       </div>
       <div className="composer">
@@ -102,8 +142,11 @@ export default function Assistant() {
           onKeyDown={onKey}
           placeholder="Ask ORA…"
         />
-        <button onClick={send} disabled={loading}>{loading ? "…" : "Send"}</button>
+        <button onClick={send} disabled={loading}>
+          {loading ? "…" : "Send"}
+        </button>
       </div>
     </section>
   );
 }
+
