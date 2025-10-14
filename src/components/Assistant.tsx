@@ -22,7 +22,13 @@ export default function Assistant() {
     if (!input.trim()) return;
     const userText = input.trim();
     setInput("");
-    setMessages((m) => [...m, { id: crypto.randomUUID(), role: "user", text: userText }]);
+    const uid = crypto.randomUUID();
+    const aid = crypto.randomUUID();
+    setMessages((m) => [
+      ...m,
+      { id: uid, role: "user", text: userText },
+      { id: aid, role: "assistant", text: "" },
+    ]);
     setLoading(true);
 
     try {
@@ -33,20 +39,44 @@ export default function Assistant() {
         { role: "user", content: userText },
       ];
 
-      const resp = await fetch("/api/grok", {
+      const resp = await fetch("/api/grok?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "grok-2-mini", messages: chat, temperature: 0.6 }),
+        body: JSON.stringify({ model: "grok-2-mini", messages: chat, temperature: 0.6, stream: true }),
       });
-      if (!resp.ok) {
+      if (!resp.ok || !resp.body) {
         const err = await resp.json().catch(() => ({}));
         throw new Error(err?.error || `HTTP ${resp.status}`);
       }
-      const data = await resp.json();
-      const content = data?.choices?.[0]?.message?.content?.toString?.() ?? "(no reply)";
-      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "assistant", text: content }]);
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line) continue;
+          const raw = line.split("\n").find((l) => l.startsWith("data:"));
+          if (!raw) continue;
+          const dataStr = raw.slice(5).trim();
+          if (dataStr === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(dataStr);
+            const delta = evt?.choices?.[0]?.delta?.content ?? "";
+            if (delta) {
+              setMessages((m) => m.map((msg) => msg.id === aid ? { ...msg, text: msg.text + delta } : msg));
+            }
+          } catch {}
+        }
+      }
     } catch (e: any) {
-      setMessages((m) => [...m, { id: crypto.randomUUID(), role: "assistant", text: `Error: ${String(e?.message || e)}` }]);
+      setMessages((m) => m.map((msg) =>
+        msg.role === "assistant" && msg.text === "" ? { ...msg, text: `Error: ${String(e?.message || e)}` } : msg
+      ));
     } finally {
       setLoading(false);
       // Scroll to bottom of thread

@@ -1,10 +1,10 @@
- .assistant { display: grid; grid-template-rows: 1fr auto; background: var(--surface); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); max-height: 60svh; }
+ .assistant { --nav-h: 64px; --composer-h: 56px; display: grid; grid-template-rows: 1fr auto; background: var(--surface); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); max-height: 60svh; }
  @supports (height: 100dvh) { .assistant { max-height: 60dvh; } }
- .thread { padding: 12px; display: grid; gap: 8px; overflow: auto; overscroll-behavior: contain; }
+ .thread { padding: 12px; padding-bottom: calc(12px + var(--composer-h)); display: grid; gap: 8px; overflow: auto; overscroll-behavior: contain; }
  .bubble { max-width: 80%; padding: 8px 10px; border-radius: 12px; font-size: 14px; line-height: 1.35; background: #efe1cc; border: 1px solid var(--card-border); color: var(--text); }
  .bubble.assistant { justify-self: start; }
  .bubble.user { justify-self: end; background: #ffd7b3; border-color: #f1caa0; color: #7a4a1e; }
- .composer { display: flex; gap: 8px; padding: 8px; border-top: 1px solid var(--card-border); background: var(--card); position: sticky; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); z-index: 5; }
+ .composer { display: flex; gap: 8px; padding: 8px; border-top: 1px solid var(--card-border); background: var(--card); position: sticky; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 5; min-height: var(--composer-h); align-items: center; }
  .composer input { flex: 1; background: #efe1cc; border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; color: var(--text); outline: none; }
  .composer input::placeholder { color: var(--muted); }
  .composer button { background: var(--accent); color: #fff; border: 1px solid var(--accent-strong); padding: 10px 14px; border-radius: 10px; cursor: pointer; }

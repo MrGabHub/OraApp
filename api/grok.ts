@@ -41,6 +41,7 @@ export default async function handler(req: Request): Promise<Response> {
   const model = payload?.model || "grok-2-mini"; // lightweight Grok
   const messages = Array.isArray(payload?.messages) ? payload.messages : [];
   const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.7;
+  const wantStream = (new URL(req.url).searchParams.get("stream") === "1") || payload?.stream === true;
 
   try {
     const resp = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -49,7 +50,7 @@ export default async function handler(req: Request): Promise<Response> {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ model, messages, temperature, stream: false }),
+      body: JSON.stringify({ model, messages, temperature, stream: wantStream }),
     });
 
     if (!resp.ok) {
@@ -60,11 +61,22 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
 
-    const data = await resp.json();
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { ...corsHeaders(), "Content-Type": "application/json" },
-    });
+    if (wantStream) {
+      // Pass-through SSE stream from xAI to client
+      const headers = new Headers({
+        ...corsHeaders(),
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+      });
+      return new Response(resp.body, { status: 200, headers });
+    } else {
+      const data = await resp.json();
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { ...corsHeaders(), "Content-Type": "application/json" },
+      });
+    }
   } catch (err: any) {
     return new Response(JSON.stringify({ error: "Request failed", details: String(err) }), {
       status: 500,
@@ -80,4 +92,3 @@ function corsHeaders() {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   } as const;
 }
-
