@@ -1,7 +1,7 @@
 /*
  Vercel Edge Function proxy for Groq Chat Completions API.
  - Reads GROQ_API_KEY (or VITE_GROQ_API_KEY) from env.
- - Default model: llama3-8b-8192
+ - Default model: llama-3.1-8b-instant (fallback even if env has deprecated values).
  - Supports SSE streaming via ?stream=1 or body.stream=true.
 */
 
@@ -30,7 +30,12 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const model = payload?.model || (process.env.GROQ_MODEL || "llama-3.1-8b-instant");
+  const payloadModel = typeof payload?.model === "string" ? payload.model.trim() : "";
+  const envModelRaw = (process.env.GROQ_MODEL || "").toString().trim();
+  const deprecatedPattern = /^llama3-.*-8192$/i;
+  const envModel = envModelRaw && !deprecatedPattern.test(envModelRaw) ? envModelRaw : "";
+  const fallbackModel = "llama-3.1-8b-instant";
+  const model = payloadModel || envModel || fallbackModel;
   const messages = Array.isArray(payload?.messages) ? payload.messages : [];
   const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
   const wantStream = (new URL(req.url).searchParams.get("stream") === "1") || payload?.stream === true;
@@ -48,7 +53,7 @@ export default async function handler(req: Request): Promise<Response> {
 
     if (!resp.ok) {
       const text = await resp.text();
-      return new Response(JSON.stringify({ error: "Upstream error", details: text }), {
+      return new Response(JSON.stringify({ error: "Upstream error", details: text, model }), {
         status: 502,
         headers: { ...corsHeaders(), "Content-Type": "application/json" },
       });
