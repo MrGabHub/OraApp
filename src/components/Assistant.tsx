@@ -1,22 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
-
-const STORAGE_KEY = "groq_model";
+const DEFAULT_MODEL = "llama3-8b-8192";
 
 export default function Assistant() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const threadRef = useRef<HTMLDivElement | null>(null);
-  const [model, setModel] = useState<string>(() =>
-    localStorage.getItem(STORAGE_KEY) || "llama3-8b-8192"
-  );
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, model);
-  }, [model]);
 
   const system = useMemo(
     () =>
@@ -48,7 +40,7 @@ export default function Assistant() {
       const resp = await fetch("/api/groq?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model, messages: chat, temperature: 0.6, stream: true }),
+        body: JSON.stringify({ model: DEFAULT_MODEL, messages: chat, temperature: 0.6, stream: true }),
       });
 
       if (!resp.ok || !resp.body) {
@@ -113,21 +105,6 @@ export default function Assistant() {
 
   return (
     <section className="assistant">
-      <div className="toolbar">
-        <label>
-          <span className="label">Model</span>
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            title="Select Groq model"
-          >
-            <option value="llama3-8b-8192">Llama3 8B</option>
-            <option value="llama3-70b-8192">Llama3 70B</option>
-            <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
-            <option value="gemma2-9b-it">Gemma2 9B</option>
-          </select>
-        </label>
-      </div>
       <div className="thread" ref={threadRef}>
         {messages.map((m) => (
           <div key={m.id} className={`bubble ${m.role}`}>
@@ -149,4 +126,3 @@ export default function Assistant() {
     </section>
   );
 }
-
