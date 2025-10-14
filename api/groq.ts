@@ -30,7 +30,7 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const model = payload?.model || (process.env.GROQ_MODEL || "llama3-8b-8192");
+  const model = payload?.model || (process.env.GROQ_MODEL || "llama-3.1-8b-instant");
   const messages = Array.isArray(payload?.messages) ? payload.messages : [];
   const temperature = typeof payload?.temperature === "number" ? payload.temperature : 0.6;
   const wantStream = (new URL(req.url).searchParams.get("stream") === "1") || payload?.stream === true;
@@ -86,4 +86,3 @@ function corsHeaders() {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   } as const;
 }
-

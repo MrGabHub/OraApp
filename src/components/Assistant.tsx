@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
-const DEFAULT_MODEL = "llama3-8b-8192";
+const DEFAULT_MODEL = "llama-3.1-8b-instant";
 
 export default function Assistant() {
   const [messages, setMessages] = useState<Msg[]>([]);
