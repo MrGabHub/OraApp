@@ -29,7 +29,7 @@
 /* Avatar */
 .avatar-wrapper {
   position: sticky;
-  top: 8px;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
   z-index: 20;
   display: flex;
   justify-content: center;

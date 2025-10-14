@@ -1,6 +1,6 @@
 .bottom-nav {
   position: fixed; left: 0; right: 0; bottom: 0; height: 64px;
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex; align-items: center; justify-content: center; gap: 16px;
   background: var(--bg);
   color: var(--text);
