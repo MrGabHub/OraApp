@@ -1,225 +1,57 @@
 :root {
-  --frame-bg: #2f2626;
-  --eye-color: #f6b860;   /* doré chaud */
-  --eye-error: #d45a54;
-  --eye-success: #3ba660;
-  --bezel-color: #e0cdb4;  /* bordure écran */
-  --screen-bg: #2b2421;    /* fond derrière les yeux (plus sombre) */
-
-  /* Réactivité (50vw ≈ largeur du visage) */
-  --avatar-width: 50vw;
-  --avatar-height: calc(50vw * 0.75);  /* 4:3 */
-  --eyes-zone-width: calc(50vw * 0.55);
-  --eyes-zone-height: calc(50vw * 0.33);
-  --eye-size: calc(50vw * 0.20);
+  --accent: #00ccff;
 }
 
-/* Mise en page globale (fond blanc, centrage) */
-.app-container {
-  min-height: 100vh;
+.avatar-wrapper.avatar-full {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: min(8vh, 64px);
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  gap: 14px;
+  margin: 0 auto;
+}
+
+.avatar-stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 32px;
   background: transparent;
 }
 
-/* Avatar */
-.avatar-wrapper {
-  position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 8px);
-  z-index: 20;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: var(--avatar-width);
-  height: var(--avatar-height);
-  margin-inline: auto;
-  pointer-events: none; /* laisse passer les interactions au scroll */
-}
-
-.avatar-frame {
-  width: 100%;
-  height: 100%;
-  fill: var(--screen-bg); /* fond d'écran sombre derrière les yeux */
-  overflow: visible; /* évite le rognage de l'épaisseur du trait */
-}
-.avatar-frame path {
-  stroke: var(--bezel-color); /* bordure du squircle (bezel) */
-  stroke-width: 12px;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  /* Ombre collée au contour réel du squircle */
-  filter: drop-shadow(0 10px 30px rgba(43, 36, 33, 0.45));
-}
-
-/* Zone des yeux */
-.avatar-eyes {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: var(--eyes-zone-width);
-  height: var(--eyes-zone-height);
-  margin: auto;
-  z-index: 2; /* au-dessus des calques de blur */
-}
-
-/* Calque de flou (frosted glass) derrière ORA */
-.avatar-wrapper::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 28% / 24%; /* approximation d'un squircle 4:3 */
-  /* uniquement l'ombre externe pour le contraste, pas de fond visible */
-  background: transparent;
-  box-shadow: none;
-  z-index: 0;
-  display: none;
-}
-
-/* Calque de verre dépoli dans l'écran (entre l'écran et les yeux) */
-/* Calque flouté retiré à la demande (pas de backdrop-filter) */
-
-/* Orbits */
-.eye-socket {
-  width: var(--eye-size);
-  height: var(--eye-size);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
-
-/* Pupille (conteneurs) */
-.pupil-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-}
-.pupil-wrapper.tracking {
-  transition: transform 0.2s ease; /* rapide quand la souris bouge */
-}
-
-.pupil-wrapper.idle {
-  transition: transform 2s ease; /* lent quand idle */
-}
-
-
-.pupil-inner {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: blink 5s infinite;
-}
-
-/* Désactive le clignement en modes non normaux */
-.pupil-inner.no-blink {
-  animation: none;
-}
-
-/* Forme normale (base commune à tous les modes) */
-.pupil-shape {
-  width: 100%;
-  height: 100%;
-  background: var(--eye-color);
-  box-shadow: 0 0 3vw rgba(246, 184, 96, 0.6);
-}
-
-/* Mode normal : pupille arrondie et un peu plus haute */
-.pupil-shape.normal {
-  border-radius: 30%;
-}
-
-/* Blink synchrone */
-@keyframes blink {
-  0%, 95%, 100% { transform: scaleY(1); }
-  97% { transform: scaleY(0.1) scaleX(1.5); }
-}
-
-/* Mode erreur : chevrons rouges */
-.pupil-shape.error {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: none;
-  box-shadow: none;
-}
-.pupil-shape.error span {
+.avatar-stage svg {
+  width: min(260px, 50vw);
+  height: auto;
   display: block;
-  width: 140%;
-  height: 70%;
-  background: var(--eye-error);
-  border-radius: 2vw;
-  box-shadow: 0 0 3vw rgba(212, 90, 84, 0.5);
-  position: absolute;
 }
 
-/* chevron gauche "<" */
-.pupil-shape.error.left span:first-child {
-  transform: rotate(45deg) translate(-15%, -20%);
-}
-.pupil-shape.error.left span:last-child {
-  transform: rotate(-45deg) translate(-15%, 20%);
-}
-
-/* chevron droit ">" */
-.pupil-shape.error.right span:first-child {
-  transform: rotate(-45deg) translate(15%, -20%);
-}
-.pupil-shape.error.right span:last-child {
-  transform: rotate(45deg) translate(15%, 20%);
-}
-
-/* Bouton de bascule */
-.toggle-button {
-  margin-top: 28px;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 12px;
-  background: #0b0f1a;
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(11, 15, 26, 0.18);
-}
-.toggle-button:hover { filter: brightness(1.08); }
-
-/* Mode succès : check vert */
-.pupil-shape.success {
-  position: relative;
+.avatar-controls {
   display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  background: none;
-  box-shadow: none;
-}
-.pupil-shape.success span {
-  position: absolute;
-  background: var(--eye-success);
-  border-radius: 2vw;
-  box-shadow: 0 0 3vw rgba(59,166,96,0.5);
-}
-/* coche "✓" : une barre courte + une longue */
-.pupil-shape.success span:first-child { /* jambage court */
-  width: 100%;
-  height: 60%;
-  transform: rotate(45deg) translate(-15%, 50%);
-}
-.pupil-shape.success span:last-child { /* jambage long */
-  width: 150%;
-  height: 60%;
-  transform: rotate(-45deg) translate(10%, 10%);
+  padding-bottom: 20px;
 }
 
+.avatar-controls button {
+  background: #1b1b1b;
+  color: #e8f9ff;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:
+    inset 0 -2px 0 rgba(255, 255, 255, 0.05),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+}
 
+.avatar-controls button:hover {
+  background: #222222;
+}
+
+.avatar-controls button:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
