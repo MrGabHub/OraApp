@@ -17,6 +17,15 @@ export type GoogleCalendarEvent = {
   htmlLink?: string;
 };
 
+export type CreateEventInput = {
+  title: string;
+  start: string;
+  end?: string | null;
+  isAllDay?: boolean;
+  location?: string;
+  description?: string;
+};
+
 type StoredToken = {
   accessToken: string;
   expiresAt: number;
@@ -30,7 +39,7 @@ type TokenResponse = {
 };
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "") as string;
-const GOOGLE_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+const GOOGLE_SCOPE = "https://www.googleapis.com/auth/calendar.events";
 const GOOGLE_SCRIPT_URL = "https://accounts.google.com/gsi/client";
 const STORAGE_KEY = "ora-google-calendar-token";
 
@@ -84,6 +93,24 @@ async function fetchCalendarProfile(accessToken: string): Promise<CalendarProfil
   return { email: primary?.id, summary: primary?.summary };
 }
 
+function mapGoogleEvent(raw: any): GoogleCalendarEvent | null {
+  if (!raw || raw?.status === "cancelled") return null;
+  const startRaw = raw?.start?.dateTime ?? raw?.start?.date;
+  if (!startRaw) return null;
+  const endRaw = raw?.end?.dateTime ?? raw?.end?.date ?? null;
+  const isAllDay = Boolean(raw?.start?.date && !raw?.start?.dateTime);
+  const id: string = raw?.id || raw?.iCalUID || `${startRaw}-${raw?.summary ?? Math.random().toString(36).slice(2)}`;
+  return {
+    id,
+    title: raw?.summary || "Untitled event",
+    start: startRaw,
+    end: endRaw,
+    isAllDay,
+    location: raw?.location || undefined,
+    htmlLink: raw?.htmlLink || undefined,
+  };
+}
+
 async function fetchUpcomingEvents(accessToken: string): Promise<GoogleCalendarEvent[]> {
   const params = new URLSearchParams({ maxResults: "8", orderBy: "startTime", singleEvents: "true", timeMin: new Date(Date.now() - 15 * 60 * 1000).toISOString() });
   if (hasWindow()) {
@@ -96,25 +123,7 @@ async function fetchUpcomingEvents(accessToken: string): Promise<GoogleCalendarE
   }
   const payload: any = await resp.json();
   const items = Array.isArray(payload?.items) ? payload.items : [];
-  return items
-    .filter((item: any) => item?.status !== "cancelled")
-    .map((item: any) => {
-      const startRaw = item?.start?.dateTime ?? item?.start?.date;
-      if (!startRaw) return null;
-      const endRaw = item?.end?.dateTime ?? item?.end?.date ?? null;
-      const isAllDay = Boolean(item?.start?.date && !item?.start?.dateTime);
-      const id: string = item?.id || item?.iCalUID || `${startRaw}-${item?.summary ?? Math.random().toString(36).slice(2)}`;
-      return {
-        id,
-        title: item?.summary || "Untitled event",
-        start: startRaw,
-        end: endRaw,
-        isAllDay,
-        location: item?.location || undefined,
-        htmlLink: item?.htmlLink || undefined,
-      } as GoogleCalendarEvent;
-    })
-    .filter((evt: GoogleCalendarEvent | null): evt is GoogleCalendarEvent => Boolean(evt));
+  return items.map((item: any) => mapGoogleEvent(item)).filter((evt: GoogleCalendarEvent | null): evt is GoogleCalendarEvent => Boolean(evt));
 }
 
 export interface GoogleCalendarConnection {
@@ -132,6 +141,7 @@ export interface GoogleCalendarConnection {
   disconnect: () => void;
   refresh: () => Promise<void>;
   reloadEvents: () => Promise<GoogleCalendarEvent[]>;
+  createEvent: (input: CreateEventInput) => Promise<GoogleCalendarEvent>;
 }
 
 export function useGoogleCalendar(): GoogleCalendarConnection {
@@ -187,6 +197,68 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       setEventsLoading(false);
     }
   }, [disconnect]);
+
+  const createEvent = useCallback(
+    async (input: CreateEventInput) => {
+      if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
+      const token = tokenRef.current.accessToken;
+      const trimmedTitle = input.title?.trim() || "Untitled event";
+      const body: any = {
+        summary: trimmedTitle,
+      };
+      if (input.isAllDay) {
+        body.start = { date: input.start };
+        body.end = { date: input.end ?? input.start };
+      } else {
+        body.start = { dateTime: input.start };
+        body.end = { dateTime: input.end ?? input.start };
+      }
+      if (input.description) body.description = input.description;
+      if (input.location) body.location = input.location;
+
+      const resp = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        if (resp.status === 401) {
+          disconnect({ clearError: false });
+          setStatus("error");
+          const message = "Google Calendar session expired. Please reconnect.";
+          setError(message);
+          setEvents([]);
+          setEventsFetchedAt(null);
+          setEventsError(message);
+        }
+        throw new GoogleApiError(text || `Google API request failed with ${resp.status}.`, resp.status);
+      }
+
+      const raw = await resp.json();
+      const mapped = mapGoogleEvent(raw);
+      try {
+        await loadEvents();
+      } catch {}
+      setLastSync(Date.now());
+      if (!mapped) {
+        return {
+          id: raw?.id || Math.random().toString(36).slice(2),
+          title: trimmedTitle,
+          start: input.start,
+          end: input.end ?? null,
+          isAllDay: Boolean(input.isAllDay),
+          location: input.location,
+          htmlLink: raw?.htmlLink,
+        };
+      }
+      return mapped;
+    },
+    [disconnect, loadEvents],
+  );
 
   const refresh = useCallback(async (opts: { silent?: boolean } = {}) => {
     if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
@@ -278,6 +350,6 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     disconnect: () => disconnect(),
     refresh: () => refresh(),
     reloadEvents: () => loadEvents(),
+    createEvent,
   };
 }
-
