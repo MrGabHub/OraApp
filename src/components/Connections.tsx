@@ -36,44 +36,43 @@ export default function Connections() {
     connect: connectGoogle,
     disconnect: disconnectGoogle,
   } = useGoogleCalendar();
-  const [items, setItems] = useState<Conn[]>([
-    {
-      id: "gmail",
-      name: "Gmail",
-      icon: Mail,
-      accentRgb: "234,67,53",
-      description: "Extract events and reminders from emails",
-      status: "connected",
-      lastSync: "Last sync: 5 minutes ago",
-    },
-    {
-      id: "whatsapp",
-      name: "WhatsApp",
-      icon: MessageCircle,
-      accentRgb: "37,211,102",
-      description: "Get reminders from chat messages",
-      status: "available",
-    },
-    {
-      id: "instagram",
-      name: "Instagram",
-      icon: Instagram,
-      accentRgb: "193,53,132",
-      description: "Track social events and meetups",
-      status: "error",
-      lastSync: "Last sync: Failed 1 hour ago",
-      errorMessage:
-        "Connection failed. Check your account permissions and try again.",
-    },
-    {
-      id: "sms",
-      name: "SMS Messages",
-      icon: Smartphone,
-      accentRgb: "148,163,184",
-      description: "Parse appointments from text messages",
-      status: "disabled",
-    },
-  ]);
+  const items = useMemo<Conn[]>(
+    () => [
+      {
+        id: "gmail",
+        name: "Gmail",
+        icon: Mail,
+        accentRgb: "234,67,53",
+        description: "Extract events and reminders from emails (coming soon)",
+        status: "disabled",
+      },
+      {
+        id: "whatsapp",
+        name: "WhatsApp",
+        icon: MessageCircle,
+        accentRgb: "37,211,102",
+        description: "Get reminders from chat messages (coming soon)",
+        status: "disabled",
+      },
+      {
+        id: "instagram",
+        name: "Instagram",
+        icon: Instagram,
+        accentRgb: "193,53,132",
+        description: "Track social events and meetups (coming soon)",
+        status: "disabled",
+      },
+      {
+        id: "sms",
+        name: "SMS Messages",
+        icon: Smartphone,
+        accentRgb: "148,163,184",
+        description: "Parse appointments from text messages (coming soon)",
+        status: "disabled",
+      },
+    ],
+    [],
+  );
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
   const googleCard = useMemo<Conn>(() => {
@@ -101,7 +100,7 @@ export default function Connections() {
 
   const cards = useMemo(() => [googleCard, ...items], [googleCard, items]);
   const connectedCount = cards.filter((i) => i.status === "connected").length;
-  const availableCount = cards.filter((i) => i.status !== "connected").length;
+  const availableCount = cards.filter((i) => i.status === "available").length;
 
   const toggle = (id: string) => {
     if (id === "gcal") {
@@ -109,23 +108,7 @@ export default function Connections() {
       if (googleStatus === "connected") { disconnectGoogle(); } else { connectGoogle(); }
       return;
     }
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? {
-              ...i,
-              status:
-                i.status === "connected"
-                  ? "available"
-                  : i.status === "available"
-                  ? "connected"
-                  : i.status === "error"
-                  ? "connected"
-                  : "connected",
-            }
-          : i,
-      ),
-    );
+    // Other integrations are not yet available.
   };
 
   const setIconGlow = (id: string) => {
@@ -185,6 +168,8 @@ export default function Connections() {
                     ? c.connectedInfo ?? `Connected${c.lastSync ? `  ${c.lastSync}` : ""}`
                     : c.status === "error"
                     ? `Error  ${c.lastSync ?? ""}`
+                    : c.status === "disabled"
+                    ? "Coming soon"
                     : c.loading
                     ? "Connecting..."
                     : "Not connected"}
@@ -195,8 +180,14 @@ export default function Connections() {
               className={`toggle ${c.status === "connected" ? "on" : "off"}`}
               aria-pressed={c.status === "connected"}
               onClick={() => toggle(c.id)}
-              disabled={c.loading}
-              title={c.status === "connected" ? "Disable" : "Enable"}
+              disabled={c.loading || c.status === "disabled"}
+              title={
+                c.status === "disabled"
+                  ? "Not available yet"
+                  : c.status === "connected"
+                  ? "Disable"
+                  : "Enable"
+              }
             />
 
             {c.status === "error" && (
@@ -212,7 +203,7 @@ export default function Connections() {
       </div>
 
       <div className="add-row">
-        <button className="add-btn">
+        <button className="add-btn" disabled title="More connections coming soon">
           <span className="plus" aria-hidden>
             <Plus size={16} />
           </span>

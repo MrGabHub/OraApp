@@ -57,6 +57,21 @@ const SKEPTIC_RIGHT_OPEN: DualShape = {
   ],
 };
 
+const BLINK_SHAPE: DualShape = {
+  left: [
+    [60, 118],
+    [148, 118],
+    [148, 124],
+    [60, 124],
+  ],
+  right: [
+    [152, 118],
+    [240, 118],
+    [240, 124],
+    [152, 124],
+  ],
+};
+
 const SHAPES: Record<InternalMode, DualShape> = {
   neutral: {
     left: [
@@ -175,6 +190,53 @@ export default function Avatar(_: { mode: Mode }) {
     const pendingRafs = new Set<number>();
     let skepticVariant: "leftOpen" | "rightOpen" = "leftOpen";
     let currentShape = cloneShape(SHAPES.neutral);
+    let blinkTimer: number | null = null;
+    let blinkReopenTimer: number | null = null;
+    let isBlinking = false;
+
+    const clearBlinkTimers = () => {
+      if (blinkTimer !== null) {
+        window.clearTimeout(blinkTimer);
+        blinkTimer = null;
+      }
+      if (blinkReopenTimer !== null) {
+        window.clearTimeout(blinkReopenTimer);
+        blinkReopenTimer = null;
+      }
+    };
+
+    function scheduleBlink() {
+      clearBlinkTimers();
+      if (!powerOn) return;
+      const delay = 2600 + Math.random() * 2800;
+      blinkTimer = window.setTimeout(() => {
+        triggerBlink();
+      }, delay);
+    }
+
+    function triggerBlink() {
+      if (!powerOn || isBlinking) {
+        scheduleBlink();
+        return;
+      }
+      isBlinking = true;
+      startMorph(BLINK_SHAPE, () => {
+        if (!powerOn) {
+          isBlinking = false;
+          clearBlinkTimers();
+          return;
+        }
+        blinkReopenTimer = window.setTimeout(() => {
+          blinkReopenTimer = null;
+          const target = shapeForMode(mode);
+          startMorph(target, () => {
+            currentShape = cloneShape(target);
+            isBlinking = false;
+            scheduleBlink();
+          }, 90);
+        }, 20);
+      }, 90);
+    }
 
     const schedule = (fn: FrameRequestCallback) => {
       const id = requestAnimationFrame((time) => {
@@ -196,7 +258,7 @@ export default function Avatar(_: { mode: Mode }) {
       return cloneShape(SHAPES[m]);
     };
 
-    const startMorph = (targetShape: DualShape) => {
+    const startMorph = (targetShape: DualShape, onDone?: () => void, duration = DUR) => {
       const from = cloneShape(currentShape);
       const to = cloneShape(targetShape);
       const start = performance.now();
@@ -208,7 +270,7 @@ export default function Avatar(_: { mode: Mode }) {
       }
 
       const step = (now: number) => {
-        const t = Math.min(1, (now - start) / DUR);
+        const t = Math.min(1, (now - start) / duration);
         const k = ease(t);
         const left = lerpPoints(from.left, to.left, k);
         const right = lerpPoints(from.right, to.right, k);
@@ -220,6 +282,7 @@ export default function Avatar(_: { mode: Mode }) {
         } else {
           currentShape = cloneShape(targetShape);
           modeAnimation = null;
+          onDone?.();
         }
       };
 
@@ -228,10 +291,19 @@ export default function Avatar(_: { mode: Mode }) {
 
     const animateTo = (target: InternalMode) => {
       if (target === mode) return;
+      if (isBlinking) {
+        isBlinking = false;
+        clearBlinkTimers();
+      }
       if (target === "skeptic") {
         skepticVariant = "leftOpen";
       }
-      startMorph(shapeForMode(target));
+      const targetShape = shapeForMode(target);
+      startMorph(targetShape, () => {
+        if (powerOn) {
+          scheduleBlink();
+        }
+      });
       mode = target;
     };
 
@@ -273,7 +345,16 @@ export default function Avatar(_: { mode: Mode }) {
           clientX >= centerX ? "rightOpen" : "leftOpen";
         if (desiredVariant !== skepticVariant) {
           skepticVariant = desiredVariant;
-          startMorph(shapeForMode("skeptic"));
+          if (isBlinking) {
+            isBlinking = false;
+            clearBlinkTimers();
+          }
+          const variantShape = shapeForMode("skeptic");
+          startMorph(variantShape, () => {
+            if (powerOn) {
+              scheduleBlink();
+            }
+          });
         }
       }
 
@@ -322,6 +403,8 @@ export default function Avatar(_: { mode: Mode }) {
     const powerOff = () => {
       if (!powerOn) return;
       powerOn = false;
+      clearBlinkTimers();
+      isBlinking = false;
       eyes.style.opacity = "0";
 
       flashFill.setAttribute("y", "0");
@@ -376,6 +459,8 @@ export default function Avatar(_: { mode: Mode }) {
     const powerOnReset = () => {
       if (powerOn) return;
       powerOn = true;
+      clearBlinkTimers();
+      isBlinking = false;
 
       const step1 = 250;
       const step2 = 150;
@@ -419,6 +504,9 @@ export default function Avatar(_: { mode: Mode }) {
           eyes.style.opacity = "1";
           flashFill.setAttribute("opacity", "0");
           flashDot.setAttribute("opacity", "0");
+          if (powerOn) {
+            scheduleBlink();
+          }
         }
       };
 
@@ -463,12 +551,15 @@ export default function Avatar(_: { mode: Mode }) {
     });
 
     updateWithClient(window.innerWidth / 2, window.innerHeight / 2);
+    scheduleBlink();
 
     return () => {
       if (modeAnimation !== null) {
         cancelAnimationFrame(modeAnimation);
       }
       pendingRafs.forEach((id) => cancelAnimationFrame(id));
+      clearBlinkTimers();
+      isBlinking = false;
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchmove", handleTouchMove);
       buttonHandlers.forEach(([btn, handler]) => btn.removeEventListener("click", handler));
