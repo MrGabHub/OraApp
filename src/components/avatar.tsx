@@ -8,6 +8,11 @@ type InternalMode = "neutral" | "happy" | "sad" | "angry" | "skeptic";
 
 export type Mode = "normal" | "error" | "success";
 
+const cloneShape = (shape: DualShape): DualShape => ({
+  left: shape.left.map(([x, y]) => [x, y] as [number, number]),
+  right: shape.right.map(([x, y]) => [x, y] as [number, number]),
+});
+
 const DUR = 350;
 const MAX_TX = 30;
 const MAX_DY = 34;
@@ -21,6 +26,36 @@ const FACE_RIGHT = 300;
 
 const BASE_LEFT = { cx: 72 + 34, cy: 66 + 39 };
 const BASE_RIGHT = { cx: 160 + 34, cy: 66 + 39 };
+
+const SKEPTIC_LEFT_OPEN: DualShape = {
+  left: [
+    [60, 54],
+    [148, 68],
+    [148, 170],
+    [60, 170],
+  ],
+  right: [
+    [152, 90],
+    [240, 64],
+    [240, 170],
+    [152, 170],
+  ],
+};
+
+const SKEPTIC_RIGHT_OPEN: DualShape = {
+  left: [
+    [60, 64],
+    [148, 90],
+    [148, 170],
+    [60, 170],
+  ],
+  right: [
+    [152, 54],
+    [240, 68],
+    [240, 170],
+    [152, 170],
+  ],
+};
 
 const SHAPES: Record<InternalMode, DualShape> = {
   neutral: {
@@ -80,18 +115,8 @@ const SHAPES: Record<InternalMode, DualShape> = {
     ],
   },
   skeptic: {
-    left: [
-      [60, 54],
-      [148, 68],
-      [148, 170],
-      [60, 170],
-    ],
-    right: [
-      [152, 90],
-      [240, 64],
-      [240, 170],
-      [152, 170],
-    ],
+    left: [...SKEPTIC_LEFT_OPEN.left],
+    right: [...SKEPTIC_LEFT_OPEN.right],
   },
 };
 
@@ -136,18 +161,7 @@ export default function Avatar(_: { mode: Mode }) {
     const flashFill = flashFillRef.current;
     const flashDot = flashDotRef.current;
 
-    if (
-      !wrap ||
-      !svg ||
-      !polyLeft ||
-      !polyRight ||
-      !screenRef.current ||
-      !gL ||
-      !gR ||
-      !eyes ||
-      !flashFill ||
-      !flashDot
-    ) {
+    if (!wrap || !svg || !polyLeft || !polyRight || !gL || !gR || !eyes || !flashFill || !flashDot) {
       return;
     }
 
@@ -159,6 +173,8 @@ export default function Avatar(_: { mode: Mode }) {
     let powerOn = true;
     let modeAnimation: number | null = null;
     const pendingRafs = new Set<number>();
+    let skepticVariant: "leftOpen" | "rightOpen" = "leftOpen";
+    let currentShape = cloneShape(SHAPES.neutral);
 
     const schedule = (fn: FrameRequestCallback) => {
       const id = requestAnimationFrame((time) => {
@@ -169,11 +185,55 @@ export default function Avatar(_: { mode: Mode }) {
       return id;
     };
 
-    const neutral = SHAPES.neutral;
-    setPoints(polyLeft, neutral.left);
-    setPoints(polyRight, neutral.right);
+    setPoints(polyLeft, currentShape.left);
+    setPoints(polyRight, currentShape.right);
 
-    const shapesFor = (m: InternalMode) => SHAPES[m];
+    const shapeForMode = (m: InternalMode): DualShape => {
+      if (m === "skeptic") {
+        const base = skepticVariant === "leftOpen" ? SKEPTIC_LEFT_OPEN : SKEPTIC_RIGHT_OPEN;
+        return cloneShape(base);
+      }
+      return cloneShape(SHAPES[m]);
+    };
+
+    const startMorph = (targetShape: DualShape) => {
+      const from = cloneShape(currentShape);
+      const to = cloneShape(targetShape);
+      const start = performance.now();
+
+      if (modeAnimation !== null) {
+        cancelAnimationFrame(modeAnimation);
+        pendingRafs.delete(modeAnimation);
+        modeAnimation = null;
+      }
+
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / DUR);
+        const k = ease(t);
+        const left = lerpPoints(from.left, to.left, k);
+        const right = lerpPoints(from.right, to.right, k);
+        setPoints(polyLeft, left);
+        setPoints(polyRight, right);
+
+        if (t < 1) {
+          modeAnimation = schedule(step);
+        } else {
+          currentShape = cloneShape(targetShape);
+          modeAnimation = null;
+        }
+      };
+
+      modeAnimation = schedule(step);
+    };
+
+    const animateTo = (target: InternalMode) => {
+      if (target === mode) return;
+      if (target === "skeptic") {
+        skepticVariant = "leftOpen";
+      }
+      startMorph(shapeForMode(target));
+      mode = target;
+    };
 
     const applyTransform = (
       node: SVGGElement,
@@ -207,6 +267,15 @@ export default function Avatar(_: { mode: Mode }) {
       const rect = svg.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
+
+      if (mode === "skeptic") {
+        const desiredVariant: "leftOpen" | "rightOpen" =
+          clientX >= centerX ? "rightOpen" : "leftOpen";
+        if (desiredVariant !== skepticVariant) {
+          skepticVariant = desiredVariant;
+          startMorph(shapeForMode("skeptic"));
+        }
+      }
 
       const nx = clamp((clientX - centerX) / (rect.width / 2), -1, 1);
       const ny = clamp((clientY - centerY) / (rect.height / 2), -1, 1);
@@ -250,32 +319,6 @@ export default function Avatar(_: { mode: Mode }) {
       applyTransform(gR, BASE_RIGHT, tx + biasXR, ty + biasYR, sxR, syR);
     };
 
-    const animateTo = (target: InternalMode) => {
-      if (target === mode) return;
-
-      const from = shapesFor(mode);
-      const to = shapesFor(target);
-      const start = performance.now();
-
-      if (modeAnimation !== null) {
-        cancelAnimationFrame(modeAnimation);
-        pendingRafs.delete(modeAnimation);
-      }
-
-      const frame = (now: number) => {
-        const t = Math.min(1, (now - start) / DUR);
-        const k = ease(t);
-        setPoints(polyLeft, lerpPoints(from.left, to.left, k));
-        setPoints(polyRight, lerpPoints(from.right, to.right, k));
-        if (t < 1) {
-          modeAnimation = schedule(frame);
-        }
-      };
-
-      modeAnimation = schedule(frame);
-      mode = target;
-    };
-
     const powerOff = () => {
       if (!powerOn) return;
       powerOn = false;
@@ -284,8 +327,8 @@ export default function Avatar(_: { mode: Mode }) {
       flashFill.setAttribute("y", "0");
       flashFill.setAttribute("height", "225");
 
-      const step1 = 200;
-      const step2 = 250;
+      const step1 = 100;
+      const step2 = 150;
       const step3 = 250;
       const start = performance.now();
 
@@ -335,8 +378,8 @@ export default function Avatar(_: { mode: Mode }) {
       powerOn = true;
 
       const step1 = 250;
-      const step2 = 250;
-      const step3 = 200;
+      const step2 = 150;
+      const step3 = 100;
       const start = performance.now();
 
       const phase1 = (now: number) => {
