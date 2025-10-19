@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   CalendarDays,
@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Plus,
 } from "lucide-react";
+import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
+import { formatRelativeTime } from "../utils/time";
 import "./connections.css";
 
 type Conn = {
@@ -20,19 +22,21 @@ type Conn = {
   status: "connected" | "available" | "error" | "disabled";
   lastSync?: string;
   errorMessage?: string;
+  connectedInfo?: string;
+  loading?: boolean;
 };
 
 export default function Connections() {
+  const {
+    status: googleStatus,
+    loading: googleLoading,
+    error: googleError,
+    lastSync: googleLastSync,
+    profile: googleProfile,
+    connect: connectGoogle,
+    disconnect: disconnectGoogle,
+  } = useGoogleCalendar();
   const [items, setItems] = useState<Conn[]>([
-    {
-      id: "gcal",
-      name: "Google Calendar",
-      icon: CalendarDays,
-      accentRgb: "66,133,244",
-      description: "Sync all your calendar events and meetings",
-      status: "connected",
-      lastSync: "Last sync: 2 minutes ago",
-    },
     {
       id: "gmail",
       name: "Gmail",
@@ -72,11 +76,39 @@ export default function Connections() {
   ]);
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
+  const googleCard = useMemo<Conn>(() => {
+    const baseLastSync = googleLastSync ? `Last sync: ${formatRelativeTime(googleLastSync)}` : undefined;
+    const connectedInfo =
+      googleStatus === "connected"
+        ? [googleProfile?.email ? `Connected as ${googleProfile.email}` : "Connected", baseLastSync]
+            .filter(Boolean)
+            .join(" | ")
+        : undefined;
+    const status = googleStatus === "connected" ? "connected" : googleStatus === "error" ? "error" : "available";
+    return {
+      id: "gcal",
+      name: "Google Calendar",
+      icon: CalendarDays,
+      accentRgb: "66,133,244",
+      description: "Sync all your calendar events and meetings",
+      status,
+      lastSync: baseLastSync,
+      errorMessage: googleError ?? undefined,
+      connectedInfo,
+      loading: googleLoading,
+    };
+  }, [googleError, googleLastSync, googleLoading, googleProfile, googleStatus]);
 
-  const connectedCount = items.filter((i) => i.status === "connected").length;
-  const availableCount = items.filter((i) => i.status !== "connected").length;
+  const cards = useMemo(() => [googleCard, ...items], [googleCard, items]);
+  const connectedCount = cards.filter((i) => i.status === "connected").length;
+  const availableCount = cards.filter((i) => i.status !== "connected").length;
 
   const toggle = (id: string) => {
+    if (id === "gcal") {
+      if (googleLoading) return;
+      if (googleStatus === "connected") { disconnectGoogle(); } else { connectGoogle(); }
+      return;
+    }
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
@@ -97,6 +129,7 @@ export default function Connections() {
   };
 
   const setIconGlow = (id: string) => {
+    if (id === "gcal" && googleLoading) return;
     setGlowing((g) => ({ ...g, [id]: true }));
     setTimeout(() => {
       setGlowing((g) => ({ ...g, [id]: false }));
@@ -117,7 +150,7 @@ export default function Connections() {
       </header>
 
       <div className="list">
-        {items.map((c) => (
+        {cards.map((c) => (
           <article
             key={c.id}
             className={`card ${c.status}`}
@@ -149,9 +182,11 @@ export default function Connections() {
                 <p className="desc">{c.description}</p>
                 <p className={`sub ${c.status}`}>
                   {c.status === "connected"
-                    ? `Connected  ${c.lastSync ?? ""}`
+                    ? c.connectedInfo ?? `Connected${c.lastSync ? `  ${c.lastSync}` : ""}`
                     : c.status === "error"
                     ? `Error  ${c.lastSync ?? ""}`
+                    : c.loading
+                    ? "Connecting..."
                     : "Not connected"}
                 </p>
               </div>
@@ -160,13 +195,14 @@ export default function Connections() {
               className={`toggle ${c.status === "connected" ? "on" : "off"}`}
               aria-pressed={c.status === "connected"}
               onClick={() => toggle(c.id)}
+              disabled={c.loading}
               title={c.status === "connected" ? "Disable" : "Enable"}
             />
 
             {c.status === "error" && (
               <div className="error-box">
                 <p>{c.errorMessage}</p>
-                <button className="btn" onClick={() => toggle(c.id)}>
+                <button className="btn" onClick={() => toggle(c.id)} disabled={c.loading}>
                   Reconnect
                 </button>
               </div>

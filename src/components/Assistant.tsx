@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
@@ -14,8 +14,17 @@ export default function Assistant() {
     () =>
       "You are ORA, a concise, kind assistant focused on time planning. " +
       "Prefer short answers with concrete actions, propose times, and avoid verbosity.",
-    []
+    [],
   );
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      threadRef.current?.scrollTo({
+        top: threadRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  }, [messages]);
 
   const send = async () => {
     if (!input.trim()) return;
@@ -40,17 +49,28 @@ export default function Assistant() {
       const resp = await fetch("/api/groq?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: DEFAULT_MODEL, messages: chat, temperature: 0.6, stream: true }),
+        body: JSON.stringify({
+          model: DEFAULT_MODEL,
+          messages: chat,
+          temperature: 0.6,
+          stream: true,
+        }),
       });
 
       if (!resp.ok || !resp.body) {
         const errText = await resp.text().catch(() => "");
         let msg = `HTTP ${resp.status}`;
+        let detail = "";
         try {
           const j = JSON.parse(errText);
-          msg = j?.error + (j?.details ? `: ${j.details}` : "") || msg;
-        } catch {}
-        throw new Error(msg);
+          if (j?.error) msg = j.error;
+          if (j?.details)
+            detail = typeof j.details === "string" ? j.details : JSON.stringify(j.details);
+        } catch {
+          detail = errText.trim();
+        }
+        const cleanDetail = detail.replace(/\s+/g, " ").trim();
+        throw new Error(cleanDetail ? `${msg}: ${cleanDetail}` : msg);
       }
 
       const reader = resp.body.getReader();
@@ -74,10 +94,12 @@ export default function Assistant() {
             const delta = evt?.choices?.[0]?.delta?.content ?? "";
             if (delta) {
               setMessages((m) =>
-                m.map((msg) => (msg.id === aid ? { ...msg, text: msg.text + delta } : msg))
+                m.map((msg) => (msg.id === aid ? { ...msg, text: msg.text + delta } : msg)),
               );
             }
-          } catch {}
+          } catch {
+            // Ignore malformed chunks.
+          }
         }
       }
     } catch (e: any) {
@@ -85,17 +107,11 @@ export default function Assistant() {
         m.map((msg) =>
           msg.role === "assistant" && msg.text === ""
             ? { ...msg, text: `Error: ${String(e?.message || e)}` }
-            : msg
-        )
+            : msg,
+        ),
       );
     } finally {
       setLoading(false);
-      requestAnimationFrame(() => {
-        threadRef.current?.scrollTo({
-          top: threadRef.current.scrollHeight,
-          behavior: "smooth",
-        });
-      });
     }
   };
 
@@ -117,12 +133,13 @@ export default function Assistant() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKey}
-          placeholder="Ask ORA…"
+          placeholder="Ask ORA..."
         />
         <button onClick={send} disabled={loading}>
-          {loading ? "…" : "Send"}
+          {loading ? "..." : "Send"}
         </button>
       </div>
     </section>
   );
 }
+
