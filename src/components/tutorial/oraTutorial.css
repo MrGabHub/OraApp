@@ -1,0 +1,124 @@
+.ora-tutorial {
+  position: fixed;
+  top: 20vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.ora-tutorial__cta {
+  pointer-events: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.18s ease;
+}
+
+.ora-tutorial__cta .avatar-wrapper {
+  width: clamp(220px, 28vw, 360px);
+  pointer-events: none;
+}
+
+.ora-tutorial__cta .avatar-stage {
+  pointer-events: none;
+}
+
+.ora-tutorial__cta:focus-visible {
+  outline: 2px solid var(--accent, #66d9ff);
+  outline-offset: 6px;
+}
+
+.ora-tutorial__cta:hover {
+  transform: translateY(-4px) scale(1.015);
+}
+
+.ora-tutorial__bubble {
+  pointer-events: auto;
+  background: rgba(12, 19, 28, 0.92);
+  color: #fff;
+  border-radius: 24px;
+  padding: 10px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  will-change: transform, opacity;
+}
+
+.ora-tutorial__bubble-inner {
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(102, 217, 255, 0.25);
+  background: linear-gradient(160deg, rgba(40, 60, 90, 0.85), rgba(24, 31, 45, 0.9));
+  max-width: min(420px, calc(100vw - 48px));
+}
+
+.ora-tutorial__text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+  min-height: 3.5rem;
+  letter-spacing: 0.015em;
+}
+
+.ora-tutorial__cursor {
+  display: inline-block;
+  width: 0.7em;
+  height: 1em;
+  margin-left: 2px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 2px;
+  transform: translateY(0.2em);
+  animation: cursor-blink 1.2s steps(2, start) infinite;
+}
+
+.ora-tutorial__cursor.is-typing {
+  animation: cursor-blink 0.3s steps(2, start) infinite;
+}
+
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ora-tutorial__dismiss {
+  border: none;
+  margin-top: 18px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(120deg, rgba(102, 217, 255, 0.95), rgba(107, 191, 255, 0.95));
+  color: #0b1220;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.ora-tutorial__dismiss:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(102, 217, 255, 0.35);
+}
+
+.ora-tutorial__dismiss:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .ora-tutorial {
+    top: 16vh;
+  }
+
+  .ora-tutorial__bubble-inner {
+    padding: 18px;
+  }
+}

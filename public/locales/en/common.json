@@ -1,0 +1,190 @@
+{
+  "app": {
+    "title": "ORA Companion",
+    "subtitle": "Your co-pilot for orchestrating the day"
+  },
+  "auth": {
+    "loading": "Signing you in...",
+    "connect_prompt": "Sign in to access your personal cockpit",
+    "sign_in": "Sign in",
+    "sign_out": "Sign out",
+    "login_title": "Sign in",
+    "register_title": "Create an account",
+    "display_name": "Display name",
+    "email": "E-mail",
+    "password": "Password",
+    "submit_login": "Sign in",
+    "submit_register": "Sign up",
+    "waiting": "Just a moment...",
+    "greeting": "Hi, {{name}}",
+    "roles": "Roles: {{roles}}",
+    "switch_to_register": "Create an account",
+    "switch_to_login": "Already have an account?",
+    "google": "Continue with Google",
+    "or": "or",
+    "error": "Unable to authenticate.",
+    "error_google": "Unable to use Google authentication."
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "french": "French"
+  },
+  "navigation": {
+    "home": "Home",
+    "assistant": "Assistant",
+    "connections": "Connections"
+  },
+  "assistant": {
+    "placeholder": "Ask ORA...",
+    "sending": "...",
+    "send": "Send",
+    "error": "Error: {{message}}"
+  },
+  "tutorial": {
+    "intro": "Hi, I'm ORA! I'm here to guide you. Click me again when you're ready to start.",
+    "dismiss": "Got it!"
+  },
+  "home": {
+    "header": {
+      "title": "Today",
+      "subtitle": "Priorities and upcoming events"
+    },
+    "quickAdd": {
+      "title": "Quick Add Event",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "Team sync",
+        "starts": "Starts",
+        "ends": "Ends",
+        "allDay": "All day",
+        "location": "Location",
+        "locationPlaceholder": "Office, video call link...",
+        "notes": "Notes",
+        "notesPlaceholder": "Agenda or context"
+      },
+      "submit": {
+        "adding": "Adding...",
+        "label": "Add to calendar"
+      },
+      "messages": {
+        "success": "Event added to Google Calendar.",
+        "error": "Failed to add event."
+      },
+      "validation": {
+        "invalidStartDate": "Select a valid start date.",
+        "invalidEndDate": "Select a valid end time.",
+        "endDateBeforeStart": "End date must be on or after the start date.",
+        "endBeforeStart": "End time must be after the start time."
+      },
+      "defaults": {
+        "title": "Untitled event"
+      },
+      "connectPrompt": "Connect Google Calendar to add events from here.",
+      "connectButton": {
+        "default": "Connect",
+        "connecting": "Connecting..."
+      }
+    },
+    "nextEvent": {
+      "title": "Next Event",
+      "loading": "Loading events...",
+      "today": "Today",
+      "empty": "No upcoming events in your calendar.",
+      "connectPrompt": "Connect Google Calendar to surface your next event.",
+      "openInCalendar": "Open in Google Calendar"
+    },
+    "upcoming": {
+      "title": "Upcoming Events",
+      "loading": "Loading events...",
+      "nothingElse": "Nothing else on the horizon.",
+      "clear": "Your calendar is clear for now.",
+      "connectPrompt": "Connect Google Calendar to list your upcoming events.",
+      "open": "Open"
+    },
+    "sync": {
+      "title": "Calendar Sync",
+      "signedInAs": "Signed in as {{email}}.",
+      "signedInFallback": "Signed in as Google account.",
+      "eventsUpdated": "Events updated {{time}}",
+      "eventsNotLoaded": "Events not loaded yet",
+      "calendarChecked": "Calendar checked {{time}}",
+      "refreshing": "Refreshing...",
+      "refresh": "Refresh events",
+      "connectPrompt": "Connect Google Calendar to keep this dashboard up to date."
+    }
+  },
+  "connections": {
+    "title": "Connections",
+    "subtitle": "Manage your connected services",
+    "stats": {
+      "connected_one": "{{count}} connected",
+      "connected_other": "{{count}} connected",
+      "available_one": "{{count}} available",
+      "available_other": "{{count}} available"
+    },
+    "google": {
+      "description": "Sync all your calendar events and meetings",
+      "connectedAs": "Connected as {{email}}",
+      "connected": "Connected",
+      "lastSync": "Last sync: {{time}}"
+    },
+    "services": {
+      "gmail": "Extract events and reminders from emails (coming soon)",
+      "whatsapp": "Get reminders from chat messages (coming soon)",
+      "instagram": "Track social events and meetups (coming soon)",
+      "sms": "Parse appointments from text messages (coming soon)"
+    },
+    "status": {
+      "connected": "Connected",
+      "error": "Error {{detail}}",
+      "disabled": "Coming soon",
+      "loading": "Connecting...",
+      "available": "Not connected"
+    },
+    "tooltip": {
+      "disabled": "Not available yet",
+      "connected": "Disable",
+      "available": "Enable"
+    },
+    "reconnect": "Reconnect",
+    "add": "Add new connection",
+    "iconLabel": "{{name}} icon"
+  },
+  "avatar": {
+    "controls": {
+      "neutral": "Neutral",
+      "happy": "Happy",
+      "sad": "Sad",
+      "angry": "Angry",
+      "skeptic": "Skeptical",
+      "off": "OFF/ON"
+    }
+  },
+  "general": {
+    "connect": "Connect",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "notAvailable": "Not available yet",
+    "comingSoon": "Coming soon",
+    "enable": "Enable",
+    "disable": "Disable",
+    "reconnect": "Reconnect",
+    "open": "Open",
+    "dismiss": "Dismiss"
+  },
+  "time": {
+    "just_now": "just now",
+    "minute_ago": "1 minute ago",
+    "minutes_ago_one": "{{count}} minute ago",
+    "minutes_ago_other": "{{count}} minutes ago",
+    "hour_ago": "1 hour ago",
+    "hours_ago_one": "{{count}} hour ago",
+    "hours_ago_other": "{{count}} hours ago",
+    "day_ago": "1 day ago",
+    "days_ago_one": "{{count}} day ago",
+    "days_ago_other": "{{count}} days ago"
+  }
+}
+

@@ -1,0 +1,190 @@
+{
+  "app": {
+    "title": "ORA Companion",
+    "subtitle": "Votre alliée pour orchestrer la journée"
+  },
+  "auth": {
+    "loading": "Connexion en cours...",
+    "connect_prompt": "Connectez-vous pour accéder à votre cockpit personnel",
+    "sign_in": "Se connecter",
+    "sign_out": "Déconnexion",
+    "login_title": "Connexion",
+    "register_title": "Créer un compte",
+    "display_name": "Pseudo",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "submit_login": "Se connecter",
+    "submit_register": "S'inscrire",
+    "waiting": "Patiente...",
+    "greeting": "Bonjour, {{name}}",
+    "roles": "Rôles : {{roles}}",
+    "switch_to_register": "Créer un compte",
+    "switch_to_login": "Déjà un compte ?",
+    "google": "Continuer avec Google",
+    "or": "ou",
+    "error": "Impossible de finaliser l'authentification.",
+    "error_google": "Impossible d'utiliser l'authentification Google."
+  },
+  "language": {
+    "label": "Langue",
+    "english": "Anglais",
+    "french": "Français"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "assistant": "Assistant",
+    "connections": "Connexions"
+  },
+  "assistant": {
+    "placeholder": "Pose ta question à ORA...",
+    "sending": "...",
+    "send": "Envoyer",
+    "error": "Erreur : {{message}}"
+  },
+  "tutorial": {
+    "intro": "Bonjour, moi c'est ORA ! Je suis là pour t'accompagner. Clique à nouveau sur moi quand tu es prêt à commencer.",
+    "dismiss": "Compris !"
+  },
+  "home": {
+    "header": {
+      "title": "Aujourd'hui",
+      "subtitle": "Priorités et événements à venir"
+    },
+    "quickAdd": {
+      "title": "Ajouter un événement",
+      "fields": {
+        "title": "Titre",
+        "titlePlaceholder": "Réunion d'équipe",
+        "starts": "Début",
+        "ends": "Fin",
+        "allDay": "Toute la journée",
+        "location": "Lieu",
+        "locationPlaceholder": "Bureau, lien de visio...",
+        "notes": "Notes",
+        "notesPlaceholder": "Agenda ou contexte"
+      },
+      "submit": {
+        "adding": "Ajout...",
+        "label": "Ajouter au calendrier"
+      },
+      "messages": {
+        "success": "Événement ajouté à Google Calendar.",
+        "error": "Impossible d'ajouter l'événement."
+      },
+      "validation": {
+        "invalidStartDate": "Sélectionnez une date de début valide.",
+        "invalidEndDate": "Sélectionnez une heure de fin valide.",
+        "endDateBeforeStart": "La date de fin doit être identique ou postérieure au début.",
+        "endBeforeStart": "L'heure de fin doit être postérieure au début."
+      },
+      "defaults": {
+        "title": "Événement sans titre"
+      },
+      "connectPrompt": "Connectez Google Calendar pour ajouter des événements ici.",
+      "connectButton": {
+        "default": "Connecter",
+        "connecting": "Connexion..."
+      }
+    },
+    "nextEvent": {
+      "title": "Prochain événement",
+      "loading": "Chargement des événements...",
+      "today": "Aujourd'hui",
+      "empty": "Aucun événement à venir dans votre agenda.",
+      "connectPrompt": "Connectez Google Calendar pour afficher votre prochain événement.",
+      "openInCalendar": "Ouvrir dans Google Calendar"
+    },
+    "upcoming": {
+      "title": "Événements à venir",
+      "loading": "Chargement des événements...",
+      "nothingElse": "Rien d'autre en vue.",
+      "clear": "Votre agenda est libre pour l'instant.",
+      "connectPrompt": "Connectez Google Calendar pour lister vos événements à venir.",
+      "open": "Ouvrir"
+    },
+    "sync": {
+      "title": "Synchronisation du calendrier",
+      "signedInAs": "Connecté en tant que {{email}}.",
+      "signedInFallback": "Connecté avec un compte Google.",
+      "eventsUpdated": "Événements mis à jour {{time}}",
+      "eventsNotLoaded": "Événements pas encore chargés",
+      "calendarChecked": "Calendrier vérifié {{time}}",
+      "refreshing": "Actualisation...",
+      "refresh": "Actualiser les événements",
+      "connectPrompt": "Connectez Google Calendar pour garder ce tableau de bord à jour."
+    }
+  },
+  "connections": {
+    "title": "Connexions",
+    "subtitle": "Gérez vos services connectés",
+    "stats": {
+      "connected_one": "{{count}} connecté",
+      "connected_other": "{{count}} connectés",
+      "available_one": "{{count}} disponible",
+      "available_other": "{{count}} disponibles"
+    },
+    "google": {
+      "description": "Synchronisez tous vos événements et réunions",
+      "connectedAs": "Connecté en tant que {{email}}",
+      "connected": "Connecté",
+      "lastSync": "Dernière synchro : {{time}}"
+    },
+    "services": {
+      "gmail": "Extraire événements et rappels des e-mails (bientôt disponible)",
+      "whatsapp": "Recevoir des rappels depuis les conversations (bientôt disponible)",
+      "instagram": "Suivre événements et rencontres sociales (bientôt disponible)",
+      "sms": "Analyser les rendez-vous reçus par SMS (bientôt disponible)"
+    },
+    "status": {
+      "connected": "Connecté",
+      "error": "Erreur {{detail}}",
+      "disabled": "Bientôt disponible",
+      "loading": "Connexion...",
+      "available": "Non connecté"
+    },
+    "tooltip": {
+      "disabled": "Pas encore disponible",
+      "connected": "Désactiver",
+      "available": "Activer"
+    },
+    "reconnect": "Reconnecter",
+    "add": "Ajouter une connexion",
+    "iconLabel": "Icône {{name}}"
+  },
+  "avatar": {
+    "controls": {
+      "neutral": "Neutre",
+      "happy": "Sourire",
+      "sad": "Triste",
+      "angry": "Fâché",
+      "skeptic": "Sceptique",
+      "off": "OFF/ON"
+    }
+  },
+  "general": {
+    "connect": "Connecter",
+    "connecting": "Connexion...",
+    "connected": "Connecté",
+    "notConnected": "Non connecté",
+    "notAvailable": "Pas disponible",
+    "comingSoon": "Bientôt disponible",
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "reconnect": "Reconnecter",
+    "open": "Ouvrir",
+    "dismiss": "Fermer"
+  },
+  "time": {
+    "just_now": "à l'instant",
+    "minute_ago": "il y a 1 minute",
+    "minutes_ago_one": "il y a {{count}} minute",
+    "minutes_ago_other": "il y a {{count}} minutes",
+    "hour_ago": "il y a 1 heure",
+    "hours_ago_one": "il y a {{count}} heure",
+    "hours_ago_other": "il y a {{count}} heures",
+    "day_ago": "il y a 1 jour",
+    "days_ago_one": "il y a {{count}} jour",
+    "days_ago_other": "il y a {{count}} jours"
+  }
+}
+

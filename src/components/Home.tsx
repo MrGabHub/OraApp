@@ -1,18 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { useGoogleCalendar, type GoogleCalendarEvent } from "../hooks/useGoogleCalendar";
 import { formatRelativeTime } from "../utils/time";
 import "./home.css";
-
-const dayFormatter = new Intl.DateTimeFormat(undefined, {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-});
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  hour: "2-digit",
-  minute: "2-digit",
-});
 
 function parseEventDate(value: string, isAllDay: boolean): Date {
   if (!value) return new Date(NaN);
@@ -32,20 +23,24 @@ function isEventToday(event: GoogleCalendarEvent): boolean {
   );
 }
 
-function formatDayLabel(event: GoogleCalendarEvent): string {
+function formatDayLabel(event: GoogleCalendarEvent, formatter: Intl.DateTimeFormat): string {
   const start = parseEventDate(event.start, event.isAllDay);
   if (Number.isNaN(start.getTime())) return "";
-  return dayFormatter.format(start);
+  return formatter.format(start);
 }
 
-function formatTimeRange(event: GoogleCalendarEvent): string {
-  if (event.isAllDay) return "All day";
+function formatTimeRange(
+  event: GoogleCalendarEvent,
+  formatter: Intl.DateTimeFormat,
+  t: TFunction<"common">,
+): string {
+  if (event.isAllDay) return t("home.quickAdd.fields.allDay");
   const start = parseEventDate(event.start, event.isAllDay);
   if (Number.isNaN(start.getTime())) return "";
   const end = event.end ? parseEventDate(event.end, event.isAllDay) : null;
-  const startLabel = timeFormatter.format(start);
+  const startLabel = formatter.format(start);
   if (!end || Number.isNaN(end.getTime())) return startLabel;
-  return `${startLabel} - ${timeFormatter.format(end)}`;
+  return `${startLabel} - ${formatter.format(end)}`;
 }
 
 function pad(value: number): string {
@@ -68,6 +63,24 @@ function addDays(dateValue: string, amount: number): string {
 }
 
 export default function Home() {
+  const { t, i18n } = useTranslation();
+  const dayFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.language, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      }),
+    [i18n.language],
+  );
+  const timeFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    [i18n.language],
+  );
   const {
     status,
     loading: calendarConnecting,
@@ -132,11 +145,15 @@ export default function Home() {
   const handleCreateEvent = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isConnected) {
-      setSubmitError("Connect Google Calendar to add events.");
+      setSubmitError(t("home.quickAdd.connectPrompt"));
       return;
     }
     if (!startValue) {
-      setSubmitError(allDay ? "Select a start date." : "Select a start time.");
+      setSubmitError(
+        allDay
+          ? t("home.quickAdd.validation.invalidStartDate")
+          : t("home.quickAdd.validation.invalidStartDate"),
+      );
       return;
     }
     clearMessages();
@@ -144,46 +161,57 @@ export default function Home() {
     let startPayload: string;
     let endPayload: string;
 
-    try {
-      if (allDay) {
-        const startDateString = startValue.slice(0, 10);
-        if (startDateString.length !== 10) throw new Error("Invalid start date.");
-        let endDateString = endValue ? endValue.slice(0, 10) : startDateString;
-        if (endDateString.length !== 10) endDateString = startDateString;
-        if (endDateString < startDateString) throw new Error("End date must be on or after start date.");
-        startPayload = startDateString;
-        endPayload = addDays(endDateString, 1);
-      } else {
-        const startDate = new Date(startValue);
-        if (Number.isNaN(startDate.getTime())) throw new Error("Invalid start time.");
-        let endDate: Date;
-        if (endValue) {
-          endDate = new Date(endValue);
-          if (Number.isNaN(endDate.getTime())) throw new Error("Invalid end time.");
-        } else {
-          endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
-        }
-        if (endDate <= startDate) throw new Error("End time must be after the start time.");
-        startPayload = startDate.toISOString();
-        endPayload = endDate.toISOString();
+    if (allDay) {
+      const startDateString = startValue.slice(0, 10);
+      if (startDateString.length !== 10) {
+        setSubmitError(t("home.quickAdd.validation.invalidStartDate"));
+        return;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setSubmitError(message || "Invalid date selection.");
-      return;
+      let endDateString = endValue ? endValue.slice(0, 10) : startDateString;
+      if (endDateString.length !== 10) {
+        endDateString = startDateString;
+      }
+      if (endDateString < startDateString) {
+        setSubmitError(t("home.quickAdd.validation.endDateBeforeStart"));
+        return;
+      }
+      startPayload = startDateString;
+      endPayload = addDays(endDateString, 1);
+    } else {
+      const startDate = new Date(startValue);
+      if (Number.isNaN(startDate.getTime())) {
+        setSubmitError(t("home.quickAdd.validation.invalidStartDate"));
+        return;
+      }
+      let endDate: Date;
+      if (endValue) {
+        endDate = new Date(endValue);
+        if (Number.isNaN(endDate.getTime())) {
+          setSubmitError(t("home.quickAdd.validation.invalidEndDate"));
+          return;
+        }
+      } else {
+        endDate = new Date(startDate.getTime() + 30 * 60 * 1000);
+      }
+      if (endDate <= startDate) {
+        setSubmitError(t("home.quickAdd.validation.endBeforeStart"));
+        return;
+      }
+      startPayload = startDate.toISOString();
+      endPayload = endDate.toISOString();
     }
 
     setSubmitting(true);
     try {
       await createEvent({
-        title: title.trim() || "Untitled event",
+        title: title.trim() || t("home.quickAdd.defaults.title"),
         start: startPayload,
         end: endPayload,
         isAllDay: allDay,
         location: location.trim() || undefined,
         description: notes.trim() || undefined,
       });
-      setSubmitSuccess("Event added to Google Calendar.");
+      setSubmitSuccess(t("home.quickAdd.messages.success"));
       if (allDay) {
         const startDateString = startPayload.slice(0, 10);
         setStartValue(startDateString);
@@ -199,7 +227,7 @@ export default function Home() {
       setNotes("");
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      setSubmitError(message || "Failed to add event.");
+      setSubmitError(message || t("home.quickAdd.messages.error"));
     } finally {
       setSubmitting(false);
     }
@@ -260,17 +288,17 @@ export default function Home() {
   return (
     <section className="home">
       <header className="home-header">
-        <h2>Today</h2>
-        <p>Priorities and upcoming events</p>
+        <h2>{t("home.header.title")}</h2>
+        <p>{t("home.header.subtitle")}</p>
       </header>
 
       <div className="home-grid">
         <div className="card add-event">
-          <h3>Quick Add Event</h3>
+          <h3>{t("home.quickAdd.title")}</h3>
           {isConnected ? (
             <form className="add-form" onSubmit={handleCreateEvent}>
               <label className="field-group">
-                <span>Title</span>
+                <span>{t("home.quickAdd.fields.title")}</span>
                 <input
                   type="text"
                   value={title}
@@ -278,12 +306,12 @@ export default function Home() {
                     setTitle(e.target.value);
                     clearMessages();
                   }}
-                  placeholder="Team sync"
+                  placeholder={t("home.quickAdd.fields.titlePlaceholder") ?? ""}
                 />
               </label>
               <div className="field-row">
                 <label className="field-group">
-                  <span>Starts</span>
+                  <span>{t("home.quickAdd.fields.starts")}</span>
                   <input
                     type={allDay ? "date" : "datetime-local"}
                     value={startValue}
@@ -292,7 +320,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="field-group">
-                  <span>Ends</span>
+                  <span>{t("home.quickAdd.fields.ends")}</span>
                   <input
                     type={allDay ? "date" : "datetime-local"}
                     value={endValue}
@@ -306,10 +334,10 @@ export default function Home() {
                   checked={allDay}
                   onChange={(e) => handleAllDayToggle(e.target.checked)}
                 />
-                <span>All day</span>
+                <span>{t("home.quickAdd.fields.allDay")}</span>
               </label>
               <label className="field-group">
-                <span>Location</span>
+                <span>{t("home.quickAdd.fields.location")}</span>
                 <input
                   type="text"
                   value={location}
@@ -317,24 +345,24 @@ export default function Home() {
                     setLocation(e.target.value);
                     clearMessages();
                   }}
-                  placeholder="Office, video call link..."
+                  placeholder={t("home.quickAdd.fields.locationPlaceholder") ?? ""}
                 />
               </label>
               <label className="field-group">
-                <span>Notes</span>
+                <span>{t("home.quickAdd.fields.notes")}</span>
                 <textarea
                   value={notes}
                   onChange={(e) => {
                     setNotes(e.target.value);
                     clearMessages();
                   }}
-                  placeholder="Agenda or context"
+                  placeholder={t("home.quickAdd.fields.notesPlaceholder") ?? ""}
                   rows={3}
                 />
               </label>
               <div className="form-actions">
                 <button type="submit" className="primary-btn" disabled={submitting}>
-                  {submitting ? "Adding..." : "Add to calendar"}
+                  {submitting ? t("home.quickAdd.submit.adding") : t("home.quickAdd.submit.label")}
                 </button>
                 {submitSuccess && <span className="success-text">{submitSuccess}</span>}
                 {submitError && <span className="error-text">{submitError}</span>}
@@ -342,54 +370,54 @@ export default function Home() {
             </form>
           ) : (
             <div className="empty">
-              <p>Connect Google Calendar to add events from here.</p>
+              <p>{t("home.quickAdd.connectPrompt")}</p>
               <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
-                {isConnecting ? "Connecting..." : "Connect"}
+                {isConnecting ? t("home.quickAdd.connectButton.connecting") : t("home.quickAdd.connectButton.default")}
               </button>
             </div>
           )}
         </div>
 
         <div className="card event highlight">
-          <h3>Next Event</h3>
+          <h3>{t("home.nextEvent.title")}</h3>
           {isConnected ? (
             showInitialLoad ? (
-              <p className="muted">Loading events...</p>
+              <p className="muted">{t("home.nextEvent.loading")}</p>
             ) : nextEvent ? (
               <div className="event-main">
                 <span className="event-day">
-                  {isEventToday(nextEvent) ? "Today" : formatDayLabel(nextEvent)}
+                  {isEventToday(nextEvent)
+                    ? t("home.nextEvent.today")
+                    : formatDayLabel(nextEvent, dayFormatter)}
                 </span>
                 <span className="event-title">{nextEvent.title}</span>
-                <span className="event-time">{formatTimeRange(nextEvent)}</span>
-                {nextEvent.location && (
-                  <span className="event-location">{nextEvent.location}</span>
-                )}
+                <span className="event-time">{formatTimeRange(nextEvent, timeFormatter, t)}</span>
+                {nextEvent.location && <span className="event-location">{nextEvent.location}</span>}
                 {nextEvent.htmlLink && (
                   <a className="event-link" href={nextEvent.htmlLink} target="_blank" rel="noreferrer">
-                    Open in Google Calendar
+                    {t("home.nextEvent.openInCalendar")}
                   </a>
                 )}
               </div>
             ) : (
-              <p className="muted">No upcoming events in your calendar.</p>
+              <p className="muted">{t("home.nextEvent.empty")}</p>
             )
           ) : (
             <div className="empty">
-              <p>Connect Google Calendar to surface your next event.</p>
+              <p>{t("home.nextEvent.connectPrompt")}</p>
               <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
-                {isConnecting ? "Connecting..." : "Connect Google Calendar"}
+                {isConnecting ? t("general.connecting") : t("general.connect")}
               </button>
             </div>
           )}
         </div>
 
         <div className="card events-list">
-          <h3>Upcoming Events</h3>
+          <h3>{t("home.upcoming.title")}</h3>
           {isConnected ? (
             <>
               {showInitialLoad ? (
-                <p className="muted">Loading events...</p>
+                <p className="muted">{t("home.upcoming.loading")}</p>
               ) : laterEvents.length > 0 ? (
                 <ul className="event-list">
                   {laterEvents.map((event) => (
@@ -398,58 +426,65 @@ export default function Home() {
                         <span className="event-item-title">{event.title}</span>
                         <span className="event-item-meta">
                           {isEventToday(event)
-                            ? `Today | ${formatTimeRange(event)}`
-                            : `${formatDayLabel(event)} | ${formatTimeRange(event)}`}
+                            ? `${t("home.nextEvent.today")} | ${formatTimeRange(event, timeFormatter, t)}`
+                            : `${formatDayLabel(event, dayFormatter)} | ${formatTimeRange(event, timeFormatter, t)}`}
                         </span>
-                        {event.location && (
-                          <span className="event-item-location">{event.location}</span>
-                        )}
+                        {event.location && <span className="event-item-location">{event.location}</span>}
                       </div>
                       {event.htmlLink && (
                         <a className="event-open" href={event.htmlLink} target="_blank" rel="noreferrer">
-                          Open
+                          {t("home.upcoming.open")}
                         </a>
                       )}
                     </li>
                   ))}
                 </ul>
               ) : nextEvent ? (
-                <p className="muted">Nothing else on the horizon.</p>
+                <p className="muted">{t("home.upcoming.nothingElse")}</p>
               ) : (
-                <p className="muted">Your calendar is clear for now.</p>
+                <p className="muted">{t("home.upcoming.clear")}</p>
               )}
               {eventsError && <p className="error-text">{eventsError}</p>}
             </>
           ) : (
-            <p className="muted">Connect Google Calendar to list your upcoming events.</p>
+            <p className="muted">{t("home.upcoming.connectPrompt")}</p>
           )}
         </div>
 
         <div className="card sync">
-          <h3>Calendar Sync</h3>
+          <h3>{t("home.sync.title")}</h3>
           {isConnected ? (
             <>
-              <p className="muted">Signed in as {profile?.email ?? "Google account"}.</p>
+              <p className="muted">
+                {profile?.email
+                  ? t("home.sync.signedInAs", { email: profile.email })
+                  : t("home.sync.signedInFallback")}
+              </p>
               <div className="meta-row">
                 <span className="badge">
-                  {eventsFetchedAt ? `Events updated ${formatRelativeTime(eventsFetchedAt)}` : "Events not loaded yet"}
+                  {eventsFetchedAt
+                    ? t("home.sync.eventsUpdated", { time: formatRelativeTime(eventsFetchedAt, t) })
+                    : t("home.sync.eventsNotLoaded")}
                 </span>
-                {lastSync && <span className="badge gray">Calendar checked {formatRelativeTime(lastSync)}</span>}
+                {lastSync && (
+                  <span className="badge gray">
+                    {t("home.sync.calendarChecked", { time: formatRelativeTime(lastSync, t) })}
+                  </span>
+                )}
               </div>
               <button className="ghost-btn" onClick={() => void reloadEvents()} disabled={eventsLoading}>
-                {eventsLoading ? "Refreshing..." : "Refresh events"}
+                {eventsLoading ? t("home.sync.refreshing") : t("home.sync.refresh")}
               </button>
             </>
           ) : (
             <div className="empty">
-              <p>Connect Google Calendar to keep this dashboard up to date.</p>
+              <p>{t("home.sync.connectPrompt")}</p>
               <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
-                {isConnecting ? "Connecting..." : "Connect"}
+                {isConnecting ? t("general.connecting") : t("general.connect")}
               </button>
             </div>
           )}
         </div>
-
       </div>
     </section>
   );
