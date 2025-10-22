@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
 import {
   CalendarDays,
@@ -27,6 +28,7 @@ type Conn = {
 };
 
 export default function Connections() {
+  const { t } = useTranslation();
   const {
     status: googleStatus,
     loading: googleLoading,
@@ -43,7 +45,7 @@ export default function Connections() {
         name: "Gmail",
         icon: Mail,
         accentRgb: "234,67,53",
-        description: "Extract events and reminders from emails (coming soon)",
+        description: t("connections.services.gmail"),
         status: "disabled",
       },
       {
@@ -51,7 +53,7 @@ export default function Connections() {
         name: "WhatsApp",
         icon: MessageCircle,
         accentRgb: "37,211,102",
-        description: "Get reminders from chat messages (coming soon)",
+        description: t("connections.services.whatsapp"),
         status: "disabled",
       },
       {
@@ -59,7 +61,7 @@ export default function Connections() {
         name: "Instagram",
         icon: Instagram,
         accentRgb: "193,53,132",
-        description: "Track social events and meetups (coming soon)",
+        description: t("connections.services.instagram"),
         status: "disabled",
       },
       {
@@ -67,19 +69,26 @@ export default function Connections() {
         name: "SMS Messages",
         icon: Smartphone,
         accentRgb: "148,163,184",
-        description: "Parse appointments from text messages (coming soon)",
+        description: t("connections.services.sms"),
         status: "disabled",
       },
     ],
-    [],
+    [t],
   );
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
   const googleCard = useMemo<Conn>(() => {
-    const baseLastSync = googleLastSync ? `Last sync: ${formatRelativeTime(googleLastSync)}` : undefined;
+    const baseLastSync = googleLastSync
+      ? t("connections.google.lastSync", { time: formatRelativeTime(googleLastSync, t) })
+      : undefined;
     const connectedInfo =
       googleStatus === "connected"
-        ? [googleProfile?.email ? `Connected as ${googleProfile.email}` : "Connected", baseLastSync]
+        ? [
+            googleProfile?.email
+              ? t("connections.google.connectedAs", { email: googleProfile.email })
+              : t("connections.google.connected"),
+            baseLastSync,
+          ]
             .filter(Boolean)
             .join(" | ")
         : undefined;
@@ -89,14 +98,14 @@ export default function Connections() {
       name: "Google Calendar",
       icon: CalendarDays,
       accentRgb: "66,133,244",
-      description: "Sync all your calendar events and meetings",
+      description: t("connections.google.description"),
       status,
       lastSync: baseLastSync,
       errorMessage: googleError ?? undefined,
       connectedInfo,
       loading: googleLoading,
     };
-  }, [googleError, googleLastSync, googleLoading, googleProfile, googleStatus]);
+  }, [googleError, googleLastSync, googleLoading, googleProfile, googleStatus, t]);
 
   const cards = useMemo(() => [googleCard, ...items], [googleCard, items]);
   const connectedCount = cards.filter((i) => i.status === "connected").length;
@@ -122,13 +131,27 @@ export default function Connections() {
   return (
     <section className="connections">
       <header className="connections-header">
-        <h2>Connections</h2>
-        <p>Manage your connected services</p>
+        <h2>{t("connections.title")}</h2>
+        <p>{t("connections.subtitle")}</p>
         <div className="stats">
           <span className="dot green" aria-hidden></span>
-          <span className="label">{connectedCount} connected</span>
+          <span className="label">
+            {t(
+              connectedCount === 1
+                ? "connections.stats.connected_one"
+                : "connections.stats.connected_other",
+              { count: connectedCount },
+            )}
+          </span>
           <span className="dot gray" aria-hidden></span>
-          <span className="label">{availableCount} available</span>
+          <span className="label">
+            {t(
+              availableCount === 1
+                ? "connections.stats.available_one"
+                : "connections.stats.available_other",
+              { count: availableCount },
+            )}
+          </span>
         </div>
       </header>
 
@@ -145,7 +168,7 @@ export default function Connections() {
             <div className="left">
               <button
                 className={`service-icon ${glowing[c.id] ? "glow" : ""}`}
-                aria-label={`${c.name} icon`}
+                aria-label={t("connections.iconLabel", { name: c.name })}
                 onClick={() => setIconGlow(c.id)}
               >
                 {(() => {
@@ -157,7 +180,7 @@ export default function Connections() {
                 <div className="title-row">
                   <h3>{c.name}</h3>
                   {c.status === "connected" && (
-                    <span className="ok" aria-label="Connected">
+                    <span className="ok" aria-label={t("general.connected")}>
                       <CheckCircle2 size={16} />
                     </span>
                   )}
@@ -165,14 +188,14 @@ export default function Connections() {
                 <p className="desc">{c.description}</p>
                 <p className={`sub ${c.status}`}>
                   {c.status === "connected"
-                    ? c.connectedInfo ?? `Connected${c.lastSync ? `  ${c.lastSync}` : ""}`
+                    ? c.connectedInfo ?? t("general.connected")
                     : c.status === "error"
-                    ? `Error  ${c.lastSync ?? ""}`
+                    ? t("connections.status.error", { detail: c.errorMessage ?? "" })
                     : c.status === "disabled"
-                    ? "Coming soon"
+                    ? t("general.comingSoon")
                     : c.loading
-                    ? "Connecting..."
-                    : "Not connected"}
+                    ? t("general.connecting")
+                    : t("general.notConnected")}
                 </p>
               </div>
             </div>
@@ -183,10 +206,10 @@ export default function Connections() {
               disabled={c.loading || c.status === "disabled"}
               title={
                 c.status === "disabled"
-                  ? "Not available yet"
+                  ? t("connections.tooltip.disabled")
                   : c.status === "connected"
-                  ? "Disable"
-                  : "Enable"
+                  ? t("connections.tooltip.connected")
+                  : t("connections.tooltip.available")
               }
             />
 
@@ -194,7 +217,7 @@ export default function Connections() {
               <div className="error-box">
                 <p>{c.errorMessage}</p>
                 <button className="btn" onClick={() => toggle(c.id)} disabled={c.loading}>
-                  Reconnect
+                  {t("general.reconnect")}
                 </button>
               </div>
             )}
@@ -203,11 +226,15 @@ export default function Connections() {
       </div>
 
       <div className="add-row">
-        <button className="add-btn" disabled title="More connections coming soon">
+        <button
+          className="add-btn"
+          disabled
+          title={t("general.comingSoon")}
+        >
           <span className="plus" aria-hidden>
             <Plus size={16} />
           </span>
-          <span>Add new connection</span>
+          <span>{t("connections.add")}</span>
         </button>
       </div>
     </section>
