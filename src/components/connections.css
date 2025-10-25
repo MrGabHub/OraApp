@@ -1,4 +1,4 @@
-.connections { display: flex; flex-direction: column; gap: 16px; color: var(--text); }
+.connections { display: flex; flex-direction: column; gap: 16px; color: var(--text); padding-bottom: clamp(80px, env(safe-area-inset-bottom, 0px) + 96px, 140px); }
 
 .connections-header h2 { margin: 0 0 4px 0; color: var(--text); }
 .connections-header p { margin: 0 0 8px 0; color: var(--muted); }
@@ -12,7 +12,7 @@
 
 .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 18px; padding: 14px; display: grid; grid-template-columns: 1fr auto; gap: 12px; box-shadow: var(--shadow); }
 .card .left { display: flex; gap: 12px; }
-.service-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba( var(--accent-rgb, 226,132,44), 0.12); border: 1px solid var(--card-border); position: relative; overflow: hidden; cursor: pointer; color: rgba(var(--accent-rgb,226,132,44), 0.95); }
+.service-icon { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: rgba( var(--accent-rgb, 226,132,44), 0.12); border: 1px solid var(--card-border); position: relative; overflow: hidden; cursor: pointer; color: rgba(var(--accent-rgb,226,132,44), 0.95); touch-action: manipulation; }
 .service-icon .lucide { width: 24px; height: 24px; }
 .service-icon:hover { filter: brightness(1.05); }
 .service-icon.glow { animation: glowPulse 600ms ease-out; }
@@ -43,8 +43,8 @@
 .btn:hover { filter: brightness(0.98); }
 .btn:disabled { cursor: not-allowed; opacity: 0.6; filter: none; }
 
-.add-row { padding: 10px 0 90px; display: flex; justify-content: center; }
-.add-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--accent); color: #fff; border: 1px solid var(--accent-strong); border-radius: 12px; cursor: pointer; box-shadow: 0 8px 22px rgba(226,132,44,0.28); }
+.add-row { padding: 10px 0; display: flex; justify-content: center; }
+.add-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--accent); color: #fff; border: 1px solid var(--accent-strong); border-radius: 12px; cursor: pointer; box-shadow: 0 8px 22px rgba(226,132,44,0.28); touch-action: manipulation; }
 .add-btn:hover { filter: brightness(1.05); }
 .add-btn .plus { font-weight: 700; }
 

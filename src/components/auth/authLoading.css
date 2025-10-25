@@ -8,8 +8,12 @@
   background: radial-gradient(circle at 20% 20%, rgba(12, 20, 32, 0.95), rgba(6, 10, 18, 0.98));
   color: #f4f6fb;
   z-index: 999;
-  padding: 24px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px)
+    clamp(20px, 8vw, 32px)
+    calc(env(safe-area-inset-bottom, 0px) + 24px);
   text-align: center;
+  box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 .auth-loading__avatar {
@@ -70,7 +74,9 @@
 
 @media (max-width: 640px) {
   .auth-loading {
-    padding: 16px;
+    padding: calc(env(safe-area-inset-top, 0px) + 18px)
+      clamp(16px, 6vw, 22px)
+      calc(env(safe-area-inset-bottom, 0px) + 18px);
   }
 
   .auth-loading__message {

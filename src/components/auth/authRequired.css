@@ -4,10 +4,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 6vw, 48px);
+  padding: calc(env(safe-area-inset-top, 0px) + clamp(24px, 6vw, 48px))
+    clamp(24px, 6vw, 48px)
+    calc(env(safe-area-inset-bottom, 0px) + clamp(24px, 6vw, 48px));
   background: radial-gradient(circle at 30% 20%, #0f1a29, #080d16 65%);
   color: #f5f7fc;
   overflow: hidden;
+  box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 .auth-required__orbit {
@@ -34,7 +38,7 @@
 
 .auth-required__language {
   position: absolute;
-  top: clamp(12px, 2.5vw, 24px);
+  top: calc(env(safe-area-inset-top, 0px) + clamp(12px, 2.5vw, 24px));
   right: clamp(12px, 3vw, 28px);
 }
 

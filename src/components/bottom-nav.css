@@ -1,11 +1,19 @@
 .bottom-nav {
-  position: fixed; left: 0; right: 0; bottom: 0; height: 64px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  display: flex; align-items: center; justify-content: center; gap: 16px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 4vw, 20px);
+  padding: 10px clamp(18px, 6vw, 32px) calc(env(safe-area-inset-bottom, 0px) + 12px);
   background: var(--bg);
   color: var(--text);
   border-top: 1px solid var(--card-border);
   z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .bottom-nav .tab {
@@ -17,7 +25,10 @@
 .bottom-nav .tab:hover { color: var(--text); background: rgba(0,0,0,0.03); }
 .bottom-nav .tab.active { color: var(--text); background: #f0dfc9; border-color: var(--card-border); }
 .bottom-nav .tab-icon { line-height: 1; display: grid; place-items: center; }
-.bottom-nav .tab-icon svg { width: 22px; height: 22px; }
+.bottom-nav .tab-icon svg { width: 24px; height: 24px; }
 .bottom-nav .tab-label { font-size: 12px; }
 
-@media (min-width: 768px) { .bottom-nav { height: 68px; } }
+@media (min-width: 768px) {
+  .bottom-nav .tab { padding: 12px 16px; }
+  .bottom-nav .tab-label { font-size: 13px; }
+}

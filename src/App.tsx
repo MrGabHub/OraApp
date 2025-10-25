@@ -31,43 +31,18 @@ function AppShell() {
 
   return (
     <div className="app-container">
-      <header
-        className="app-header"
-        style={{
-          width: "100%",
-          maxWidth: 960,
-          padding: "16px",
-          boxSizing: "border-box",
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-        }}
-      >
+      <header className="app-header">
         <div className="app-brand">
-          <span style={{ fontWeight: 700, fontSize: "1.25rem" }}>{t("app.title")}</span>
-          <span style={{ display: "block", fontSize: "0.85rem", color: "rgba(240,240,245,0.65)" }}>
-            {t("app.subtitle")}
-          </span>
+          <span className="app-brand-title">{t("app.title")}</span>
+          <span className="app-brand-subtitle">{t("app.subtitle")}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="app-header__actions">
           <LanguageSwitcher />
           <AuthGate />
         </div>
       </header>
 
-      <main
-        style={{
-          width: "100%",
-          maxWidth: 960,
-          padding: "16px",
-          boxSizing: "border-box",
-          display: "grid",
-          gap: 16,
-          margin: "0 auto",
-        }}
-      >
+      <main className="app-main">
         {tab === "home" && <Home />}
         {tab === "assistant" && <Assistant />}
         {tab === "connections" && <Connections />}
