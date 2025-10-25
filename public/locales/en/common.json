@@ -31,6 +31,7 @@
     "french": "French"
   },
   "navigation": {
+    "ariaLabel": "Primary navigation",
     "home": "Home",
     "assistant": "Assistant",
     "connections": "Connections"
@@ -187,4 +188,5 @@
     "days_ago_other": "{{count}} days ago"
   }
 }
+
 

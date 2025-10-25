@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Home, MessageSquare, Settings } from "lucide-react";
 import "./bottom-nav.css";
 
@@ -10,15 +11,17 @@ type Props = {
 };
 
 const BottomNav: FC<Props> = ({ active, onChange }) => {
+  const { t } = useTranslation();
+
   return (
-    <nav className="bottom-nav" role="navigation" aria-label="Navigation principale">
+    <nav className="bottom-nav" role="navigation" aria-label={t("navigation.ariaLabel", "Navigation")}>
       <button
         className={`tab ${active === "home" ? "active" : ""}`}
         onClick={() => onChange("home")}
         aria-current={active === "home" ? "page" : undefined}
       >
         <span className="tab-icon" aria-hidden><Home /></span>
-        <span className="tab-label">Accueil</span>
+        <span className="tab-label">{t("navigation.home")}</span>
       </button>
       <button
         className={`tab ${active === "assistant" ? "active" : ""}`}
@@ -26,7 +29,7 @@ const BottomNav: FC<Props> = ({ active, onChange }) => {
         aria-current={active === "assistant" ? "page" : undefined}
       >
         <span className="tab-icon" aria-hidden><MessageSquare /></span>
-        <span className="tab-label">Assistant</span>
+        <span className="tab-label">{t("navigation.assistant")}</span>
       </button>
       <button
         className={`tab ${active === "connections" ? "active" : ""}`}
@@ -34,7 +37,7 @@ const BottomNav: FC<Props> = ({ active, onChange }) => {
         aria-current={active === "connections" ? "page" : undefined}
       >
         <span className="tab-icon" aria-hidden><Settings /></span>
-        <span className="tab-label">Connexions</span>
+        <span className="tab-label">{t("navigation.connections")}</span>
       </button>
     </nav>
   );

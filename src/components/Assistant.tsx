@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./assistant.css";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string };
 const DEFAULT_MODEL = "llama-3.1-8b-instant";
 
 export default function Assistant() {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,7 +108,7 @@ export default function Assistant() {
       setMessages((m) =>
         m.map((msg) =>
           msg.role === "assistant" && msg.text === ""
-            ? { ...msg, text: `Error: ${String(e?.message || e)}` }
+            ? { ...msg, text: t("assistant.error", { message: String(e?.message || e) }) }
             : msg,
         ),
       );
@@ -133,10 +135,10 @@ export default function Assistant() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKey}
-          placeholder="Ask ORA..."
+          placeholder={t("assistant.placeholder") ?? ""}
         />
-        <button onClick={send} disabled={loading}>
-          {loading ? "..." : "Send"}
+        <button className="btn btn-primary" onClick={send} disabled={loading}>
+          {loading ? t("assistant.sending") : t("assistant.send")}
         </button>
       </div>
     </section>

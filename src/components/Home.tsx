@@ -361,7 +361,7 @@ export default function Home() {
                 />
               </label>
               <div className="form-actions">
-                <button type="submit" className="primary-btn" disabled={submitting}>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
                   {submitting ? t("home.quickAdd.submit.adding") : t("home.quickAdd.submit.label")}
                 </button>
                 {submitSuccess && <span className="success-text">{submitSuccess}</span>}
@@ -371,18 +371,18 @@ export default function Home() {
           ) : (
             <div className="empty">
               <p>{t("home.quickAdd.connectPrompt")}</p>
-              <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
+              <button className="btn btn-primary" onClick={() => connect()} disabled={isConnecting}>
                 {isConnecting ? t("home.quickAdd.connectButton.connecting") : t("home.quickAdd.connectButton.default")}
               </button>
             </div>
           )}
         </div>
 
-        <div className="card event highlight">
+        <div className="card event">
           <h3>{t("home.nextEvent.title")}</h3>
           {isConnected ? (
             showInitialLoad ? (
-              <p className="muted">{t("home.nextEvent.loading")}</p>
+              <p className="text-muted">{t("home.nextEvent.loading")}</p>
             ) : nextEvent ? (
               <div className="event-main">
                 <span className="event-day">
@@ -400,12 +400,12 @@ export default function Home() {
                 )}
               </div>
             ) : (
-              <p className="muted">{t("home.nextEvent.empty")}</p>
+              <p className="text-muted">{t("home.nextEvent.empty")}</p>
             )
           ) : (
             <div className="empty">
-              <p>{t("home.nextEvent.connectPrompt")}</p>
-              <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
+              <p className="text-muted">{t("home.nextEvent.connectPrompt")}</p>
+              <button className="btn btn-primary" onClick={() => connect()} disabled={isConnecting}>
                 {isConnecting ? t("general.connecting") : t("general.connect")}
               </button>
             </div>
@@ -417,7 +417,7 @@ export default function Home() {
           {isConnected ? (
             <>
               {showInitialLoad ? (
-                <p className="muted">{t("home.upcoming.loading")}</p>
+                <p className="text-muted">{t("home.upcoming.loading")}</p>
               ) : laterEvents.length > 0 ? (
                 <ul className="event-list">
                   {laterEvents.map((event) => (
@@ -440,14 +440,14 @@ export default function Home() {
                   ))}
                 </ul>
               ) : nextEvent ? (
-                <p className="muted">{t("home.upcoming.nothingElse")}</p>
+                <p className="text-muted">{t("home.upcoming.nothingElse")}</p>
               ) : (
-                <p className="muted">{t("home.upcoming.clear")}</p>
+                <p className="text-muted">{t("home.upcoming.clear")}</p>
               )}
               {eventsError && <p className="error-text">{eventsError}</p>}
             </>
           ) : (
-            <p className="muted">{t("home.upcoming.connectPrompt")}</p>
+            <p className="text-muted">{t("home.upcoming.connectPrompt")}</p>
           )}
         </div>
 
@@ -455,7 +455,7 @@ export default function Home() {
           <h3>{t("home.sync.title")}</h3>
           {isConnected ? (
             <>
-              <p className="muted">
+              <p className="text-muted">
                 {profile?.email
                   ? t("home.sync.signedInAs", { email: profile.email })
                   : t("home.sync.signedInFallback")}
@@ -472,14 +472,14 @@ export default function Home() {
                   </span>
                 )}
               </div>
-              <button className="ghost-btn" onClick={() => void reloadEvents()} disabled={eventsLoading}>
+              <button className="btn btn-ghost" onClick={() => void reloadEvents()} disabled={eventsLoading}>
                 {eventsLoading ? t("home.sync.refreshing") : t("home.sync.refresh")}
               </button>
             </>
           ) : (
             <div className="empty">
               <p>{t("home.sync.connectPrompt")}</p>
-              <button className="primary-btn" onClick={() => connect()} disabled={isConnecting}>
+              <button className="btn btn-primary" onClick={() => connect()} disabled={isConnecting}>
                 {isConnecting ? t("general.connecting") : t("general.connect")}
               </button>
             </div>

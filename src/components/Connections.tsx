@@ -156,7 +156,10 @@ export default function Connections() {
       </header>
 
       <div className="list">
-        {cards.map((c) => (
+        {cards.map((c) => {
+          const errorDetail = c.errorMessage ? ` : ${c.errorMessage}` : "";
+
+          return (
           <article
             key={c.id}
             className={`card ${c.status}`}
@@ -190,7 +193,7 @@ export default function Connections() {
                   {c.status === "connected"
                     ? c.connectedInfo ?? t("general.connected")
                     : c.status === "error"
-                    ? t("connections.status.error", { detail: c.errorMessage ?? "" })
+                    ? t("connections.status.error", { detail: errorDetail })
                     : c.status === "disabled"
                     ? t("general.comingSoon")
                     : c.loading
@@ -216,13 +219,13 @@ export default function Connections() {
             {c.status === "error" && (
               <div className="error-box">
                 <p>{c.errorMessage}</p>
-                <button className="btn" onClick={() => toggle(c.id)} disabled={c.loading}>
+                <button className="btn-reconnect" onClick={() => toggle(c.id)} disabled={c.loading}>
                   {t("general.reconnect")}
                 </button>
               </div>
             )}
           </article>
-        ))}
+        )})}
       </div>
 
       <div className="add-row">
