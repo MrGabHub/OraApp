@@ -47,11 +47,6 @@
   transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-.auth-gate__signout:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
 .auth-gate__form {
   display: flex;
   flex-direction: column;
@@ -116,11 +111,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
-.auth-gate__submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-
 .auth-gate__submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -164,11 +154,6 @@
   background: transparent;
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.auth-gate__google:hover:not(:disabled) {
-  border-color: rgba(150, 190, 255, 0.6);
-  transform: translateY(-1px);
 }
 
 .auth-gate__google:disabled {

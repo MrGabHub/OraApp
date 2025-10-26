@@ -43,7 +43,18 @@
     "home": "Home overview",
     "progress": "Progress insights",
     "assistant": "Chat with ORA",
-    "connections": "Services & preferences"
+    "connections": "Services & preferences",
+    "summary": {
+      "title": "ORA Assistant",
+      "status": {
+        "connected": "Calendar connected",
+        "connecting": "Connecting calendar...",
+        "disconnected": "Calendar disconnected",
+        "error": "Calendar error",
+        "unavailable": "Calendar unavailable"
+      },
+      "language": "Language: {{language}}"
+    }
   },
   "assistant": {
     "placeholder": "Ask ORA...",

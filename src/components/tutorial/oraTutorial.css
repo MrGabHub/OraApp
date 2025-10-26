@@ -34,10 +34,6 @@
   outline-offset: 6px;
 }
 
-.ora-tutorial__cta:hover {
-  transform: translateY(-4px) scale(1.015);
-}
-
 .ora-tutorial__bubble {
   pointer-events: auto;
   background: rgba(12, 19, 28, 0.92);
@@ -101,11 +97,6 @@
   background: linear-gradient(120deg, rgba(102, 217, 255, 0.95), rgba(107, 191, 255, 0.95));
   color: #0b1220;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
-}
-
-.ora-tutorial__dismiss:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(102, 217, 255, 0.35);
 }
 
 .ora-tutorial__dismiss:disabled {

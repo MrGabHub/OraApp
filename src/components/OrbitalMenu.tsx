@@ -3,6 +3,7 @@ import type { CSSProperties, ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { Home, MessageCircle, Settings, Sparkles } from "lucide-react";
 import Avatar, { type Mode as AvatarMode } from "./avatar";
+import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import "./orbital-menu.css";
 
 export type TabKey = "home" | "progress" | "assistant" | "connections";
@@ -27,8 +28,9 @@ type NavItem = {
 };
 
 export default function OrbitalMenu({ active, anchor, avatarMode, onChange }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  const { status: calendarStatus, error: calendarError, profile: calendarProfile } = useGoogleCalendar();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -125,6 +127,45 @@ export default function OrbitalMenu({ active, anchor, avatarMode, onChange }: Pr
     ? t("orbitalMenu.close", "Fermer le menu ORA")
     : t("orbitalMenu.open", "Ouvrir le menu ORA");
 
+  const languageName = useMemo(() => {
+    const code = (i18n.language || "en").split("-")[0]?.toLowerCase();
+    if (code === "fr") return t("language.french", "French");
+    if (code === "en") return t("language.english", "English");
+    return code ? code.toUpperCase() : "EN";
+  }, [i18n.language, t]);
+
+  const connectionState = useMemo(() => {
+    if (calendarStatus === "connecting") return "connecting";
+    if (calendarStatus === "connected") return "connected";
+    if (calendarStatus === "error") {
+      if (calendarError?.toLowerCase().includes("missing vite")) return "unavailable";
+      return "error";
+    }
+    return "disconnected";
+  }, [calendarError, calendarStatus]);
+
+  const statusMessage = useMemo(() => {
+    switch (connectionState) {
+      case "connected":
+        return t("orbitalMenu.summary.status.connected", "Calendar connected");
+      case "connecting":
+        return t("orbitalMenu.summary.status.connecting", "Connecting calendar...");
+      case "error":
+        return t("orbitalMenu.summary.status.error", "Calendar error");
+      case "unavailable":
+        return t("orbitalMenu.summary.status.unavailable", "Calendar unavailable");
+      default:
+        return t("orbitalMenu.summary.status.disconnected", "Calendar disconnected");
+    }
+  }, [connectionState, t]);
+
+  const statusDetail = useMemo(() => {
+    if (connectionState === "connected" && calendarProfile?.email) {
+      return calendarProfile.email;
+    }
+    return "";
+  }, [calendarProfile?.email, connectionState]);
+
   return (
     <div
       className={`orbital-layer${open ? " orbital-layer--open" : ""}`}
@@ -170,23 +211,40 @@ export default function OrbitalMenu({ active, anchor, avatarMode, onChange }: Pr
           );
         })}
       </div>
+      <div className="orbital-dock">
+        <button
+          type="button"
+          className={`orbital-core${open ? " orbital-core--open" : ""}`}
+          onClick={handleToggle}
+          aria-expanded={open}
+          style={{ "--accent": activeAccent } as CSSProperties}
+          aria-label={orbitalLabel}
+        >
+          <span className="orbital-core__glow" aria-hidden />
+          <span className="orbital-core__shell" aria-hidden>
+            <span className="orbital-core__pulse" />
+          </span>
+          <span className="orbital-core__avatar" aria-hidden>
+            <Avatar mode={open && activeItem ? activeItem.mode : avatarMode} />
+          </span>
+        </button>
 
-      <button
-        type="button"
-        className={`orbital-core${open ? " orbital-core--open" : ""}`}
-        onClick={handleToggle}
-        aria-expanded={open}
-        style={{ "--accent": activeAccent } as CSSProperties}
-        aria-label={orbitalLabel}
-      >
-        <span className="orbital-core__glow" aria-hidden />
-        <span className="orbital-core__shell" aria-hidden>
-          <span className="orbital-core__pulse" />
-        </span>
-        <span className="orbital-core__avatar" aria-hidden>
-          <Avatar mode={open && activeItem ? activeItem.mode : avatarMode} />
-        </span>
-      </button>
+        <div className="orbital-dock__info" aria-hidden={open}>
+          <span className="orbital-dock__icon" aria-hidden>
+            <MessageCircle size={18} />
+          </span>
+          <div className="orbital-dock__copy">
+            <span className="orbital-dock__title">{t("orbitalMenu.summary.title", "ORA Assistant")}</span>
+            <span className={`orbital-dock__status status-${connectionState}`}>
+              {statusMessage}
+              {statusDetail ? <span className="orbital-dock__status-detail"> - {statusDetail}</span> : null}
+            </span>
+            <span className="orbital-dock__language">
+              {t("orbitalMenu.summary.language", { language: languageName, defaultValue: `Language: ${languageName}` })}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

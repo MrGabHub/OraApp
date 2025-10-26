@@ -54,12 +54,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.prompt-chip:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 26px rgba(90, 216, 255, 0.18);
-  border-color: rgba(90, 216, 255, 0.42);
-}
-
 .prompt-chip:disabled {
   opacity: 0.6;
   cursor: not-allowed;

@@ -43,7 +43,18 @@
     "home": "Vue d'ensemble",
     "progress": "Suivi de progression",
     "assistant": "Discuter avec ORA",
-    "connections": "Services & préférences"
+    "connections": "Services & préférences",
+    "summary": {
+      "title": "Assistant ORA",
+      "status": {
+        "connected": "Calendrier connecté",
+        "connecting": "Connexion du calendrier...",
+        "disconnected": "Calendrier déconnecté",
+        "error": "Erreur du calendrier",
+        "unavailable": "Calendrier indisponible"
+      },
+      "language": "Langue : {{language}}"
+    }
   },
   "assistant": {
     "placeholder": "Pose ta question à ORA...",

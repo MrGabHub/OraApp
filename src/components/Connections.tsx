@@ -5,6 +5,9 @@ import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { formatRelativeTime } from "../utils/time";
 import type { Mode as AvatarMode } from "./avatar";
+import LanguageSwitcher from "./LanguageSwitcher";
+import AuthGate from "./auth/AuthGate";
+import type { SupportedLanguage } from "../lib/i18n";
 import "./connections.css";
 
 type Conn = {
@@ -22,9 +25,10 @@ type Conn = {
 
 type Props = {
   onCelebrate?: (mode: AvatarMode) => void;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
 };
 
-export default function Connections({ onCelebrate }: Props) {
+export default function Connections({ onCelebrate, onLanguageChange }: Props) {
   const { t } = useTranslation();
   const {
     status: googleStatus,
@@ -127,6 +131,11 @@ export default function Connections({ onCelebrate }: Props) {
           </span>
         </div>
       </header>
+
+      <div className="connections-header__controls">
+        <LanguageSwitcher onLanguageChange={onLanguageChange} />
+        <AuthGate />
+      </div>
 
       <div className="connections-list">
         {cards.map((c) => {
