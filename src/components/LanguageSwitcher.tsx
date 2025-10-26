@@ -9,13 +9,12 @@ import {
 } from "../lib/i18n";
 import "./languageSwitcher.css";
 
-const LANGUAGE_OPTIONS: Array<{ code: SupportedLanguage; label: string; aria: string }> = [
-  { code: "fr", label: "FR", aria: "Français" },
-  { code: "en", label: "EN", aria: "English" },
-];
+type Props = {
+  onLanguageChange?: (lang: SupportedLanguage) => void;
+};
 
-export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+export default function LanguageSwitcher({ onLanguageChange }: Props) {
+  const { i18n, t } = useTranslation();
   const { user, updatePreferences } = useAuth();
   const [updating, setUpdating] = useState(false);
 
@@ -37,16 +36,33 @@ export default function LanguageSwitcher() {
         } else if (typeof window !== "undefined") {
           window.localStorage.setItem(LOCAL_STORAGE_LANGUAGE_KEY, lang);
         }
+        onLanguageChange?.(lang);
       } finally {
         setUpdating(false);
       }
     },
-    [currentLanguage, updating, updatePreferences, user],
+    [currentLanguage, updating, updatePreferences, user, onLanguageChange],
+  );
+
+  const languageOptions = useMemo(
+    () => [
+      {
+        code: "fr" as SupportedLanguage,
+        label: "FR",
+        aria: t("language.french", "Français"),
+      },
+      {
+        code: "en" as SupportedLanguage,
+        label: "EN",
+        aria: t("language.english", "English"),
+      },
+    ],
+    [t],
   );
 
   return (
-    <div className="language-switcher" role="group" aria-label="Language selector">
-      {LANGUAGE_OPTIONS.map(({ code, label, aria }) => (
+    <div className="language-switcher" role="group" aria-label={t("language.label", "Langue")}>
+      {languageOptions.map(({ code, label, aria }) => (
         <button
           key={code}
           type="button"
@@ -62,4 +78,3 @@ export default function LanguageSwitcher() {
     </div>
   );
 }
-

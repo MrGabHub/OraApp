@@ -33,26 +33,49 @@
   "navigation": {
     "ariaLabel": "Navigation principale",
     "home": "Accueil",
+    "progress": "Progression",
     "assistant": "Assistant",
     "connections": "Connexions"
+  },
+  "orbitalMenu": {
+    "open": "Ouvrir le menu ORA",
+    "close": "Fermer le menu ORA",
+    "home": "Vue d'ensemble",
+    "progress": "Suivi de progression",
+    "assistant": "Discuter avec ORA",
+    "connections": "Services & préférences"
   },
   "assistant": {
     "placeholder": "Pose ta question à ORA...",
     "sending": "...",
     "send": "Envoyer",
-    "error": "Erreur : {{message}}"
+    "error": "Erreur : {{message}}",
+    "prompts": {
+      "planDay": {
+        "message": "Peux-tu organiser ma journée en regroupant mes réunions et blocs de focus ?",
+        "label": "Planifier ma journée"
+      },
+      "meeting": {
+        "message": "Aide-moi à préparer mon prochain rendez-vous : points clés, documents et suivi.",
+        "label": "Préparer un rendez-vous"
+      },
+      "wrapUp": {
+        "message": "Résume ma journée et propose les actions à retenir pour demain.",
+        "label": "Bilan rapide"
+      }
+    }
   },
   "tutorial": {
-    "intro": "Bonjour, moi c'est ORA ! Je suis là pour t'accompagner. Clique à nouveau sur moi quand tu es prêt à commencer.",
+    "intro": "Bonjour, moi c'est ORA ! Je suis là pour t'accompagner. Clique de nouveau sur moi quand tu es prêt à commencer.",
     "dismiss": "Compris !"
   },
   "home": {
     "header": {
       "title": "Aujourd'hui",
-      "subtitle": "Priorités et événements à venir"
+      "subtitle": "Priorités et évènements à venir"
     },
     "quickAdd": {
-      "title": "Ajouter un événement",
+      "title": "Ajouter un évènement",
       "fields": {
         "title": "Titre",
         "titlePlaceholder": "Réunion d'équipe",
@@ -69,8 +92,8 @@
         "label": "Ajouter au calendrier"
       },
       "messages": {
-        "success": "Événement ajouté à Google Calendar.",
-        "error": "Impossible d'ajouter l'événement."
+        "success": "Évènement ajouté à Google Calendar.",
+        "error": "Impossible d'ajouter l'évènement."
       },
       "validation": {
         "invalidStartDate": "Sélectionnez une date de début valide.",
@@ -79,39 +102,39 @@
         "endBeforeStart": "L'heure de fin doit être postérieure au début."
       },
       "defaults": {
-        "title": "Événement sans titre"
+        "title": "Évènement sans titre"
       },
-      "connectPrompt": "Connectez Google Calendar pour ajouter des événements ici.",
+      "connectPrompt": "Connectez Google Calendar pour ajouter des évènements ici.",
       "connectButton": {
         "default": "Connecter",
         "connecting": "Connexion..."
       }
     },
     "nextEvent": {
-      "title": "Prochain événement",
-      "loading": "Chargement des événements...",
+      "title": "Prochain évènement",
+      "loading": "Chargement des évènements...",
       "today": "Aujourd'hui",
       "empty": "Aucun évènement à venir dans votre agenda.",
-      "connectPrompt": "Connectez Google Calendar pour afficher votre prochain événement.",
+      "connectPrompt": "Connectez Google Calendar pour afficher votre prochain évènement.",
       "openInCalendar": "Ouvrir dans Google Calendar"
     },
     "upcoming": {
-      "title": "Événements à venir",
-      "loading": "Chargement des événements...",
+      "title": "Évènements à venir",
+      "loading": "Chargement des évènements...",
       "nothingElse": "Rien d'autre en vue.",
       "clear": "Votre agenda est libre pour l'instant.",
-      "connectPrompt": "Connectez Google Calendar pour lister vos événements à venir.",
+      "connectPrompt": "Connectez Google Calendar pour lister vos évènements à venir.",
       "open": "Ouvrir"
     },
     "sync": {
       "title": "Synchronisation du calendrier",
       "signedInAs": "Connecté en tant que {{email}}.",
       "signedInFallback": "Connecté avec un compte Google.",
-      "eventsUpdated": "Événements mis à jour {{time}}",
-      "eventsNotLoaded": "Événements pas encore chargés",
+      "eventsUpdated": "Évènements mis à jour {{time}}",
+      "eventsNotLoaded": "Évènements pas encore chargés",
       "calendarChecked": "Calendrier vérifié {{time}}",
       "refreshing": "Actualisation...",
-      "refresh": "Actualiser les événements",
+      "refresh": "Actualiser les évènements",
       "connectPrompt": "Connectez Google Calendar pour garder ce tableau de bord à jour."
     }
   },
@@ -125,16 +148,10 @@
       "available_other": "{{count}} disponibles"
     },
     "google": {
-      "description": "Synchronisez tous vos événements et réunions",
+      "description": "Synchronisez tous vos évènements et réunions",
       "connectedAs": "Connecté en tant que {{email}}",
       "connected": "Connecté",
       "lastSync": "Dernière synchro : {{time}}"
-    },
-    "services": {
-      "gmail": "Extraire événements et rappels des e-mails (bientôt disponible)",
-      "whatsapp": "Recevoir des rappels depuis les conversations (bientôt disponible)",
-      "instagram": "Suivre événements et rencontres sociales (bientôt disponible)",
-      "sms": "Analyser les rendez-vous reçus par SMS (bientôt disponible)"
     },
     "status": {
       "connected": "Connecté",

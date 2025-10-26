@@ -33,14 +33,37 @@
   "navigation": {
     "ariaLabel": "Primary navigation",
     "home": "Home",
+    "progress": "Progress",
     "assistant": "Assistant",
     "connections": "Connections"
+  },
+  "orbitalMenu": {
+    "open": "Open ORA menu",
+    "close": "Close ORA menu",
+    "home": "Home overview",
+    "progress": "Progress insights",
+    "assistant": "Chat with ORA",
+    "connections": "Services & preferences"
   },
   "assistant": {
     "placeholder": "Ask ORA...",
     "sending": "...",
     "send": "Send",
-    "error": "Error: {{message}}"
+    "error": "Error: {{message}}",
+    "prompts": {
+      "planDay": {
+        "label": "Plan my day",
+        "message": "Can you organise my day by grouping meetings and focus blocks?"
+      },
+      "meeting": {
+        "label": "Prepare a meeting",
+        "message": "Help me prepare my next meeting: key points, documents, and follow up."
+      },
+      "wrapUp": {
+        "label": "Daily wrap up",
+        "message": "Summarise my day and suggest the actions to carry into tomorrow."
+      }
+    }
   },
   "tutorial": {
     "intro": "Hi, I'm ORA! I'm here to guide you. Click me again when you're ready to start.",
