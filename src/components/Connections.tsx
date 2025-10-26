@@ -1,17 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
-import {
-  CalendarDays,
-  Mail,
-  MessageCircle,
-  Instagram,
-  Smartphone,
-  CheckCircle2,
-  Plus,
-} from "lucide-react";
+import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { formatRelativeTime } from "../utils/time";
+import type { Mode as AvatarMode } from "./avatar";
 import "./connections.css";
 
 type Conn = {
@@ -27,7 +20,11 @@ type Conn = {
   loading?: boolean;
 };
 
-export default function Connections() {
+type Props = {
+  onCelebrate?: (mode: AvatarMode) => void;
+};
+
+export default function Connections({ onCelebrate }: Props) {
   const { t } = useTranslation();
   const {
     status: googleStatus,
@@ -38,45 +35,9 @@ export default function Connections() {
     connect: connectGoogle,
     disconnect: disconnectGoogle,
   } = useGoogleCalendar();
-  const items = useMemo<Conn[]>(
-    () => [
-      {
-        id: "gmail",
-        name: "Gmail",
-        icon: Mail,
-        accentRgb: "234,67,53",
-        description: t("connections.services.gmail"),
-        status: "disabled",
-      },
-      {
-        id: "whatsapp",
-        name: "WhatsApp",
-        icon: MessageCircle,
-        accentRgb: "37,211,102",
-        description: t("connections.services.whatsapp"),
-        status: "disabled",
-      },
-      {
-        id: "instagram",
-        name: "Instagram",
-        icon: Instagram,
-        accentRgb: "193,53,132",
-        description: t("connections.services.instagram"),
-        status: "disabled",
-      },
-      {
-        id: "sms",
-        name: "SMS Messages",
-        icon: Smartphone,
-        accentRgb: "148,163,184",
-        description: t("connections.services.sms"),
-        status: "disabled",
-      },
-    ],
-    [t],
-  );
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
+  const lastStatusRef = useRef(googleStatus);
   const googleCard = useMemo<Conn>(() => {
     const baseLastSync = googleLastSync
       ? t("connections.google.lastSync", { time: formatRelativeTime(googleLastSync, t) })
@@ -107,7 +68,7 @@ export default function Connections() {
     };
   }, [googleError, googleLastSync, googleLoading, googleProfile, googleStatus, t]);
 
-  const cards = useMemo(() => [googleCard, ...items], [googleCard, items]);
+  const cards = useMemo(() => [googleCard], [googleCard]);
   const connectedCount = cards.filter((i) => i.status === "connected").length;
   const availableCount = cards.filter((i) => i.status === "available").length;
 
@@ -128,14 +89,26 @@ export default function Connections() {
     }, 600);
   };
 
+  useEffect(() => {
+    const previous = lastStatusRef.current;
+    if (googleStatus === "connected" && previous !== "connected") {
+      onCelebrate?.("happy");
+    } else if (googleStatus === "disconnected" && previous === "connected") {
+      onCelebrate?.("sad");
+    } else if (googleStatus === "error" && previous !== "error") {
+      onCelebrate?.("angry");
+    }
+    lastStatusRef.current = googleStatus;
+  }, [googleStatus, onCelebrate]);
+
   return (
     <section className="connections">
       <header className="connections-header">
         <h2>{t("connections.title")}</h2>
         <p>{t("connections.subtitle")}</p>
-        <div className="stats">
-          <span className="dot green" aria-hidden></span>
-          <span className="label">
+        <div className="connections-header__stats">
+          <span className="connections-header__pill connections-header__pill--positive">
+            <span className="dot" aria-hidden></span>
             {t(
               connectedCount === 1
                 ? "connections.stats.connected_one"
@@ -143,8 +116,8 @@ export default function Connections() {
               { count: connectedCount },
             )}
           </span>
-          <span className="dot gray" aria-hidden></span>
-          <span className="label">
+          <span className="connections-header__pill connections-header__pill--neutral">
+            <span className="dot" aria-hidden></span>
             {t(
               availableCount === 1
                 ? "connections.stats.available_one"
@@ -155,22 +128,22 @@ export default function Connections() {
         </div>
       </header>
 
-      <div className="list">
+      <div className="connections-list">
         {cards.map((c) => {
           const errorDetail = c.errorMessage ? ` : ${c.errorMessage}` : "";
 
           return (
           <article
             key={c.id}
-            className={`card ${c.status}`}
+            className={`connection-card ${c.status}`}
             style={{
               ["--accent" as any]: `rgb(${c.accentRgb})`,
               ["--accent-rgb" as any]: c.accentRgb,
             }}
           >
-            <div className="left">
+            <div className="connection-card__body">
               <button
-                className={`service-icon ${glowing[c.id] ? "glow" : ""}`}
+                className={`connection-card__icon ${glowing[c.id] ? "glow" : ""}`}
                 aria-label={t("connections.iconLabel", { name: c.name })}
                 onClick={() => setIconGlow(c.id)}
               >
@@ -179,17 +152,17 @@ export default function Connections() {
                   return <Icon className="lucide" />;
                 })()}
               </button>
-              <div className="meta">
-                <div className="title-row">
+              <div className="connection-card__meta">
+                <div className="connection-card__title">
                   <h3>{c.name}</h3>
                   {c.status === "connected" && (
-                    <span className="ok" aria-label={t("general.connected")}>
+                    <span className="connection-card__badge" aria-label={t("general.connected")}>
                       <CheckCircle2 size={16} />
                     </span>
                   )}
                 </div>
-                <p className="desc">{c.description}</p>
-                <p className={`sub ${c.status}`}>
+                <p className="connection-card__desc">{c.description}</p>
+                <p className={`connection-card__status ${c.status}`}>
                   {c.status === "connected"
                     ? c.connectedInfo ?? t("general.connected")
                     : c.status === "error"
@@ -203,7 +176,7 @@ export default function Connections() {
               </div>
             </div>
             <button
-              className={`toggle ${c.status === "connected" ? "on" : "off"}`}
+              className={`connection-card__toggle ${c.status === "connected" ? "on" : "off"}`}
               aria-pressed={c.status === "connected"}
               onClick={() => toggle(c.id)}
               disabled={c.loading || c.status === "disabled"}
@@ -217,9 +190,9 @@ export default function Connections() {
             />
 
             {c.status === "error" && (
-              <div className="error-box">
+              <div className="connection-card__error">
                 <p>{c.errorMessage}</p>
-                <button className="btn-reconnect" onClick={() => toggle(c.id)} disabled={c.loading}>
+                <button className="connection-card__retry" onClick={() => toggle(c.id)} disabled={c.loading}>
                   {t("general.reconnect")}
                 </button>
               </div>

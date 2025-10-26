@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import "./avatar.css";
 
 type Point = { x: number; y: number };
@@ -6,7 +6,7 @@ type Polygon = [number, number][];
 type DualShape = { left: Polygon; right: Polygon };
 type InternalMode = "neutral" | "happy" | "sad" | "angry" | "skeptic" | "sleepy" | "drowsy";
 
-export type Mode = "normal" | "error" | "success";
+export type Mode = "normal" | "error" | "success" | "happy" | "skeptic" | "sad" | "angry" | "sleepy" | "drowsy";
 
 const cloneShape = (shape: DualShape): DualShape => ({
   left: shape.left.map(([x, y]) => [x, y] as [number, number]),
@@ -208,7 +208,7 @@ const setPoints = (el: SVGPolygonElement, pts: Polygon) => {
   );
 };
 
-export default function Avatar(_: { mode: Mode }) {
+export default function Avatar({ mode }: { mode: Mode }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const polyLeftRef = useRef<SVGPolygonElement | null>(null);
@@ -922,6 +922,32 @@ export default function Avatar(_: { mode: Mode }) {
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     const buttonHandlers: Array<[HTMLButtonElement, () => void]> = [];
+    const externalModeMap: Record<Mode, InternalMode> = {
+      normal: "neutral",
+      success: "happy",
+      error: "angry",
+      happy: "happy",
+      skeptic: "skeptic",
+      sad: "sad",
+      angry: "angry",
+      sleepy: "sleepy",
+      drowsy: "drowsy",
+    };
+
+    const setExternalMode = (requested: Mode) => {
+      const target = externalModeMap[requested] ?? "neutral";
+      resetInactivity();
+      if (!powerOn && target !== "sleepy" && target !== "drowsy") {
+        powerOn = true;
+      }
+      if ((target === "sleepy" || target === "drowsy") && powerOn) {
+        animateTo(target);
+        return;
+      }
+      animateTo(target);
+    };
+
+    (wrap as unknown as { __setAvatarExternalMode?: (mode: Mode) => void }).__setAvatarExternalMode = setExternalMode;
 
     buttons.forEach((btn) => {
       const handler = () => {
@@ -947,6 +973,7 @@ export default function Avatar(_: { mode: Mode }) {
     startInactivityTimers();
 
     return () => {
+      (wrap as unknown as { __setAvatarExternalMode?: (mode: Mode) => void }).__setAvatarExternalMode = undefined;
       if (modeAnimation !== null) {
         cancelAnimationFrame(modeAnimation);
       }
@@ -961,6 +988,11 @@ export default function Avatar(_: { mode: Mode }) {
       buttonHandlers.forEach(([btn, handler]) => btn.removeEventListener("click", handler));
     };
   }, []);
+
+  useEffect(() => {
+    const wrap = wrapRef.current as unknown as { __setAvatarExternalMode?: (mode: Mode) => void };
+    wrap?.__setAvatarExternalMode?.(mode);
+  }, [mode]);
 
   return (
     <div className="avatar-wrapper avatar-full" ref={wrapRef}>
@@ -1053,14 +1085,8 @@ export default function Avatar(_: { mode: Mode }) {
           </g>
         </svg>
       </div>
-      <div className="avatar-controls">
-        <button data-mode="neutral">Neutre</button>
-        <button data-mode="happy">Happy</button>
-        <button data-mode="sad">Triste</button>
-        <button data-mode="angry">Fâché</button>
-        <button data-mode="skeptic">Sceptique</button>
-        <button data-mode="off">OFF/ON</button>
-      </div>
     </div>
   );
 }
+
+
