@@ -1,0 +1,124 @@
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 5vw, 36px);
+  color: var(--text-primary);
+}
+
+.progress__header {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 3vw, 20px);
+  max-width: 720px;
+}
+
+.progress__header h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 3.8vw, 1.9rem);
+  font-weight: 700;
+}
+
+.progress__header p {
+  margin: 0;
+  font-size: 0.96rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.progress__grid {
+  display: grid;
+  gap: clamp(18px, 4vw, 28px);
+}
+
+@media (min-width: 1100px) {
+  .progress__grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-areas:
+      "summary timeline"
+      "summary upcoming";
+  }
+
+  .progress__summary {
+    grid-area: summary;
+  }
+
+  .progress__timeline {
+    grid-area: timeline;
+  }
+
+  .progress__upcoming {
+    grid-area: upcoming;
+  }
+}
+
+.progress__summary {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 3vw, 24px);
+}
+
+.progress__summary-head h3 {
+  margin: 6px 0 0;
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  font-weight: 600;
+}
+
+.progress__summary-head p {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.progress__empty {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 22px);
+}
+
+.progress__timeline-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress__timeline-head h3 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.progress__timeline-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(154, 123, 255, 0.2);
+  background: rgba(154, 123, 255, 0.12);
+  color: rgba(85, 64, 150, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.progress__upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 3vw, 22px);
+}
+
+.progress__upcoming-head h3 {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+

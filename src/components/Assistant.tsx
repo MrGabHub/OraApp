@@ -28,10 +28,14 @@ export default function Assistant() {
     });
   }, [messages]);
 
-  const send = async () => {
-    if (!input.trim()) return;
-    const userText = input.trim();
-    setInput("");
+  const send = async (overrideText?: string) => {
+    const userText = (overrideText ?? input).trim();
+    if (!userText) return;
+    if (overrideText === undefined) {
+      setInput("");
+    } else {
+      setInput("");
+    }
     const uid = crypto.randomUUID();
     const aid = crypto.randomUUID();
     setMessages((m) => [
@@ -107,7 +111,7 @@ export default function Assistant() {
     } catch (e: any) {
       setMessages((m) =>
         m.map((msg) =>
-          msg.role === "assistant" && msg.text === ""
+          msg.id === aid && msg.role === "assistant"
             ? { ...msg, text: t("assistant.error", { message: String(e?.message || e) }) }
             : msg,
         ),
@@ -117,12 +121,59 @@ export default function Assistant() {
     }
   };
 
+  const quickPrompts = useMemo(
+    () => [
+      {
+        id: "plan-day",
+        label: t("assistant.prompts.planDay.label", "Plan my day"),
+        message: t(
+          "assistant.prompts.planDay.message",
+          "Can you organise my day by grouping meetings and focus blocks?",
+        ),
+      },
+      {
+        id: "prepare-meeting",
+        label: t("assistant.prompts.meeting.label", "Prepare a meeting"),
+        message: t(
+          "assistant.prompts.meeting.message",
+          "Help me prepare my next meeting: key points, documents, and follow up.",
+        ),
+      },
+      {
+        id: "wrap-up",
+        label: t("assistant.prompts.wrapUp.label", "Daily wrap up"),
+        message: t(
+          "assistant.prompts.wrapUp.message",
+          "Summarise my day and suggest the actions to carry into tomorrow.",
+        ),
+      },
+    ],
+    [t],
+  );
+  const promptsMeta = useMemo(
+    () => quickPrompts.map((prompt) => prompt.label).join(", "),
+    [quickPrompts],
+  );
+
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") send();
+    if (e.key === "Enter") void send();
   };
 
   return (
-    <section className="assistant">
+    <section className="assistant" data-prompts={promptsMeta}>
+      <header className="assistant__header">
+        <div className="assistant__headline">
+          <span className="eyebrow">{t("assistant.header.eyebrow", "ORA Assistant")}</span>
+          <h3>{t("assistant.header.title", "Chat with ORA to orchestrate your priorities")}</h3>
+          <p>
+            {t(
+              "assistant.header.subtitle",
+              "Ask for a quick plan, a summary, or a reminder. ORA blends your data for tailored actions.",
+            )}
+          </p>
+        </div>
+      </header>
+
       <div className="thread" ref={threadRef}>
         {messages.map((m) => (
           <div key={m.id} className={`bubble ${m.role}`}>
@@ -137,11 +188,10 @@ export default function Assistant() {
           onKeyDown={onKey}
           placeholder={t("assistant.placeholder") ?? ""}
         />
-        <button className="btn btn-primary" onClick={send} disabled={loading}>
+        <button className="btn btn-primary" onClick={() => void send()} disabled={loading}>
           {loading ? t("assistant.sending") : t("assistant.send")}
         </button>
       </div>
     </section>
   );
 }
-
