@@ -47,6 +47,29 @@
     "sending": "...",
     "send": "Send",
     "error": "Error: {{message}}",
+    "header": {
+      "eyebrow": "ORA Assistant",
+      "title": "Chat with ORA to orchestrate your priorities",
+      "subtitle": "Ask for a quick plan, a summary, or a reminder. ORA blends your data for tailored actions."
+    },
+    "eventSuggestion": {
+      "title": "Event suggestion",
+      "dismiss": "Dismiss",
+      "location": "Location",
+      "notes": "Notes",
+      "checkingConflicts": "Checking your calendar for conflicts...",
+      "noConflicts": "No conflicts detected for this timeframe.",
+      "conflictsTitle": "Conflicts detected:",
+      "connect": "Connect Google Calendar",
+      "connecting": "Connecting...",
+      "add": "Add to calendar",
+      "creating": "Creating...",
+      "force": "Create anyway",
+      "success": "Event added to your calendar.",
+      "successReply": "All set! I've added it to your agenda.",
+      "conflictError": "There's already something scheduled at that time.",
+      "invalidTime": "I couldn't understand the proposed dates. Could you rephrase them?"
+    },
     "prompts": {
       "planDay": {
         "label": "Plan my day",
@@ -209,5 +232,3 @@
     "days_ago_other": "{{count}} days ago"
   }
 }
-
-

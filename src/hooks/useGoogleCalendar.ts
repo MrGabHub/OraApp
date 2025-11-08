@@ -39,9 +39,13 @@ type TokenResponse = {
 };
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "") as string;
-const GOOGLE_SCOPE = "https://www.googleapis.com/auth/calendar.events";
+const GOOGLE_SCOPE = [
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events",
+].join(" ");
 const GOOGLE_SCRIPT_URL = "https://accounts.google.com/gsi/client";
 const STORAGE_KEY = "ora-google-calendar-token";
+const CONNECTED_FLAG_KEY = "ora-google-calendar-connected";
 
 class GoogleApiError extends Error {
   status?: number;
@@ -49,6 +53,15 @@ class GoogleApiError extends Error {
     super(message);
     this.name = "GoogleApiError";
     this.status = status;
+  }
+}
+
+export class GoogleCalendarConflictError extends Error {
+  conflicts: GoogleCalendarEvent[];
+  constructor(conflicts: GoogleCalendarEvent[], message = "Requested time conflicts with existing events.") {
+    super(message);
+    this.name = "GoogleCalendarConflictError";
+    this.conflicts = conflicts;
   }
 }
 
@@ -111,6 +124,57 @@ function mapGoogleEvent(raw: any): GoogleCalendarEvent | null {
   };
 }
 
+function toISO(date: Date): string {
+  return new Date(date).toISOString();
+}
+
+function buildTimeWindow(input: { start: string; end?: string | null; isAllDay?: boolean }): { timeMin: string; timeMax: string } {
+  if (input.isAllDay) {
+    const startDate = new Date(`${input.start}T00:00:00`);
+    const endDate = new Date(`${(input.end ?? input.start)}T00:00:00`);
+    endDate.setDate(endDate.getDate() + 1);
+    return { timeMin: toISO(startDate), timeMax: toISO(endDate) };
+  }
+  const startDate = new Date(input.start);
+  const hasValidStart = !Number.isNaN(startDate.getTime());
+  const endDate = input.end ? new Date(input.end) : new Date(startDate.getTime());
+  if (!input.end) {
+    endDate.setMinutes(endDate.getMinutes() + 60);
+  } else if (Number.isNaN(endDate.getTime())) {
+    endDate.setTime(startDate.getTime());
+    endDate.setMinutes(endDate.getMinutes() + 60);
+  }
+  if (!hasValidStart) {
+    throw new Error("Invalid start date supplied for conflict detection.");
+  }
+  if (endDate <= startDate) {
+    endDate.setMinutes(startDate.getMinutes() + 15);
+  }
+  return { timeMin: toISO(startDate), timeMax: toISO(endDate) };
+}
+
+async function fetchConflictingEvents(token: string, range: { timeMin: string; timeMax: string }): Promise<GoogleCalendarEvent[]> {
+  const params = new URLSearchParams({
+    timeMin: range.timeMin,
+    timeMax: range.timeMax,
+    singleEvents: "true",
+    orderBy: "startTime",
+    maxResults: "20",
+  });
+  const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new GoogleApiError(text || `Google API request failed with ${resp.status}.`, resp.status);
+  }
+  const payload: any = await resp.json();
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  return items
+    .map((item: any) => mapGoogleEvent(item))
+    .filter((evt: GoogleCalendarEvent | null): evt is GoogleCalendarEvent => Boolean(evt));
+}
+
 async function fetchUpcomingEvents(accessToken: string): Promise<GoogleCalendarEvent[]> {
   const params = new URLSearchParams({ maxResults: "8", orderBy: "startTime", singleEvents: "true", timeMin: new Date(Date.now() - 15 * 60 * 1000).toISOString() });
   if (hasWindow()) {
@@ -141,7 +205,8 @@ export interface GoogleCalendarConnection {
   disconnect: () => void;
   refresh: () => Promise<void>;
   reloadEvents: () => Promise<GoogleCalendarEvent[]>;
-  createEvent: (input: CreateEventInput) => Promise<GoogleCalendarEvent>;
+  createEvent: (input: CreateEventInput, options?: { allowConflicts?: boolean }) => Promise<GoogleCalendarEvent>;
+  checkConflicts: (range: { start: string; end?: string | null; isAllDay?: boolean }) => Promise<GoogleCalendarEvent[]>;
 }
 
 export function useGoogleCalendar(): GoogleCalendarConnection {
@@ -155,12 +220,16 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
   const [eventsFetchedAt, setEventsFetchedAt] = useState<number | null>(null);
   const tokenRef = useRef<StoredToken | null>(null);
   const tokenClientRef = useRef<any>(null);
+  const silentRequestRef = useRef(false);
 
   const hasClientId = useMemo(() => Boolean(GOOGLE_CLIENT_ID), []);
 
   const disconnect = useCallback((opts: { clearError?: boolean } = {}) => {
     tokenRef.current = null;
-    try { window.sessionStorage.removeItem(STORAGE_KEY); } catch {}
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(CONNECTED_FLAG_KEY);
+    } catch {}
     setProfile(null);
     setLastSync(null);
     setEvents([]);
@@ -199,7 +268,7 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
   }, [disconnect]);
 
   const createEvent = useCallback(
-    async (input: CreateEventInput) => {
+    async (input: CreateEventInput, options?: { allowConflicts?: boolean }) => {
       if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
       const token = tokenRef.current.accessToken;
       const trimmedTitle = input.title?.trim() || "Untitled event";
@@ -212,6 +281,22 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       } else {
         body.start = { dateTime: input.start };
         body.end = { dateTime: input.end ?? input.start };
+      }
+      try {
+        const window = buildTimeWindow({ start: input.start, end: input.end, isAllDay: input.isAllDay });
+        const conflicts = await fetchConflictingEvents(token, window);
+        if (conflicts.length > 0 && !options?.allowConflicts) {
+          throw new GoogleCalendarConflictError(conflicts);
+        }
+      } catch (conflictErr) {
+        if (conflictErr instanceof GoogleCalendarConflictError) throw conflictErr;
+        if (conflictErr instanceof GoogleApiError && conflictErr.status === 401) {
+          disconnect({ clearError: false });
+          setStatus("error");
+          setError("Google Calendar session expired. Please reconnect.");
+          throw conflictErr;
+        }
+        throw conflictErr;
       }
       if (input.description) body.description = input.description;
       if (input.location) body.location = input.location;
@@ -283,57 +368,121 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     }
   }, [disconnect, loadEvents]);
 
-  const handleTokenResponse = useCallback(async (response: TokenResponse) => {
-    if (response?.error) { setStatus("error"); setError(response.error_description ?? response.error); return; }
-    if (!response?.access_token) { setStatus("error"); setError("Google did not return an access token."); return; }
+  const handleTokenResponse = useCallback(
+    async (response: TokenResponse) => {
+      if (response?.error) {
+        if (silentRequestRef.current && response.error === "access_denied") {
+          silentRequestRef.current = false;
+          setStatus("disconnected");
+          setError(null);
+          return;
+        }
+        silentRequestRef.current = false;
+        setStatus("error");
+        setError(response.error_description ?? response.error);
+        return;
+      }
+      if (!response?.access_token) {
+        silentRequestRef.current = false;
+        setStatus("error");
+        setError("Google did not return an access token.");
+        return;
+      }
     const expiresIn = Number(response.expires_in ?? 3600);
     const safeExpiresIn = Number.isFinite(expiresIn) ? expiresIn : 3600;
     const expiry = Date.now() + Math.max(safeExpiresIn - 60, 60) * 1000;
     tokenRef.current = { accessToken: response.access_token, expiresAt: expiry };
-    try { window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tokenRef.current)); } catch {}
-    try { await refresh({ silent: true }); } catch {}
-  }, [refresh]);
-
-  const connect = useCallback(async () => {
-    if (!hasWindow()) return;
-    if (!hasClientId) { setStatus("error"); setError("Missing VITE_GOOGLE_CLIENT_ID environment variable."); return; }
-    setError(null);
-    setStatus("connecting");
+    silentRequestRef.current = false;
     try {
-      await ensureGoogleScript();
-      const google = (window as any).google;
-      const oauth2 = google?.accounts?.oauth2;
-      if (!oauth2?.initTokenClient) throw new Error("Google OAuth client is unavailable.");
-      if (!tokenClientRef.current) {
-        tokenClientRef.current = oauth2.initTokenClient({
-          client_id: GOOGLE_CLIENT_ID,
-          scope: GOOGLE_SCOPE,
-          callback: (r: TokenResponse) => { void handleTokenResponse(r); },
-        });
-      } else {
-        tokenClientRef.current.callback = (r: TokenResponse) => { void handleTokenResponse(r); };
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tokenRef.current));
+      window.localStorage.setItem(CONNECTED_FLAG_KEY, "1");
+    } catch {}
+    try {
+      await refresh({ silent: true });
+    } catch {}
+  },
+    [refresh],
+  );
+
+  const requestToken = useCallback(
+    async (prompt: "" | "consent") => {
+      if (!hasWindow()) return;
+      if (!hasClientId) {
+        setStatus("error");
+        setError("Missing VITE_GOOGLE_CLIENT_ID environment variable.");
+        return;
       }
-      tokenClientRef.current.requestAccessToken({ prompt: "consent" });
-    } catch (err) {
-      setStatus("error");
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  }, [handleTokenResponse, hasClientId]);
+      if (prompt === "consent") setError(null);
+      setStatus("connecting");
+      try {
+        await ensureGoogleScript();
+        const google = (window as any).google;
+        const oauth2 = google?.accounts?.oauth2;
+        if (!oauth2?.initTokenClient) throw new Error("Google OAuth client is unavailable.");
+        if (!tokenClientRef.current) {
+          tokenClientRef.current = oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: GOOGLE_SCOPE,
+            callback: (r: TokenResponse) => {
+              void handleTokenResponse(r);
+            },
+          });
+        } else {
+          tokenClientRef.current.callback = (r: TokenResponse) => {
+            void handleTokenResponse(r);
+          };
+        }
+        silentRequestRef.current = prompt === "";
+        tokenClientRef.current.requestAccessToken({ prompt });
+      } catch (err) {
+        silentRequestRef.current = false;
+        setStatus("error");
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [handleTokenResponse, hasClientId],
+  );
+
+  const connect = useCallback(() => {
+    void requestToken("consent");
+  }, [requestToken]);
+
+  const checkConflicts = useCallback(
+    async (range: { start: string; end?: string | null; isAllDay?: boolean }) => {
+      if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
+      const window = buildTimeWindow(range);
+      return fetchConflictingEvents(tokenRef.current.accessToken, window);
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (!hasClientId) { setStatus("error"); setError("Missing VITE_GOOGLE_CLIENT_ID environment variable."); return; }
+    if (!hasClientId) {
+      setStatus("error");
+      setError("Missing VITE_GOOGLE_CLIENT_ID environment variable.");
+      return;
+    }
+    let hadStoredToken = false;
     try {
       const raw = window.sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const stored = JSON.parse(raw) as StoredToken;
         if (stored?.accessToken) {
           tokenRef.current = stored;
+          hadStoredToken = true;
           setStatus("connecting");
           void refresh({ silent: true }).catch(() => {});
         }
       }
     } catch {}
-  }, [hasClientId, refresh]);
+    if (!hadStoredToken) {
+      try {
+        if (window.localStorage.getItem(CONNECTED_FLAG_KEY) === "1") {
+          void requestToken("");
+        }
+      } catch {}
+    }
+  }, [hasClientId, refresh, requestToken]);
 
   return {
     status,
@@ -351,5 +500,6 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     refresh: () => refresh(),
     reloadEvents: () => loadEvents(),
     createEvent,
+    checkConflicts,
   };
 }
