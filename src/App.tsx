@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import Connections from "./components/Connections";
 import Home from "./components/Home";
 import Assistant from "./components/Assistant";
 import Progress from "./components/Progress";
-import OrbitalMenu, { type TabKey } from "./components/OrbitalMenu";
+import BottomNav, { type TabKey } from "./components/BottomNav";
 import AuthRequiredScreen from "./components/auth/AuthRequiredScreen";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { ensureUserDocumentListener } from "./lib/auth/onLogin";
-import type { Mode as AvatarMode } from "./components/avatar";
 
 const TAB_ORDER: TabKey[] = ["home", "progress", "assistant", "connections"];
 
@@ -17,11 +15,7 @@ function AppShell() {
   const [tab, setTab] = useState<TabKey>("home");
   const mainRef = useRef<HTMLDivElement | null>(null);
   const tabRef = useRef<TabKey>(tab);
-  const burstTimerRef = useRef<number | null>(null);
-  const [burstMode, setBurstMode] = useState<AvatarMode | null>(null);
   const { loading, user } = useAuth();
-  const { t } = useTranslation();
-
   useEffect(() => {
     const cleanup = ensureUserDocumentListener();
     return cleanup;
@@ -30,37 +24,6 @@ function AppShell() {
   useEffect(() => {
     tabRef.current = tab;
   }, [tab]);
-
-  const avatarModeMap: Record<TabKey, AvatarMode> = {
-    home: "normal",
-    progress: "success",
-    assistant: "happy",
-    connections: "skeptic",
-  };
-  const avatarMode = avatarModeMap[tab];
-  const displayMode: AvatarMode = burstMode ?? avatarMode;
-
-  const orbitalAnchor: "top" | "bottom" = tab === "home" || tab === "assistant" ? "bottom" : "top";
-
-  const triggerAvatarMode = useCallback((mode: AvatarMode, duration = 1000) => {
-    if (burstTimerRef.current !== null) {
-      window.clearTimeout(burstTimerRef.current);
-    }
-    setBurstMode(mode);
-    burstTimerRef.current = window.setTimeout(() => {
-      setBurstMode(null);
-      burstTimerRef.current = null;
-    }, duration);
-  }, []);
-
-  useEffect(
-    () => () => {
-      if (burstTimerRef.current !== null) {
-        window.clearTimeout(burstTimerRef.current);
-      }
-    },
-    [],
-  );
 
   useEffect(() => {
     const node = mainRef.current;
@@ -112,26 +75,14 @@ function AppShell() {
 
   return (
     <div className={`app-container tab-${tab}`}>
-      <header className="app-header">
-        <div className="app-brand">
-          <span className="app-brand-title">{t("app.title")}</span>
-          <span className="app-brand-subtitle">{t("app.subtitle")}</span>
-        </div>
-      </header>
-
       <main className="app-main" ref={mainRef}>
         {tab === "home" && <Home />}
         {tab === "progress" && <Progress />}
         {tab === "assistant" && <Assistant />}
-        {tab === "connections" && (
-          <Connections
-            onCelebrate={(mode) => triggerAvatarMode(mode, 1000)}
-            onLanguageChange={() => triggerAvatarMode("skeptic", 1000)}
-          />
-        )}
+        {tab === "connections" && <Connections />}
       </main>
 
-      <OrbitalMenu active={tab} anchor={orbitalAnchor} avatarMode={displayMode} onChange={setTab} />
+      <BottomNav active={tab} onChange={setTab} />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 {
   "app": {
-    "title": "ORA Companion",
-    "subtitle": "Your co-pilot for orchestrating the day"
+    "title": "ORA"
   },
   "auth": {
     "loading": "Signing you in...",
@@ -37,24 +36,11 @@
     "assistant": "Assistant",
     "connections": "Connections"
   },
-  "orbitalMenu": {
-    "open": "Open ORA menu",
-    "close": "Close ORA menu",
-    "home": "Home overview",
-    "progress": "Progress insights",
-    "assistant": "Chat with ORA",
-    "connections": "Services & preferences",
-    "summary": {
-      "title": "ORA Assistant",
-      "status": {
-        "connected": "Calendar connected",
-        "connecting": "Connecting calendar...",
-        "disconnected": "Calendar disconnected",
-        "error": "Calendar error",
-        "unavailable": "Calendar unavailable"
-      },
-      "language": "Language: {{language}}"
-    }
+  "navBar": {
+    "home": "Today overview",
+    "progress": "Momentum",
+    "assistant": "Chat & plan",
+    "connections": "Integrations"
   },
   "assistant": {
     "placeholder": "Ask ORA...",

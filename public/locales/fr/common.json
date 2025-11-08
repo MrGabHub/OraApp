@@ -1,7 +1,6 @@
 {
   "app": {
-    "title": "ORA Companion",
-    "subtitle": "Votre alliée pour orchestrer la journée"
+    "title": "ORA"
   },
   "auth": {
     "loading": "Connexion en cours...",
@@ -37,24 +36,11 @@
     "assistant": "Assistant",
     "connections": "Connexions"
   },
-  "orbitalMenu": {
-    "open": "Ouvrir le menu ORA",
-    "close": "Fermer le menu ORA",
+  "navBar": {
     "home": "Vue d'ensemble",
-    "progress": "Suivi de progression",
-    "assistant": "Discuter avec ORA",
-    "connections": "Services & préférences",
-    "summary": {
-      "title": "Assistant ORA",
-      "status": {
-        "connected": "Calendrier connecté",
-        "connecting": "Connexion du calendrier...",
-        "disconnected": "Calendrier déconnecté",
-        "error": "Erreur du calendrier",
-        "unavailable": "Calendrier indisponible"
-      },
-      "language": "Langue : {{language}}"
-    }
+    "progress": "Moments clés",
+    "assistant": "Discussion & plan",
+    "connections": "Services"
   },
   "assistant": {
     "placeholder": "Pose ta question à ORA...",

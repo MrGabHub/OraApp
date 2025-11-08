@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
 import { CalendarDays, CheckCircle2, Plus } from "lucide-react";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { formatRelativeTime } from "../utils/time";
-import type { Mode as AvatarMode } from "./avatar";
 import LanguageSwitcher from "./LanguageSwitcher";
 import AuthGate from "./auth/AuthGate";
-import type { SupportedLanguage } from "../lib/i18n";
 import "./connections.css";
 
 type Conn = {
@@ -23,12 +21,7 @@ type Conn = {
   loading?: boolean;
 };
 
-type Props = {
-  onCelebrate?: (mode: AvatarMode) => void;
-  onLanguageChange?: (lang: SupportedLanguage) => void;
-};
-
-export default function Connections({ onCelebrate, onLanguageChange }: Props) {
+export default function Connections() {
   const { t } = useTranslation();
   const {
     status: googleStatus,
@@ -41,7 +34,6 @@ export default function Connections({ onCelebrate, onLanguageChange }: Props) {
   } = useGoogleCalendar();
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
-  const lastStatusRef = useRef(googleStatus);
   const googleCard = useMemo<Conn>(() => {
     const baseLastSync = googleLastSync
       ? t("connections.google.lastSync", { time: formatRelativeTime(googleLastSync, t) })
@@ -93,18 +85,6 @@ export default function Connections({ onCelebrate, onLanguageChange }: Props) {
     }, 600);
   };
 
-  useEffect(() => {
-    const previous = lastStatusRef.current;
-    if (googleStatus === "connected" && previous !== "connected") {
-      onCelebrate?.("happy");
-    } else if (googleStatus === "disconnected" && previous === "connected") {
-      onCelebrate?.("sad");
-    } else if (googleStatus === "error" && previous !== "error") {
-      onCelebrate?.("angry");
-    }
-    lastStatusRef.current = googleStatus;
-  }, [googleStatus, onCelebrate]);
-
   return (
     <section className="connections">
       <header className="connections-header">
@@ -133,7 +113,7 @@ export default function Connections({ onCelebrate, onLanguageChange }: Props) {
       </header>
 
       <div className="connections-header__controls">
-        <LanguageSwitcher onLanguageChange={onLanguageChange} />
+        <LanguageSwitcher />
         <AuthGate />
       </div>
 
