@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { Sparkles } from "lucide-react";
 import LanguageSwitcher from "../LanguageSwitcher";
-import Avatar from "../avatar";
 import AuthGate from "./AuthGate";
 import "./authRequired.css";
 
@@ -18,9 +18,9 @@ export default function AuthRequiredScreen({ loading }: AuthRequiredScreenProps)
         <div className="auth-required__language">
           <LanguageSwitcher />
         </div>
-        <div className="auth-required__mascot">
-          <div className="auth-required__avatar">
-            <Avatar mode={loading ? "success" : "normal"} />
+        <div className="auth-required__hero">
+          <div className="auth-required__badge" aria-hidden>
+            <Sparkles size={loading ? 64 : 56} />
           </div>
           <div className="auth-required__text">
             <h1>{t("app.title")}</h1>

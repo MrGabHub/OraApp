@@ -4,7 +4,7 @@
   },
   "auth": {
     "loading": "Signing you in...",
-    "connect_prompt": "Sign in to access your personal cockpit",
+    "connect_prompt": "Your co-pilot for orchestrating the day",
     "sign_in": "Sign in",
     "sign_out": "Sign out",
     "login_title": "Sign in",

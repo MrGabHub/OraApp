@@ -4,7 +4,7 @@
   },
   "auth": {
     "loading": "Connexion en cours...",
-    "connect_prompt": "Connectez-vous pour accéder à votre cockpit personnel",
+    "connect_prompt": "Votre alliée pour orchestrer la journée",
     "sign_in": "Se connecter",
     "sign_out": "Déconnexion",
     "login_title": "Connexion",
