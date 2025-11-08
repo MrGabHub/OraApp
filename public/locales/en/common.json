@@ -64,7 +64,8 @@
   },
   "tutorial": {
     "intro": "Hi, I'm ORA! I'm here to guide you. Click me again when you're ready to start.",
-    "dismiss": "Got it!"
+    "dismiss": "Got it!",
+    "reset": "Reset tutorial"
   },
   "home": {
     "header": {

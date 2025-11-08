@@ -64,7 +64,8 @@
   },
   "tutorial": {
     "intro": "Bonjour, moi c'est ORA ! Je suis là pour t'accompagner. Clique de nouveau sur moi quand tu es prêt à commencer.",
-    "dismiss": "Compris !"
+    "dismiss": "Compris !",
+    "reset": "Réinitialiser le tutoriel"
   },
   "home": {
     "header": {
