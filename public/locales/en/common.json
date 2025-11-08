@@ -1,11 +1,10 @@
 {
   "app": {
-    "title": "ORA Companion",
-    "subtitle": "Your co-pilot for orchestrating the day"
+    "title": "ORA"
   },
   "auth": {
     "loading": "Signing you in...",
-    "connect_prompt": "Sign in to access your personal cockpit",
+    "connect_prompt": "Your co-pilot for orchestrating the day",
     "sign_in": "Sign in",
     "sign_out": "Sign out",
     "login_title": "Sign in",
@@ -37,30 +36,40 @@
     "assistant": "Assistant",
     "connections": "Connections"
   },
-  "orbitalMenu": {
-    "open": "Open ORA menu",
-    "close": "Close ORA menu",
-    "home": "Home overview",
-    "progress": "Progress insights",
-    "assistant": "Chat with ORA",
-    "connections": "Services & preferences",
-    "summary": {
-      "title": "ORA Assistant",
-      "status": {
-        "connected": "Calendar connected",
-        "connecting": "Connecting calendar...",
-        "disconnected": "Calendar disconnected",
-        "error": "Calendar error",
-        "unavailable": "Calendar unavailable"
-      },
-      "language": "Language: {{language}}"
-    }
+  "navBar": {
+    "home": "Today overview",
+    "progress": "Momentum",
+    "assistant": "Chat & plan",
+    "connections": "Integrations"
   },
   "assistant": {
     "placeholder": "Ask ORA...",
     "sending": "...",
     "send": "Send",
     "error": "Error: {{message}}",
+    "header": {
+      "eyebrow": "ORA Assistant",
+      "title": "Chat with ORA to orchestrate your priorities",
+      "subtitle": "Ask for a quick plan, a summary, or a reminder. ORA blends your data for tailored actions."
+    },
+    "eventSuggestion": {
+      "title": "Event suggestion",
+      "dismiss": "Dismiss",
+      "location": "Location",
+      "notes": "Notes",
+      "checkingConflicts": "Checking your calendar for conflicts...",
+      "noConflicts": "No conflicts detected for this timeframe.",
+      "conflictsTitle": "Conflicts detected:",
+      "connect": "Connect Google Calendar",
+      "connecting": "Connecting...",
+      "add": "Add to calendar",
+      "creating": "Creating...",
+      "force": "Create anyway",
+      "success": "Event added to your calendar.",
+      "successReply": "All set! I've added it to your agenda.",
+      "conflictError": "There's already something scheduled at that time.",
+      "invalidTime": "I couldn't understand the proposed dates. Could you rephrase them?"
+    },
     "prompts": {
       "planDay": {
         "label": "Plan my day",
@@ -78,7 +87,8 @@
   },
   "tutorial": {
     "intro": "Hi, I'm ORA! I'm here to guide you. Click me again when you're ready to start.",
-    "dismiss": "Got it!"
+    "dismiss": "Got it!",
+    "reset": "Reset tutorial"
   },
   "home": {
     "header": {
@@ -222,5 +232,3 @@
     "days_ago_other": "{{count}} days ago"
   }
 }
-
-

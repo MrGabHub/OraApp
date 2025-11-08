@@ -12,7 +12,6 @@ function buildDefaultUserPayload(email: string | null | undefined) {
   return {
     email: email ?? null,
     role: "user",
-    oraTutorialSeen: false,
     createdAt: new Date(),
   };
 }

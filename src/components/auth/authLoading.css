@@ -16,30 +16,35 @@
   touch-action: manipulation;
 }
 
-.auth-loading__avatar {
+.auth-loading__badge {
   position: relative;
-  display: inline-block;
-  width: clamp(220px, 32vw, 360px);
+  display: inline-grid;
+  place-items: center;
+  width: clamp(200px, 32vw, 320px);
+  aspect-ratio: 1;
+  border-radius: 40%;
+  background: linear-gradient(150deg, rgba(154, 123, 255, 0.35), rgba(90, 216, 255, 0.18));
+  box-shadow:
+    0 30px 50px rgba(5, 9, 20, 0.6),
+    inset 0 0 30px rgba(255, 255, 255, 0.12);
   animation: pulse 2.8s ease-in-out infinite;
 }
 
-.auth-loading__avatar .avatar-wrapper {
-  width: 100%;
-  pointer-events: none;
+.auth-loading__spinner {
+  color: rgba(245, 247, 252, 0.95);
+  animation: spin 1.4s linear infinite;
 }
 
 .auth-loading__glow {
   position: absolute;
-  inset: auto 15% -12%;
-  height: 24%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(102, 217, 255, 0.6),
-    rgba(102, 217, 255, 0) 65%
-  );
-  filter: blur(12px);
-  opacity: 0.75;
-  animation: glow 3.5s ease-in-out infinite;
+  inset: auto 18% -14%;
+  height: 22%;
+  width: 64%;
+  margin: 0 auto;
+  background: radial-gradient(ellipse at center, rgba(102, 217, 255, 0.45), rgba(102, 217, 255, 0));
+  filter: blur(10px);
+  opacity: 0.7;
+  animation: glow 3.2s ease-in-out infinite;
 }
 
 .auth-loading__message {
@@ -57,6 +62,15 @@
   }
   50% {
     transform: translateY(-6px) scale(1.02);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 

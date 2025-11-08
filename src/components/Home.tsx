@@ -293,22 +293,23 @@ export default function Home() {
       </header>
 
       <div className="home-grid">
-        <div className="card add-event">
-          <h3>{t("home.quickAdd.title")}</h3>
-          {isConnected ? (
-            <form className="add-form" onSubmit={handleCreateEvent}>
-              <label className="field-group">
-                <span>{t("home.quickAdd.fields.title")}</span>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => {
-                    setTitle(e.target.value);
-                    clearMessages();
-                  }}
-                  placeholder={t("home.quickAdd.fields.titlePlaceholder") ?? ""}
-                />
-              </label>
+        {false && (
+          <div className="card add-event">
+            <h3>{t("home.quickAdd.title")}</h3>
+            {isConnected ? (
+              <form className="add-form" onSubmit={handleCreateEvent}>
+                <label className="field-group">
+                  <span>{t("home.quickAdd.fields.title")}</span>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      clearMessages();
+                    }}
+                    placeholder={t("home.quickAdd.fields.titlePlaceholder") ?? ""}
+                  />
+                </label>
               <div className="field-row">
                 <label className="field-group">
                   <span>{t("home.quickAdd.fields.starts")}</span>
@@ -376,7 +377,8 @@ export default function Home() {
               </button>
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         <div className="card event">
           <h3>{t("home.nextEvent.title")}</h3>

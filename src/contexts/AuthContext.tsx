@@ -28,7 +28,6 @@ import {
 } from "../lib/i18n";
 
 export type UserPreferences = {
-  oraTutorialSeen?: boolean;
   language?: SupportedLanguage;
   [key: string]: unknown;
 };
@@ -40,7 +39,6 @@ export type UserProfile = {
   role?: string;
   roles: string[];
   preferences: UserPreferences;
-  oraTutorialSeen?: boolean;
   createdAt?: unknown;
   language?: SupportedLanguage;
 };
@@ -98,18 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         typeof data?.preferences === "object" && data?.preferences !== null
           ? { ...(data.preferences as UserPreferences) }
           : {};
-      const oraTutorialSeenValue =
-        typeof data?.oraTutorialSeen === "boolean"
-          ? (data.oraTutorialSeen as boolean)
-          : typeof preferences.oraTutorialSeen === "boolean"
-            ? preferences.oraTutorialSeen
-            : undefined;
-      if (
-        typeof oraTutorialSeenValue === "boolean" &&
-        typeof preferences.oraTutorialSeen !== "boolean"
-      ) {
-        preferences.oraTutorialSeen = oraTutorialSeenValue;
-      }
       const rootLanguage =
         typeof data?.language === "string" && SUPPORTED_LANGUAGES.includes(data.language as SupportedLanguage)
           ? (data.language as SupportedLanguage)
@@ -130,7 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: roleField ?? roles[0],
         roles,
         preferences,
-        oraTutorialSeen: oraTutorialSeenValue,
         createdAt: data?.createdAt,
         language,
       };
@@ -147,9 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: firebaseUser.email ?? null,
           role: "user",
           roles: ["user"],
-          oraTutorialSeen: false,
           language: DEFAULT_LANGUAGE,
-          preferences: { oraTutorialSeen: false, language: DEFAULT_LANGUAGE },
+          preferences: { language: DEFAULT_LANGUAGE },
           createdAt: new Date(),
         };
         await setDoc(ref, defaultData, { merge: true });
@@ -218,11 +202,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatePayload: Record<string, unknown> = {
         preferences: mergedPrefs,
       };
-      const hasOraField = Object.prototype.hasOwnProperty.call(prefs, "oraTutorialSeen");
-      const nextOraValue = hasOraField ? prefs.oraTutorialSeen ?? false : undefined;
-      if (hasOraField) {
-        updatePayload.oraTutorialSeen = nextOraValue;
-      }
       const hasLanguageField = Object.prototype.hasOwnProperty.call(prefs, "language");
       const nextLanguageValue =
         hasLanguageField &&
@@ -239,7 +218,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ? {
               ...prev,
               preferences: mergedPrefs,
-              oraTutorialSeen: hasOraField ? nextOraValue : prev.oraTutorialSeen,
               language: hasLanguageField && nextLanguageValue ? nextLanguageValue : prev.language,
             }
           : prev,

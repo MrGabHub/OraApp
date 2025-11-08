@@ -1,4 +1,4 @@
-.assistant {
+section.assistant {
   --composer-h: clamp(62px, 9vh, 80px);
   display: flex;
   flex-direction: column;
@@ -62,7 +62,8 @@
 .thread {
   flex: 1;
   padding: clamp(16px, 4vw, 28px);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: clamp(12px, 2vw, 18px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -70,8 +71,16 @@
   background: rgba(255, 255, 255, 0.72);
 }
 
+.thread .bubble {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-bottom: clamp(12px, 2vw, 18px);
+}
+
 .bubble {
+  display: inline-block;
   max-width: min(78%, 520px);
+  width: fit-content;
   padding: 14px 18px;
   border-radius: clamp(18px, 3vw, 22px);
   font-size: 0.98rem;
@@ -84,15 +93,15 @@
 }
 
 .bubble.assistant {
-  justify-self: flex-start;
   background: linear-gradient(150deg, rgba(158, 123, 255, 0.16), rgba(255, 255, 255, 0.9));
   border-color: rgba(158, 123, 255, 0.32);
+  margin-right: auto;
 }
 
 .bubble.user {
-  justify-self: flex-end;
   background: linear-gradient(150deg, rgba(90, 216, 255, 0.2), rgba(255, 255, 255, 0.9));
   border-color: rgba(90, 216, 255, 0.32);
+  margin-left: auto;
 }
 
 .composer {
@@ -130,6 +139,86 @@
 
 .composer .btn {
   min-width: 112px;
+}
+
+.assistant-event-card {
+  margin: clamp(16px, 4vw, 28px);
+  margin-top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(34, 42, 72, 0.08);
+  border-radius: var(--radius-md);
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assistant-event-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.assistant-event-card__header h4 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+}
+
+.assistant-event-card__close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0 6px;
+  color: var(--text-secondary);
+}
+
+.assistant-event-card__range {
+  font-weight: 600;
+  margin: 0;
+}
+
+.assistant-event-card__meta {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.assistant-event-card__conflicts {
+  background: rgba(34, 42, 72, 0.04);
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+}
+
+.assistant-event-card__conflicts ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.assistant-event-card__error {
+  color: #c53232;
+  margin: 0;
+  font-weight: 600;
+}
+
+.assistant-event-card__success {
+  color: #0d8c5c;
+  margin: 0;
+  font-weight: 600;
+}
+
+.assistant-event-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.assistant-event-card .btn-ghost {
+  background: rgba(34, 42, 72, 0.08);
+  border: 1px solid transparent;
 }
 
 @media (max-width: 720px) {
