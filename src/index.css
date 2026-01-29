@@ -92,6 +92,18 @@ textarea {
   width: min(1100px, 100%);
 }
 
+.offline-banner {
+  width: min(1100px, 100%);
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 107, 129, 0.25);
+  background: linear-gradient(135deg, rgba(255, 107, 129, 0.16), rgba(255, 162, 76, 0.18));
+  color: #5b1c26;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 14px 28px rgba(255, 107, 129, 0.12);
+}
+
 .app-header {
   display: flex;
   align-items: center;

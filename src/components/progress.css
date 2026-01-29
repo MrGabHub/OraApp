@@ -1,124 +1,160 @@
 .progress {
   display: flex;
   flex-direction: column;
-  gap: clamp(24px, 5vw, 36px);
+  gap: clamp(24px, 5vw, 34px);
   color: var(--text-primary);
 }
 
 .progress__header {
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 3vw, 20px);
+  gap: clamp(12px, 3vw, 18px);
   max-width: 720px;
 }
 
 .progress__header h2 {
   margin: 0;
-  font-size: clamp(1.45rem, 3.8vw, 1.9rem);
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
 }
 
 .progress__header p {
   margin: 0;
-  font-size: 0.96rem;
-  color: var(--text-secondary);
+  font-size: 0.98rem;
+  color: rgba(33, 36, 54, 0.72);
   line-height: 1.6;
 }
 
-.progress__grid {
-  display: grid;
-  gap: clamp(18px, 4vw, 28px);
+.progress__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-@media (min-width: 1100px) {
-  .progress__grid {
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    grid-template-areas:
-      "summary timeline"
-      "summary upcoming";
-  }
-
-  .progress__summary {
-    grid-area: summary;
-  }
-
-  .progress__timeline {
-    grid-area: timeline;
-  }
-
-  .progress__upcoming {
-    grid-area: upcoming;
-  }
+.progress__status {
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(34, 42, 72, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  color: rgba(32, 34, 54, 0.8);
 }
 
-.progress__summary {
+.progress__status--ok {
+  border-color: rgba(49, 195, 159, 0.32);
+  background: rgba(49, 195, 159, 0.16);
+  color: #0f5f4b;
+}
+
+.progress__habits {
   display: flex;
   flex-direction: column;
   gap: clamp(18px, 3vw, 24px);
 }
 
-.progress__summary-head h3 {
-  margin: 6px 0 0;
-  font-size: clamp(1.1rem, 3vw, 1.3rem);
-  font-weight: 600;
-}
-
-.progress__summary-head p {
+.progress__habits p {
   margin: 4px 0 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: rgba(33, 36, 54, 0.7);
 }
 
-.progress__empty {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--text-secondary);
+.progress__habit-chips {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.progress__timeline {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(16px, 3vw, 22px);
-}
-
-.progress__timeline-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.progress__timeline-head h3 {
-  margin: 4px 0 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.progress__timeline-total {
+.progress__habit-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(154, 123, 255, 0.2);
-  background: rgba(154, 123, 255, 0.12);
-  color: rgba(85, 64, 150, 0.9);
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 42, 72, 0.12);
+  background: rgba(248, 248, 253, 0.95);
+  font-size: 0.9rem;
+  color: rgba(32, 34, 54, 0.78);
 }
 
-.progress__upcoming {
-  display: flex;
-  flex-direction: column;
+.progress__suggestions {
+  display: grid;
   gap: clamp(16px, 3vw, 22px);
 }
 
-.progress__upcoming-head h3 {
+@media (min-width: 900px) {
+  .progress__suggestions {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+.suggestion-card {
+  border-radius: var(--radius-md);
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid rgba(34, 42, 72, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 48px rgba(18, 27, 52, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 220px;
+}
+
+.suggestion-card__body h3 {
   margin: 6px 0 0;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
+.suggestion-card__body p {
+  margin: 8px 0 0;
+  color: rgba(33, 36, 54, 0.75);
+  line-height: 1.5;
+}
+
+.suggestion-card__action {
+  align-self: flex-start;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.suggestion-card__action:active {
+  transform: translateY(1px);
+}
+
+.suggestion-card--focus {
+  border-color: rgba(90, 216, 255, 0.4);
+  background: linear-gradient(135deg, rgba(90, 216, 255, 0.12), rgba(255, 255, 255, 0.95));
+}
+
+.suggestion-card--focus .suggestion-card__action {
+  background: rgba(90, 216, 255, 0.18);
+  color: #094050;
+  box-shadow: 0 10px 22px rgba(90, 216, 255, 0.22);
+}
+
+.suggestion-card--balance {
+  border-color: rgba(154, 123, 255, 0.3);
+  background: linear-gradient(135deg, rgba(154, 123, 255, 0.1), rgba(255, 255, 255, 0.96));
+}
+
+.suggestion-card--balance .suggestion-card__action {
+  background: rgba(154, 123, 255, 0.16);
+  color: #3c2a72;
+  box-shadow: 0 10px 22px rgba(154, 123, 255, 0.25);
+}
+
+.suggestion-card--energy {
+  border-color: rgba(255, 162, 76, 0.3);
+  background: linear-gradient(135deg, rgba(255, 162, 76, 0.1), rgba(255, 255, 255, 0.96));
+}
+
+.suggestion-card--energy .suggestion-card__action {
+  background: rgba(255, 162, 76, 0.18);
+  color: #6a3707;
+  box-shadow: 0 10px 22px rgba(255, 162, 76, 0.25);
+}

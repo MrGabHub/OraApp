@@ -9,16 +9,18 @@ import {
 } from "react";
 import {
   GoogleAuthProvider,
-  createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
-  updateProfile,
   type User,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
+import {
+  GOOGLE_CALENDAR_SCOPES,
+  storeGoogleToken,
+  clearStoredGoogleToken,
+} from "../lib/googleAuth";
 import {
   DEFAULT_LANGUAGE,
   LOCAL_STORAGE_LANGUAGE_KEY,
@@ -48,8 +50,6 @@ type AuthContextValue = {
   loading: boolean;
   profile: UserProfile | null;
   roles: string[];
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   updatePreferences: (prefs: Partial<UserPreferences>) => Promise<void>;
@@ -130,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!snapshot.exists()) {
         const defaultData = {
           email: firebaseUser.email ?? null,
+          displayName: firebaseUser.displayName ?? null,
           role: "user",
           roles: ["user"],
           language: DEFAULT_LANGUAGE,
@@ -169,28 +170,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, [loadProfile]);
 
-  const signInWithEmail = useCallback(async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-  }, []);
-
-  const registerWithEmail = useCallback(
-    async (email: string, password: string, displayName?: string) => {
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      if (displayName) {
-        await updateProfile(credential.user, { displayName });
-      }
-      await loadProfile(credential.user);
-    },
-    [loadProfile],
-  );
-
   const signInWithGoogleHandler = useCallback(async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  }, []);
+    GOOGLE_CALENDAR_SCOPES.forEach((scope) => provider.addScope(scope));
+    provider.setCustomParameters({
+      prompt: "consent",
+      ...(profile?.email ? { login_hint: profile.email } : {}),
+    });
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (credential?.accessToken) {
+      storeGoogleToken(credential.accessToken);
+    }
+  }, [profile?.email]);
 
   const signOutHandler = useCallback(async () => {
     await firebaseSignOut(auth);
+    clearStoredGoogleToken();
     setProfile(null);
   }, []);
 
@@ -238,8 +234,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       profile,
       roles: profile?.roles ?? [],
-      signInWithEmail,
-      registerWithEmail,
       signInWithGoogle: signInWithGoogleHandler,
       signOut: signOutHandler,
       updatePreferences,
@@ -249,8 +243,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       profile,
       refreshProfile,
-      registerWithEmail,
-      signInWithEmail,
       signInWithGoogleHandler,
       signOutHandler,
       updatePreferences,

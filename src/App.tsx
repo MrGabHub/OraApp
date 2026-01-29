@@ -13,12 +13,24 @@ const TAB_ORDER: TabKey[] = ["home", "progress", "assistant", "connections"];
 
 function AppShell() {
   const [tab, setTab] = useState<TabKey>("home");
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
   const mainRef = useRef<HTMLDivElement | null>(null);
   const tabRef = useRef<TabKey>(tab);
   const { loading, user } = useAuth();
   useEffect(() => {
     const cleanup = ensureUserDocumentListener();
     return cleanup;
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   useEffect(() => {
@@ -75,6 +87,11 @@ function AppShell() {
 
   return (
     <div className={`app-container tab-${tab}`}>
+      {!isOnline && (
+        <div className="offline-banner" role="status" aria-live="polite">
+          Vous êtes hors ligne. Certaines données peuvent ne pas se charger.
+        </div>
+      )}
       <main className="app-main" ref={mainRef}>
         {tab === "home" && <Home />}
         {tab === "progress" && <Progress />}

@@ -6,6 +6,7 @@
     "loading": "Connexion en cours...",
     "connect_prompt": "Votre alliée pour orchestrer la journée",
     "sign_in": "Se connecter",
+    "single_sign_on": "Connexion unique via Google pour accéder à l'app et à votre agenda.",
     "sign_out": "Déconnexion",
     "login_title": "Connexion",
     "register_title": "Créer un compte",
@@ -157,6 +158,87 @@
       "refreshing": "Actualisation...",
       "refresh": "Actualiser les événements",
       "connectPrompt": "Connectez Google Calendar pour garder ce tableau de bord à jour."
+    }
+  },
+  "progress": {
+    "header": {
+      "eyebrow": "Suggestions intelligentes",
+      "title": "ORA anticipe le rythme de ta semaine",
+      "subtitle": "Ces recommandations s'appuient sur tes habitudes et sur l'agenda à venir pour équilibrer focus, énergie et réunions."
+    },
+    "actions": {
+      "connect": "Connecter le calendrier"
+    },
+    "meta": {
+      "disconnected": "Calendrier non connecté",
+      "loading": "Synchronisation en cours…",
+      "updated": "Mis à jour {{time}}",
+      "idle": "En attente de la prochaine synchro"
+    },
+    "habits": {
+      "title": "Ton rythme actuel",
+      "subtitle": "ORA observe quand tu rencontres, te concentres et termines la journée.",
+      "avgStart": "Première réunion vers {{time}}",
+      "load": "{{count}} réunions par jour en moyenne",
+      "focus": "Meilleur créneau focus : {{day}} · {{range}}"
+    },
+    "suggestions": {
+      "eyebrow": "Suggestion personnalisée",
+      "focusBlock": {
+        "title": "Réserve un créneau profond",
+        "body": "{{day}} entre {{range}} est encore libre. Transforme ces {{duration}} en travail profond.",
+        "action": "Planifier un bloc focus"
+      },
+      "balanceDay": {
+        "title": "Ajoute un peu d'air",
+        "body": "{{day}} compte déjà {{count}} réunions. Déplace-en une pour protéger ton énergie.",
+        "action": "Réorganiser la journée"
+      },
+      "wrap": {
+        "title": "Protège ta soirée",
+        "body": "Tu termines vers {{time}} le {{day}}. Prépare tes suivis plus tôt pour pouvoir décrocher à l'heure.",
+        "action": "Préparer le rituel de fin"
+      }
+    },
+    "genericSuggestions": [
+      {
+        "id": "generic-focus",
+        "tone": "focus",
+        "title": "Bloque un sprint focus",
+        "body": "Réserve 90 minutes avant midi pour ta priorité stratégique.",
+        "action": "Réserver le créneau"
+      },
+      {
+        "id": "generic-balance",
+        "tone": "balance",
+        "title": "Ajoute des respirations",
+        "body": "Garde 10 minutes entre chaque duo de réunions pour noter les actions.",
+        "action": "Ajouter des pauses"
+      },
+      {
+        "id": "generic-energy",
+        "tone": "energy",
+        "title": "Clôture avec intention",
+        "body": "Termine la journée en listant trois avancées et ton premier geste de demain.",
+        "action": "Commencer le rituel"
+      }
+    ],
+    "offlineSuggestions": [
+      {
+        "title": "Connecte Google Calendar pour débloquer les nudges en direct.",
+        "body": "ORA surveille la forme de ta semaine et suggère où te concentrer, quand souffler et comment clôturer.",
+        "action": "Connecter maintenant"
+      },
+      {
+        "title": "Synchronise tes habitudes automatiquement.",
+        "body": "Une fois connecté, ORA détecte les motifs récurrents comme les matinées libres ou les mardis chargés.",
+        "action": "Activer la synchro"
+      }
+    ],
+    "duration": {
+      "minutes": "{{count}} min",
+      "hours": "{{count}} h",
+      "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
   "connections": {

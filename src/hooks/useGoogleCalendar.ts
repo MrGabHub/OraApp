@@ -1,4 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "./useAuth";
+import {
+  GOOGLE_SCOPE,
+  GOOGLE_CONNECTED_FLAG_KEY,
+  readStoredGoogleToken,
+  storeGoogleToken,
+  clearStoredGoogleToken,
+  type StoredGoogleToken,
+} from "../lib/googleAuth";
 
 type GoogleCalendarStatus = "disconnected" | "connecting" | "connected" | "error";
 
@@ -26,11 +35,6 @@ export type CreateEventInput = {
   description?: string;
 };
 
-type StoredToken = {
-  accessToken: string;
-  expiresAt: number;
-};
-
 type TokenResponse = {
   access_token?: string;
   expires_in?: number;
@@ -39,13 +43,7 @@ type TokenResponse = {
 };
 
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID ?? "") as string;
-const GOOGLE_SCOPE = [
-  "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/calendar.events",
-].join(" ");
 const GOOGLE_SCRIPT_URL = "https://accounts.google.com/gsi/client";
-const STORAGE_KEY = "ora-google-calendar-token";
-const CONNECTED_FLAG_KEY = "ora-google-calendar-connected";
 
 class GoogleApiError extends Error {
   status?: number;
@@ -210,6 +208,7 @@ export interface GoogleCalendarConnection {
 }
 
 export function useGoogleCalendar(): GoogleCalendarConnection {
+  const { user, loading: authLoading } = useAuth();
   const [status, setStatus] = useState<GoogleCalendarStatus>("disconnected");
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<CalendarProfile | null>(null);
@@ -218,18 +217,16 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [eventsFetchedAt, setEventsFetchedAt] = useState<number | null>(null);
-  const tokenRef = useRef<StoredToken | null>(null);
+  const [reauthMode, setReauthMode] = useState<"silent" | "consent" | null>(null);
+  const tokenRef = useRef<StoredGoogleToken | null>(null);
   const tokenClientRef = useRef<any>(null);
   const silentRequestRef = useRef(false);
 
   const hasClientId = useMemo(() => Boolean(GOOGLE_CLIENT_ID), []);
 
-  const disconnect = useCallback((opts: { clearError?: boolean } = {}) => {
+  const disconnect = useCallback((opts: { clearError?: boolean; keepFlag?: boolean } = {}) => {
     tokenRef.current = null;
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-      window.localStorage.removeItem(CONNECTED_FLAG_KEY);
-    } catch {}
+    clearStoredGoogleToken({ keepFlag: opts.keepFlag });
     setProfile(null);
     setLastSync(null);
     setEvents([]);
@@ -240,24 +237,50 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     if (opts.clearError !== false) setError(null);
   }, []);
 
+  const getAccessToken = useCallback((): string => {
+    if (!tokenRef.current) {
+      throw new Error("No Google Calendar session is active.");
+    }
+    if (tokenRef.current.expiresAt <= Date.now()) {
+      disconnect({ clearError: false, keepFlag: true });
+      setStatus("error");
+      setError("Google Calendar session expired. Reconnecting...");
+      setReauthMode("silent");
+      throw new Error("Google Calendar session expired.");
+    }
+    return tokenRef.current.accessToken;
+  }, [disconnect]);
+
+  const shouldRequestConsent = (err: GoogleApiError) =>
+    err.status === 403 && /insufficientPermissions|ACCESS_TOKEN_SCOPE_INSUFFICIENT/i.test(err.message);
+
   const loadEvents = useCallback(async () => {
-    if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
+    const accessToken = getAccessToken();
     setEventsLoading(true);
     setEventsError(null);
     try {
-      const upcoming = await fetchUpcomingEvents(tokenRef.current.accessToken);
+      const upcoming = await fetchUpcomingEvents(accessToken);
       setEvents(upcoming);
       setEventsFetchedAt(Date.now());
       return upcoming;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       if (err instanceof GoogleApiError && err.status === 401) {
-        disconnect({ clearError: false });
+        disconnect({ clearError: false, keepFlag: true });
         setStatus("error");
-        setError("Google Calendar session expired. Please reconnect.");
+        setError("Google Calendar session expired. Reconnecting...");
         setEvents([]);
         setEventsFetchedAt(null);
-        setEventsError("Google Calendar session expired. Please reconnect.");
+        setEventsError("Google Calendar session expired. Reconnecting...");
+        setReauthMode("silent");
+      } else if (err instanceof GoogleApiError && shouldRequestConsent(err)) {
+        disconnect({ clearError: false, keepFlag: true });
+        setStatus("error");
+        setError("Calendar authorization required. Requesting access...");
+        setEvents([]);
+        setEventsFetchedAt(null);
+        setEventsError("Calendar authorization required. Requesting access...");
+        setReauthMode("consent");
       } else {
         setEventsError(message);
       }
@@ -265,12 +288,11 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     } finally {
       setEventsLoading(false);
     }
-  }, [disconnect]);
+  }, [disconnect, getAccessToken]);
 
   const createEvent = useCallback(
     async (input: CreateEventInput, options?: { allowConflicts?: boolean }) => {
-      if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
-      const token = tokenRef.current.accessToken;
+      const token = getAccessToken();
       const trimmedTitle = input.title?.trim() || "Untitled event";
       const body: any = {
         summary: trimmedTitle,
@@ -291,9 +313,17 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       } catch (conflictErr) {
         if (conflictErr instanceof GoogleCalendarConflictError) throw conflictErr;
         if (conflictErr instanceof GoogleApiError && conflictErr.status === 401) {
-          disconnect({ clearError: false });
+          disconnect({ clearError: false, keepFlag: true });
           setStatus("error");
-          setError("Google Calendar session expired. Please reconnect.");
+          setError("Google Calendar session expired. Reconnecting...");
+          setReauthMode("silent");
+          throw conflictErr;
+        }
+        if (conflictErr instanceof GoogleApiError && shouldRequestConsent(conflictErr)) {
+          disconnect({ clearError: false, keepFlag: true });
+          setStatus("error");
+          setError("Calendar authorization required. Requesting access...");
+          setReauthMode("consent");
           throw conflictErr;
         }
         throw conflictErr;
@@ -312,13 +342,25 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       if (!resp.ok) {
         const text = await resp.text().catch(() => "");
         if (resp.status === 401) {
-          disconnect({ clearError: false });
+          disconnect({ clearError: false, keepFlag: true });
           setStatus("error");
-          const message = "Google Calendar session expired. Please reconnect.";
+          const message = "Google Calendar session expired. Reconnecting...";
           setError(message);
           setEvents([]);
           setEventsFetchedAt(null);
           setEventsError(message);
+          setReauthMode("silent");
+        } else if (resp.status === 403) {
+          const err = new GoogleApiError(text || `Google API request failed with ${resp.status}.`, resp.status);
+          if (shouldRequestConsent(err)) {
+            disconnect({ clearError: false, keepFlag: true });
+            setStatus("error");
+            setError("Calendar authorization required. Requesting access...");
+            setEvents([]);
+            setEventsFetchedAt(null);
+            setEventsError("Calendar authorization required. Requesting access...");
+            setReauthMode("consent");
+          }
         }
         throw new GoogleApiError(text || `Google API request failed with ${resp.status}.`, resp.status);
       }
@@ -342,7 +384,7 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       }
       return mapped;
     },
-    [disconnect, loadEvents],
+    [disconnect, getAccessToken, loadEvents],
   );
 
   const refresh = useCallback(async (opts: { silent?: boolean } = {}) => {
@@ -357,9 +399,15 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
       try { await loadEvents(); } catch {}
     } catch (err) {
       if (err instanceof GoogleApiError && err.status === 401) {
-        disconnect({ clearError: false });
+        disconnect({ clearError: false, keepFlag: true });
         setStatus("error");
-        setError("Google Calendar session expired. Please reconnect.");
+        setError("Google Calendar session expired. Reconnecting...");
+        setReauthMode("silent");
+      } else if (err instanceof GoogleApiError && shouldRequestConsent(err)) {
+        disconnect({ clearError: false, keepFlag: true });
+        setStatus("error");
+        setError("Calendar authorization required. Requesting access...");
+        setReauthMode("consent");
       } else {
         setStatus("error");
         setError(err instanceof Error ? err.message : String(err));
@@ -388,25 +436,20 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
         setError("Google did not return an access token.");
         return;
       }
-    const expiresIn = Number(response.expires_in ?? 3600);
-    const safeExpiresIn = Number.isFinite(expiresIn) ? expiresIn : 3600;
-    const expiry = Date.now() + Math.max(safeExpiresIn - 60, 60) * 1000;
-    tokenRef.current = { accessToken: response.access_token, expiresAt: expiry };
-    silentRequestRef.current = false;
-    try {
-      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tokenRef.current));
-      window.localStorage.setItem(CONNECTED_FLAG_KEY, "1");
-    } catch {}
-    try {
-      await refresh({ silent: true });
-    } catch {}
-  },
+      const expiresIn = Number(response.expires_in ?? 3600);
+      tokenRef.current = storeGoogleToken(response.access_token, expiresIn);
+      silentRequestRef.current = false;
+      try {
+        await refresh({ silent: true });
+      } catch {}
+    },
     [refresh],
   );
 
   const requestToken = useCallback(
     async (prompt: "" | "consent") => {
       if (!hasWindow()) return;
+      if (!user) return;
       if (!hasClientId) {
         setStatus("error");
         setError("Missing VITE_GOOGLE_CLIENT_ID environment variable.");
@@ -440,49 +483,75 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
         setError(err instanceof Error ? err.message : String(err));
       }
     },
-    [handleTokenResponse, hasClientId],
+    [handleTokenResponse, hasClientId, user],
   );
 
   const connect = useCallback(() => {
+    if (!user) {
+      setStatus("error");
+      setError("Please sign in with Google to authorize your calendar.");
+      return;
+    }
     void requestToken("consent");
-  }, [requestToken]);
+  }, [requestToken, user]);
 
   const checkConflicts = useCallback(
     async (range: { start: string; end?: string | null; isAllDay?: boolean }) => {
-      if (!tokenRef.current) throw new Error("No Google Calendar session is active.");
+      const token = getAccessToken();
       const window = buildTimeWindow(range);
-      return fetchConflictingEvents(tokenRef.current.accessToken, window);
+      try {
+        return await fetchConflictingEvents(token, window);
+      } catch (err) {
+        if (err instanceof GoogleApiError && err.status === 401) {
+          disconnect({ clearError: false, keepFlag: true });
+          setStatus("error");
+          setError("Google Calendar session expired. Reconnecting...");
+          setReauthMode("silent");
+        } else if (err instanceof GoogleApiError && shouldRequestConsent(err)) {
+          disconnect({ clearError: false, keepFlag: true });
+          setStatus("error");
+          setError("Calendar authorization required. Requesting access...");
+          setReauthMode("consent");
+        }
+        throw err;
+      }
     },
-    [],
+    [disconnect, getAccessToken],
   );
 
   useEffect(() => {
+    if (!reauthMode || !user) return;
+    const mode = reauthMode;
+    setReauthMode(null);
+    void requestToken(mode === "consent" ? "consent" : "");
+  }, [reauthMode, requestToken, user]);
+
+  useEffect(() => {
+    if (!user) {
+      if (!authLoading) {
+        disconnect({ clearError: true });
+      }
+      return;
+    }
     if (!hasClientId) {
       setStatus("error");
       setError("Missing VITE_GOOGLE_CLIENT_ID environment variable.");
       return;
     }
-    let hadStoredToken = false;
+    const stored = readStoredGoogleToken();
+    if (stored?.accessToken) {
+      tokenRef.current = stored;
+      setStatus("connecting");
+      void refresh({ silent: true }).catch(() => {});
+      return;
+    }
     try {
-      const raw = window.sessionStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const stored = JSON.parse(raw) as StoredToken;
-        if (stored?.accessToken) {
-          tokenRef.current = stored;
-          hadStoredToken = true;
-          setStatus("connecting");
-          void refresh({ silent: true }).catch(() => {});
-        }
+      if (window.localStorage.getItem(GOOGLE_CONNECTED_FLAG_KEY) === "1") {
+        void requestToken("");
+        return;
       }
     } catch {}
-    if (!hadStoredToken) {
-      try {
-        if (window.localStorage.getItem(CONNECTED_FLAG_KEY) === "1") {
-          void requestToken("");
-        }
-      } catch {}
-    }
-  }, [hasClientId, refresh, requestToken]);
+  }, [authLoading, disconnect, hasClientId, refresh, requestToken, user]);
 
   return {
     status,

@@ -6,6 +6,7 @@
     "loading": "Signing you in...",
     "connect_prompt": "Your co-pilot for orchestrating the day",
     "sign_in": "Sign in",
+    "single_sign_on": "One Google sign-in unlocks the app and your calendar.",
     "sign_out": "Sign out",
     "login_title": "Sign in",
     "register_title": "Create an account",
@@ -157,6 +158,87 @@
       "refreshing": "Refreshing...",
       "refresh": "Refresh events",
       "connectPrompt": "Connect Google Calendar to keep this dashboard up to date."
+    }
+  },
+  "progress": {
+    "header": {
+      "eyebrow": "Intelligent nudges",
+      "title": "ORA anticipates how your week will flow",
+      "subtitle": "These suggestions read your recent routines and next events to keep focus, energy, and meetings in balance."
+    },
+    "actions": {
+      "connect": "Connect calendar"
+    },
+    "meta": {
+      "disconnected": "Calendar not connected",
+      "loading": "Syncing your calendar…",
+      "updated": "Updated {{time}}",
+      "idle": "Waiting for the next sync"
+    },
+    "habits": {
+      "title": "Your current rhythm",
+      "subtitle": "ORA tracks when you usually meet, focus, and wrap.",
+      "avgStart": "First meeting around {{time}}",
+      "load": "{{count}} meetings per day on average",
+      "focus": "Best focus window: {{day}} · {{range}}"
+    },
+    "suggestions": {
+      "eyebrow": "Personal suggestion",
+      "focusBlock": {
+        "title": "Block a deep work window",
+        "body": "{{day}} between {{range}} is still clear. Turn the {{duration}} gap into focus time.",
+        "action": "Schedule focus time"
+      },
+      "balanceDay": {
+        "title": "Add breathing room",
+        "body": "{{day}} already holds {{count}} meetings. Consider moving one to protect your energy.",
+        "action": "Move one meeting"
+      },
+      "wrap": {
+        "title": "Protect your evening",
+        "body": "You wrap close to {{time}} on {{day}}. Capture follow-ups earlier so you can log off on time.",
+        "action": "Plan wrap-up ritual"
+      }
+    },
+    "genericSuggestions": [
+      {
+        "id": "generic-focus",
+        "tone": "focus",
+        "title": "Block a focus sprint",
+        "body": "Reserve 90 minutes before lunch for your most strategic task.",
+        "action": "Hold the slot"
+      },
+      {
+        "id": "generic-balance",
+        "tone": "balance",
+        "title": "Add buffers between meetings",
+        "body": "Keep 10 minute gaps after every second meeting to capture notes.",
+        "action": "Add buffers"
+      },
+      {
+        "id": "generic-energy",
+        "tone": "energy",
+        "title": "Wrap with intent",
+        "body": "End your day by listing the top-three wins and tomorrow’s first move.",
+        "action": "Start a wrap ritual"
+      }
+    ],
+    "offlineSuggestions": [
+      {
+        "title": "Connect Google Calendar to unlock live nudges.",
+        "body": "ORA watches the shape of your week and suggests where to focus, when to pause, and how to wrap.",
+        "action": "Connect now"
+      },
+      {
+        "title": "Sync habits automatically.",
+        "body": "Once connected, ORA spots patterns like early focus windows or heavy Tuesdays.",
+        "action": "Enable sync"
+      }
+    ],
+    "duration": {
+      "minutes": "{{count}} min",
+      "hours": "{{count}} h",
+      "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
   "connections": {

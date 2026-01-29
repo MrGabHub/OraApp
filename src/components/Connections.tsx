@@ -30,7 +30,6 @@ export default function Connections() {
     lastSync: googleLastSync,
     profile: googleProfile,
     connect: connectGoogle,
-    disconnect: disconnectGoogle,
   } = useGoogleCalendar();
 
   const [glowing, setGlowing] = useState<Record<string, boolean>>({});
@@ -68,13 +67,11 @@ export default function Connections() {
   const connectedCount = cards.filter((i) => i.status === "connected").length;
   const availableCount = cards.filter((i) => i.status === "available").length;
 
-  const toggle = (id: string) => {
+  const connect = (id: string) => {
     if (id === "gcal") {
       if (googleLoading) return;
-      if (googleStatus === "connected") { disconnectGoogle(); } else { connectGoogle(); }
-      return;
+      connectGoogle();
     }
-    // Other integrations are not yet available.
   };
 
   const setIconGlow = (id: string) => {
@@ -164,24 +161,25 @@ export default function Connections() {
                 </p>
               </div>
             </div>
-            <button
-              className={`connection-card__toggle ${c.status === "connected" ? "on" : "off"}`}
-              aria-pressed={c.status === "connected"}
-              onClick={() => toggle(c.id)}
-              disabled={c.loading || c.status === "disabled"}
-              title={
-                c.status === "disabled"
-                  ? t("connections.tooltip.disabled")
-                  : c.status === "connected"
-                  ? t("connections.tooltip.connected")
-                  : t("connections.tooltip.available")
-              }
-            />
+            {c.status !== "connected" && (
+              <button
+                className="connection-card__action"
+                onClick={() => connect(c.id)}
+                disabled={c.loading || c.status === "disabled"}
+                title={
+                  c.status === "disabled"
+                    ? t("connections.tooltip.disabled")
+                    : t("connections.tooltip.available")
+                }
+              >
+                {c.loading ? t("general.connecting") : t("general.connect")}
+              </button>
+            )}
 
             {c.status === "error" && (
               <div className="connection-card__error">
                 <p>{c.errorMessage}</p>
-                <button className="connection-card__retry" onClick={() => toggle(c.id)} disabled={c.loading}>
+                <button className="connection-card__retry" onClick={() => connect(c.id)} disabled={c.loading}>
                   {t("general.reconnect")}
                 </button>
               </div>
