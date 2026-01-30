@@ -87,6 +87,14 @@
   justify-content: center;
 }
 
+.auth-required .avatar-controls {
+  display: none;
+}
+
+.auth-required .avatar-stage {
+  padding: 8px 0 0;
+}
+
 @keyframes float {
   0%,
   100% {
