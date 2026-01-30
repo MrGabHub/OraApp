@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "../LanguageSwitcher";
 import AuthGate from "./AuthGate";
 import Avatar from "../avatar";
 import "./authRequired.css";
@@ -15,9 +14,6 @@ export default function AuthRequiredScreen({ loading }: AuthRequiredScreenProps)
     <div className="auth-required" aria-busy={loading}>
       <div className="auth-required__orbit" aria-hidden />
       <div className="auth-required__content">
-        <div className="auth-required__language">
-          <LanguageSwitcher />
-        </div>
         <div className="auth-required__hero">
           <div className="auth-required__badge" aria-hidden>
             <Avatar mode="normal" />
