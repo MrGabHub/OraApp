@@ -2,10 +2,10 @@
   display: inline-flex;
   gap: 10px;
   padding: 6px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--surface-main);
   border-radius: 999px;
-  border: 1px solid rgba(34, 42, 72, 0.12);
-  box-shadow: 0 10px 22px rgba(20, 32, 56, 0.12);
+  border: 1px solid var(--divider);
+  box-shadow: var(--shadow-soft);
 }
 
 .language-switcher__btn {
@@ -26,9 +26,9 @@
 }
 
 .language-switcher__btn.is-active {
-  color: #04101c;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
-  box-shadow: 0 12px 22px rgba(158, 123, 255, 0.28);
+  color: var(--surface-main);
+  background: var(--accent-ora);
+  box-shadow: var(--shadow-soft);
 }
 
 .language-switcher__btn:disabled {

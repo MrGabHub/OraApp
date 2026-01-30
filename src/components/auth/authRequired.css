@@ -8,10 +8,10 @@
     clamp(24px, 6vw, 48px)
     calc(env(safe-area-inset-bottom, 0px) + clamp(24px, 6vw, 48px));
   background:
-    radial-gradient(circle at 20% 18%, rgba(120, 182, 255, 0.22), transparent 55%),
-    radial-gradient(circle at 80% 12%, rgba(182, 211, 255, 0.28), transparent 50%),
-    linear-gradient(180deg, #f9fbff 0%, #f0f4fb 55%, #e9eff8 100%);
-  color: #1f2a44;
+    radial-gradient(circle at 20% 18%, var(--accent-ora-soft), transparent 55%),
+    radial-gradient(circle at 80% 12%, var(--accent-ora-soft-strong), transparent 50%),
+    var(--bg-main);
+  color: var(--text-primary);
   overflow: hidden;
   box-sizing: border-box;
   touch-action: manipulation;
@@ -22,7 +22,7 @@
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(90, 170, 255, 0.28), rgba(90, 170, 255, 0));
+  background: radial-gradient(circle, var(--accent-ora-soft-strong), transparent);
   filter: blur(12px);
   animation: orbitPulse 8s ease-in-out infinite;
 }
@@ -55,7 +55,7 @@
   border-radius: 0;
   background: none;
   box-shadow: none;
-  color: rgba(25, 34, 56, 0.9);
+  color: var(--text-primary);
   animation: float 3.8s ease-in-out infinite;
 }
 
@@ -68,7 +68,7 @@
 .auth-required__text p {
   margin: 6px 0 0;
   font-size: clamp(1rem, 1.6vw, 1.2rem);
-  color: rgba(45, 60, 88, 0.75);
+  color: var(--text-secondary);
 }
 
 .auth-required__panel {

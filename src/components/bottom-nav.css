@@ -5,7 +5,7 @@
   gap: 8px;
   padding: clamp(6px, 2vw, 12px);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--surface-main);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
   align-self: center;
@@ -40,7 +40,7 @@
 }
 
 .bottom-nav__item.is-active {
-  background: linear-gradient(135deg, rgba(90, 216, 255, 0.18), rgba(158, 123, 255, 0.18));
+  background: var(--accent-ora-soft);
   color: var(--text-primary);
 }
 
@@ -50,12 +50,12 @@
   width: 32px;
   height: 32px;
   border-radius: 12px;
-  background: rgba(90, 216, 255, 0.12);
+  background: var(--accent-ora-soft);
   color: var(--text-primary);
 }
 
 .bottom-nav__item:not(.is-active) .bottom-nav__icon {
-  background: rgba(35, 35, 54, 0.08);
+  background: var(--surface-alt);
   color: var(--text-secondary);
 }
 

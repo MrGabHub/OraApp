@@ -53,7 +53,7 @@ export default function Connections() {
       id: "gcal",
       name: "Google Calendar",
       icon: CalendarDays,
-      accentRgb: "66,133,244",
+      accentRgb: "0,204,255",
       description: t("connections.google.description"),
       status,
       lastSync: baseLastSync,

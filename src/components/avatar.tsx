@@ -991,7 +991,7 @@ export default function Avatar(_: { mode: Mode }) {
               <polygon id="poly-right" ref={polyRightRef} points="152,60 240,60 240,170 152,170" />
             </clipPath>
             <pattern id="crt" width="6" height="6" patternUnits="userSpaceOnUse">
-              <rect width="6" height="2" fill="#000" opacity=".65" />
+              <rect width="6" height="2" fill="var(--text-primary)" opacity=".65" />
             </pattern>
             <clipPath id="squircle">
               <path d="M150,0 C285,0 300,20 300,112 C300,205 285,225 150,225 C15,225 0,205 0,112 C0,20 15,0 150,0 Z" />
@@ -1000,7 +1000,7 @@ export default function Avatar(_: { mode: Mode }) {
 
           <path
             d="M150,0 C285,0 300,20 300,112 C300,205 285,225 150,225 C15,225 0,205 0,112 C0,20 15,0 150,0 Z"
-            fill="#000"
+            fill="var(--text-primary)"
           />
 
           <g ref={screenRef} clipPath="url(#squircle)">

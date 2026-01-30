@@ -5,8 +5,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 20% 20%, rgba(12, 20, 32, 0.95), rgba(6, 10, 18, 0.98));
-  color: #f4f6fb;
+  background: var(--bg-main);
+  color: var(--text-primary);
   z-index: 999;
   padding: calc(env(safe-area-inset-top, 0px) + 24px)
     clamp(20px, 8vw, 32px)
@@ -23,15 +23,13 @@
   width: clamp(200px, 32vw, 320px);
   aspect-ratio: 1;
   border-radius: 40%;
-  background: linear-gradient(150deg, rgba(154, 123, 255, 0.35), rgba(90, 216, 255, 0.18));
-  box-shadow:
-    0 30px 50px rgba(5, 9, 20, 0.6),
-    inset 0 0 30px rgba(255, 255, 255, 0.12);
+  background: linear-gradient(150deg, var(--surface-alt), var(--accent-ora-soft));
+  box-shadow: var(--shadow-strong);
   animation: pulse 2.8s ease-in-out infinite;
 }
 
 .auth-loading__spinner {
-  color: rgba(245, 247, 252, 0.95);
+  color: var(--text-primary);
   animation: spin 1.4s linear infinite;
 }
 
@@ -41,7 +39,7 @@
   height: 22%;
   width: 64%;
   margin: 0 auto;
-  background: radial-gradient(ellipse at center, rgba(102, 217, 255, 0.45), rgba(102, 217, 255, 0));
+  background: radial-gradient(ellipse at center, var(--accent-ora-soft-strong), transparent);
   filter: blur(10px);
   opacity: 0.7;
   animation: glow 3.2s ease-in-out infinite;
@@ -52,7 +50,7 @@
   font-size: clamp(1.05rem, 2.5vw, 1.35rem);
   font-weight: 600;
   letter-spacing: 0.025em;
-  color: rgba(244, 246, 251, 0.9);
+  color: var(--text-secondary);
 }
 
 @keyframes pulse {
