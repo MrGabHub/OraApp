@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Ora avatar">
+  <rect width="512" height="512" fill="#0b0f1a"/>
+  <defs>
+    <filter id="glowUniform" x="-60" y="-60" width="420" height="345" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix result="glowColor" type="matrix" values="0 0 0 0 0   0 0 0 0 0.8   0 0 0 0 1   0 0 0 0.8 0"/>
+      <feMerge>
+        <feMergeNode in="glowColor"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="crt" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="3" fill="#111111" opacity=".65"/>
+    </pattern>
+  </defs>
+  <g transform="translate(24 82) scale(1.55)">
+    <g filter="url(#glowUniform)">
+      <rect x="72" y="66" width="68" height="78" rx="22" ry="24" fill="#5ad8ff"/>
+    </g>
+    <g filter="url(#glowUniform)">
+      <rect x="160" y="66" width="68" height="78" rx="22" ry="24" fill="#5ad8ff"/>
+    </g>
+  </g>
+  <rect width="512" height="512" fill="url(#crt)" opacity=".5"/>
+</svg>
