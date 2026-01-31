@@ -66,7 +66,7 @@ export default function AuthGate() {
         }}
         disabled={submitting}
       >
-        {t("auth.google")}
+        <span className="auth-gate__google-label">{t("auth.google")}</span>
       </button>
       {error && (
         <p className="auth-gate__error" role="alert">

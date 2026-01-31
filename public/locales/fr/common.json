@@ -4,9 +4,9 @@
   },
   "auth": {
     "loading": "Connexion en cours...",
-    "connect_prompt": "Votre alliée pour orchestrer la journée",
-    "sign_in": "Se connecter",
-    "single_sign_on": "Connexion unique via Google pour accéder à l'app et à votre agenda.",
+    "connect_prompt": "Je veille sur votre temps.",
+    "sign_in": "Entrer dans ORA",
+    "single_sign_on": "Connexion via Google pour synchroniser votre agenda.",
     "sign_out": "Déconnexion",
     "login_title": "Connexion",
     "register_title": "Créer un compte",

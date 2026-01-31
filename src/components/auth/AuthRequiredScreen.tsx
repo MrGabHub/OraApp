@@ -19,7 +19,6 @@ export default function AuthRequiredScreen({ loading }: AuthRequiredScreenProps)
             <Avatar mode="normal" />
           </div>
           <div className="auth-required__text">
-            <h1>{t("app.title")}</h1>
             <p>{t("auth.connect_prompt")}</p>
           </div>
         </div>

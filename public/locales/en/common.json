@@ -4,9 +4,9 @@
   },
   "auth": {
     "loading": "Signing you in...",
-    "connect_prompt": "Your co-pilot for orchestrating the day",
-    "sign_in": "Sign in",
-    "single_sign_on": "One Google sign-in unlocks the app and your calendar.",
+    "connect_prompt": "I watch over your time.",
+    "sign_in": "Enter ORA",
+    "single_sign_on": "Sign in with Google to sync your calendar.",
     "sign_out": "Sign out",
     "login_title": "Sign in",
     "register_title": "Create an account",

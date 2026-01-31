@@ -168,6 +168,32 @@
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface-main) 50%, transparent);
+  animation: auth-gate-button-pulse 2s var(--ease-ora) infinite;
+}
+
+.auth-gate__google-label {
+  font-weight: 600;
+}
+
+@keyframes auth-gate-button-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--surface-main) 50%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent-ora) 25%, transparent);
+  }
+  60% {
+    transform: scale(1.01);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--surface-main) 50%, transparent),
+      0 0 0 10px color-mix(in srgb, var(--accent-ora) 0%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--surface-main) 50%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent-ora) 0%, transparent);
+  }
 }
 
 .auth-gate__google:disabled {
