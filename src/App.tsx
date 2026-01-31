@@ -17,6 +17,7 @@ function AppShell() {
   const mainRef = useRef<HTMLDivElement | null>(null);
   const tabRef = useRef<TabKey>(tab);
   const { loading, user } = useAuth();
+
   useEffect(() => {
     const cleanup = ensureUserDocumentListener();
     return cleanup;

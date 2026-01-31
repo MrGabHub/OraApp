@@ -19,11 +19,13 @@
   --success: #4caf50;
   --error: #e5533d;
   --warning: #ffb020;
-  --accent-ora-soft: color-mix(in srgb, var(--accent-ora) 18%, transparent);
-  --accent-ora-soft-strong: color-mix(in srgb, var(--accent-ora) 32%, transparent);
-  --success-soft: color-mix(in srgb, var(--success) 18%, transparent);
-  --warning-soft: color-mix(in srgb, var(--warning) 18%, transparent);
-  --error-soft: color-mix(in srgb, var(--error) 18%, transparent);
+  --accent-ora-soft: color-mix(in srgb, var(--accent-ora) 28%, transparent);
+  --accent-ora-soft-strong: color-mix(in srgb, var(--accent-ora) 46%, transparent);
+  --success-soft: color-mix(in srgb, var(--success) 26%, transparent);
+  --warning-soft: color-mix(in srgb, var(--warning) 28%, transparent);
+  --error-soft: color-mix(in srgb, var(--error) 26%, transparent);
+  --lavender: #b59cff;
+  --lavender-soft: color-mix(in srgb, var(--lavender) 36%, transparent);
   --text-primary-08: color-mix(in srgb, var(--text-primary) 8%, transparent);
   --text-primary-12: color-mix(in srgb, var(--text-primary) 12%, transparent);
   --text-primary-18: color-mix(in srgb, var(--text-primary) 18%, transparent);
@@ -80,6 +82,7 @@ body {
   overscroll-behavior-y: none;
   touch-action: pan-y;
 }
+
 
 * {
   -webkit-tap-highlight-color: transparent;

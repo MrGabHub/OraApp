@@ -18,6 +18,11 @@
   gap: 6px;
 }
 
+.auth-gate:not(.auth-gate--signed) .auth-gate__copy {
+  align-items: center;
+  text-align: center;
+}
+
 .auth-gate--signed {
   flex-direction: row;
   align-items: center;
@@ -108,6 +113,10 @@
   gap: 12px;
 }
 
+.auth-gate:not(.auth-gate--signed) .auth-gate__actions {
+  align-items: center;
+}
+
 .auth-gate__submit {
   display: inline-flex;
   align-items: center;
@@ -138,6 +147,10 @@
   font-size: 0.92rem;
   text-decoration: underline;
   align-self: flex-start;
+}
+
+.auth-gate:not(.auth-gate--signed) .auth-gate__switch {
+  align-self: center;
 }
 
 .auth-gate__divider {
@@ -205,6 +218,10 @@
   margin: 0;
   color: var(--error);
   font-size: 0.9rem;
+}
+
+.auth-gate:not(.auth-gate--signed) .auth-gate__error {
+  text-align: center;
 }
 
 @media (max-width: 640px) {
