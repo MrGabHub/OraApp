@@ -63,7 +63,6 @@ export default function Friends() {
   const [searchMessage, setSearchMessage] = useState<string | null>(null);
   const [requestActionError, setRequestActionError] = useState<string | null>(null);
 
-  const [publishStatus, setPublishStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [publishError, setPublishError] = useState<string | null>(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [friendAvailability, setFriendAvailability] = useState<Record<string, AvailabilitySnapshot>>({});
@@ -89,14 +88,12 @@ export default function Friends() {
     void refreshLastUpdated();
   }, [refreshLastUpdated]);
 
-  const publishAvailability = useCallback(async () => {
+  const syncAvailability = useCallback(async () => {
     if (!user) return;
     if (!isConnected) {
       setPublishError(t("friends.availability.connectPrompt"));
-      setPublishStatus("error");
       return;
     }
-    setPublishStatus("syncing");
     setPublishError(null);
     try {
       const start = new Date();
@@ -111,12 +108,10 @@ export default function Friends() {
         batch.set(ref, { slots, updatedAt }, { merge: true });
       });
       await batch.commit();
-      setPublishStatus("success");
       setLastUpdatedAt(Date.now());
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setPublishError(message);
-      setPublishStatus("error");
     }
   }, [fetchEventsInRange, isConnected, t, user]);
 
@@ -127,10 +122,10 @@ export default function Friends() {
     if (lastUpdatedAt && Date.now() - lastUpdatedAt < cooldown) return;
     if (autoSyncRef.current) return;
     autoSyncRef.current = true;
-    void publishAvailability().finally(() => {
+    void syncAvailability().finally(() => {
       autoSyncRef.current = false;
     });
-  }, [hasAutoSync, isConnected, lastUpdatedAt, publishAvailability, user]);
+  }, [hasAutoSync, isConnected, lastUpdatedAt, syncAvailability, user]);
 
   useEffect(() => {
     if (!friends.length) {
@@ -299,17 +294,11 @@ export default function Friends() {
           </div>
           {publishError && <p className="friends-card__error">{publishError}</p>}
           <div className="friends-card__actions">
-            {!isConnected ? (
+            {isConnected ? (
+              <p className="friends-card__desc">{t("friends.availability.autoSyncOn")}</p>
+            ) : (
               <button className="btn btn-primary" onClick={connectGoogle}>
                 {t("friends.availability.connectAction")}
-              </button>
-            ) : (
-              <button
-                className="btn btn-primary"
-                onClick={publishAvailability}
-                disabled={publishStatus === "syncing"}
-              >
-                {publishStatus === "syncing" ? t("friends.availability.syncing") : t("friends.availability.sync")}
               </button>
             )}
           </div>
