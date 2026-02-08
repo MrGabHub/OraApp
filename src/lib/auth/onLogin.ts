@@ -1,6 +1,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { buildDefaultHandle, normalizeEmail } from "../../utils/identity";
 
 let listenerRegistered = false;
 
@@ -8,9 +9,20 @@ function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
 
-function buildDefaultUserPayload(email: string | null | undefined) {
+function buildDefaultUserPayload(input: { uid: string; email: string | null | undefined; displayName?: string | null; photoURL?: string | null }) {
+  const handle = buildDefaultHandle({
+    uid: input.uid,
+    displayName: input.displayName,
+    email: input.email,
+  });
+  const emailLower = normalizeEmail(input.email ?? undefined);
   return {
-    email: email ?? null,
+    email: input.email ?? null,
+    emailLower,
+    displayName: input.displayName ?? null,
+    photoURL: input.photoURL ?? null,
+    handle,
+    handleLower: handle.toLowerCase(),
     role: "user",
     createdAt: new Date(),
   };
@@ -38,7 +50,12 @@ export function ensureUserDocumentListener(): () => void {
     try {
       const snapshot = await getDoc(userRef);
       if (!snapshot.exists()) {
-        const payload = buildDefaultUserPayload(user.email);
+        const payload = buildDefaultUserPayload({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        });
         await setDoc(userRef, payload);
       }
     } catch (error) {

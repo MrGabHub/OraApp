@@ -1,0 +1,287 @@
+.friends {
+  display: grid;
+  gap: clamp(18px, 4vw, 28px);
+}
+
+.friends-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.friends-subtitle {
+  color: var(--text-secondary);
+  margin: 6px 0 0;
+}
+
+.friends-handle {
+  display: grid;
+  gap: 6px;
+  background: var(--surface-alt);
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  font-weight: 600;
+}
+
+.friends-handle__value {
+  display: grid;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.friends-handle__email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.friends-grid {
+  display: grid;
+  gap: clamp(16px, 3vw, 22px);
+}
+
+@media (min-width: 900px) {
+  .friends-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.friends-card {
+  display: grid;
+  gap: 12px;
+}
+
+.friends-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.friends-card__desc {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.friends-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.friends-card__pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent-ora-soft);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.friends-card__error {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.friends-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.friends-search {
+  display: grid;
+  gap: 10px;
+}
+
+.friends-search__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  color: var(--text-secondary);
+}
+
+.friends-search__input input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.friends-search__message {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.friends-search__result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--divider);
+  background: var(--surface-alt);
+}
+
+.friends-search__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.friends-search__name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.friends-search__handle {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--accent-ora-soft);
+  color: var(--text-primary);
+  display: grid;
+  place-items: center;
+}
+
+.friends-list {
+  display: grid;
+  gap: 12px;
+}
+
+.friends-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--divider);
+  background: var(--surface-alt);
+}
+
+.friends-item__name {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.friends-item__meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.friends-item__updated {
+  color: var(--text-secondary);
+}
+
+.friends-item__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.friends-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-pill.on {
+  background: var(--success-soft);
+  color: var(--text-primary);
+}
+
+.status-pill.off {
+  background: var(--warning-soft);
+  color: var(--text-primary);
+}
+
+.status-busy {
+  color: var(--error);
+}
+
+.status-free {
+  color: var(--success);
+}
+
+.status-stale {
+  color: var(--warning);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--divider);
+  background: var(--surface-main);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.toggle-thumb {
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--text-primary-12);
+  position: relative;
+  display: inline-block;
+}
+
+.toggle-thumb::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface-main);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.2s var(--ease-ora);
+}
+
+.toggle.on .toggle-thumb {
+  background: var(--accent-ora);
+}
+
+.toggle.on .toggle-thumb::after {
+  transform: translateX(14px);
+}
+
+.friends-card__count {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--text-primary-08);
+  font-weight: 600;
+}

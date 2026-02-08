@@ -1,7 +1,7 @@
 .bottom-nav {
   width: min(720px, 100%);
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   padding: clamp(6px, 2vw, 12px);
   border-radius: 28px;

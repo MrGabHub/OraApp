@@ -31,3 +31,24 @@ GROQ powers the assistant API route at `/api/groq`. The front-end uses `VITE_GOO
 
 - `/api/groq` uses a Node serverless function with SSE piping for streaming responses.
 - The Assistant auto-scrolls and shows detailed error messages for easier debugging.
+
+## Friends + background sync
+
+Additional serverless routes:
+- `POST /api/calendar-consent-start`
+- `GET /api/calendar-consent-callback`
+- `POST /api/calendar-sync`
+
+Additional required environment variables:
+
+```
+GOOGLE_OAUTH_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=your_google_oauth_client_secret
+CALENDAR_OAUTH_STATE_SECRET=long_random_secret
+FIREBASE_SERVICE_ACCOUNT_JSON={...}
+CALENDAR_SYNC_CRON_SECRET=long_random_secret
+APP_BASE_URL=https://your-domain
+```
+
+`vercel.json` includes a cron for `/api/calendar-sync` every 15 minutes.
+QA checklist: `docs/friends-sync-checklist.md`.

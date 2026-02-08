@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
-import { Home, MessageCircle, Settings, Sparkles } from "lucide-react";
+import { Home, MessageCircle, Settings, Sparkles, Users } from "lucide-react";
 import "./bottom-nav.css";
 
-export type TabKey = "home" | "progress" | "assistant" | "connections";
+export type TabKey = "home" | "progress" | "assistant" | "friends" | "connections";
 
 type Props = {
   active: TabKey;
@@ -40,6 +40,12 @@ export default function BottomNav({ active, onChange }: Props) {
         label: t("navigation.assistant", "Assistant"),
         caption: t("navBar.assistant", "Chat & plan"),
         icon: MessageCircle,
+      },
+      {
+        key: "friends",
+        label: t("navigation.friends", "Friends"),
+        caption: t("navBar.friends", "Network"),
+        icon: Users,
       },
       {
         key: "connections",

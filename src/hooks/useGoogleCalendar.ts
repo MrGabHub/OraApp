@@ -188,6 +188,37 @@ async function fetchUpcomingEvents(accessToken: string): Promise<GoogleCalendarE
   return items.map((item: any) => mapGoogleEvent(item)).filter((evt: GoogleCalendarEvent | null): evt is GoogleCalendarEvent => Boolean(evt));
 }
 
+async function fetchEventsInRangeWithToken(
+  accessToken: string,
+  range: { timeMin: string; timeMax: string },
+): Promise<GoogleCalendarEvent[]> {
+  const params = new URLSearchParams({
+    timeMin: range.timeMin,
+    timeMax: range.timeMax,
+    singleEvents: "true",
+    orderBy: "startTime",
+    maxResults: "250",
+  });
+  if (hasWindow()) {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) params.set("timeZone", tz);
+    } catch {}
+  }
+  const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params.toString()}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new GoogleApiError(text || `Google API request failed with ${resp.status}.`, resp.status);
+  }
+  const payload: any = await resp.json();
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  return items
+    .map((item: any) => mapGoogleEvent(item))
+    .filter((evt: GoogleCalendarEvent | null): evt is GoogleCalendarEvent => Boolean(evt));
+}
+
 export interface GoogleCalendarConnection {
   status: GoogleCalendarStatus;
   loading: boolean;
@@ -203,6 +234,7 @@ export interface GoogleCalendarConnection {
   disconnect: () => void;
   refresh: () => Promise<void>;
   reloadEvents: () => Promise<GoogleCalendarEvent[]>;
+  fetchEventsInRange: (range: { timeMin: string; timeMax: string }) => Promise<GoogleCalendarEvent[]>;
   createEvent: (input: CreateEventInput, options?: { allowConflicts?: boolean }) => Promise<GoogleCalendarEvent>;
   checkConflicts: (range: { start: string; end?: string | null; isAllDay?: boolean }) => Promise<GoogleCalendarEvent[]>;
 }
@@ -519,6 +551,29 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     [disconnect, getAccessToken],
   );
 
+  const fetchEventsInRange = useCallback(
+    async (range: { timeMin: string; timeMax: string }) => {
+      const token = getAccessToken();
+      try {
+        return await fetchEventsInRangeWithToken(token, range);
+      } catch (err) {
+        if (err instanceof GoogleApiError && err.status === 401) {
+          disconnect({ clearError: false, keepFlag: true });
+          setStatus("error");
+          setError("Google Calendar session expired. Reconnecting...");
+          setReauthMode("silent");
+        } else if (err instanceof GoogleApiError && shouldRequestConsent(err)) {
+          disconnect({ clearError: false, keepFlag: true });
+          setStatus("error");
+          setError("Calendar authorization required. Requesting access...");
+          setReauthMode("consent");
+        }
+        throw err;
+      }
+    },
+    [disconnect, getAccessToken],
+  );
+
   useEffect(() => {
     if (!reauthMode || !user) return;
     const mode = reauthMode;
@@ -568,6 +623,7 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
     disconnect: () => disconnect(),
     refresh: () => refresh(),
     reloadEvents: () => loadEvents(),
+    fetchEventsInRange,
     createEvent,
     checkConflicts,
   };

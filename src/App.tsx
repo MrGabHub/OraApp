@@ -3,13 +3,14 @@ import Connections from "./components/Connections";
 import Home from "./components/Home";
 import Assistant from "./components/Assistant";
 import Progress from "./components/Progress";
+import Friends from "./components/Friends";
 import BottomNav, { type TabKey } from "./components/BottomNav";
 import AuthRequiredScreen from "./components/auth/AuthRequiredScreen";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { ensureUserDocumentListener } from "./lib/auth/onLogin";
 
-const TAB_ORDER: TabKey[] = ["home", "progress", "assistant", "connections"];
+const TAB_ORDER: TabKey[] = ["home", "progress", "assistant", "friends", "connections"];
 
 function AppShell() {
   const [tab, setTab] = useState<TabKey>("home");
@@ -97,6 +98,7 @@ function AppShell() {
         {tab === "home" && <Home />}
         {tab === "progress" && <Progress />}
         {tab === "assistant" && <Assistant />}
+        {tab === "friends" && <Friends />}
         {tab === "connections" && <Connections />}
       </main>
 

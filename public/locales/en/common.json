@@ -35,13 +35,15 @@
     "home": "Home",
     "progress": "Progress",
     "assistant": "Assistant",
-    "connections": "Connections"
+    "friends": "Friends",
+    "connections": "Settings"
   },
   "navBar": {
     "home": "Today overview",
     "progress": "Momentum",
     "assistant": "Chat & plan",
-    "connections": "Integrations"
+    "friends": "Friends",
+    "connections": "Settings"
   },
   "assistant": {
     "placeholder": "Ask ORA...",
@@ -241,9 +243,64 @@
       "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
+  "friends": {
+    "eyebrow": "Aura network",
+    "title": "Friends",
+    "subtitle": "Add friends and share availability with total privacy.",
+    "handleLabel": "Your email",
+    "availability": {
+      "title": "Availability sync",
+      "desc": "Aura only shares free/busy slots, never event titles or locations.",
+      "connected": "Calendar connected",
+      "disconnected": "Calendar not connected",
+      "updated": "Updated {{time}}",
+      "neverUpdated": "No availability published yet",
+      "autoSyncOn": "Auto-sync on",
+      "connectAction": "Connect Google Calendar",
+      "sync": "Publish availability",
+      "syncing": "Publishing...",
+      "connectPrompt": "Connect Google Calendar to publish availability."
+    },
+    "search": {
+      "title": "Find friends",
+      "desc": "Search by email address.",
+      "placeholder": "email@example.com",
+      "action": "Search",
+      "add": "Add friend",
+      "noResult": "No user found.",
+      "requestSent": "Request sent.",
+      "alreadySent": "Request pending.",
+      "alreadyFriends": "Already friends.",
+      "incoming": "Incoming request.",
+      "invalidEmail": "Enter a valid email address.",
+      "error": "Unable to search right now."
+    },
+    "requests": {
+      "incoming": "Incoming requests",
+      "outgoing": "Sent requests",
+      "none": "No pending requests.",
+      "noneSent": "No requests sent yet.",
+      "requested": "Wants to connect",
+      "pending": "Pending response",
+      "accept": "Accept",
+      "decline": "Decline",
+      "cancel": "Cancel"
+    },
+    "list": {
+      "title": "Your friends",
+      "empty": "No friends yet.",
+      "autoSync": "Auto-sync"
+    },
+    "status": {
+      "busy": "Busy now",
+      "free": "Free now",
+      "unknown": "Unknown",
+      "stale": "Possibly outdated"
+    }
+  },
   "connections": {
-    "title": "Connections",
-    "subtitle": "Manage your connected services",
+    "title": "Settings",
+    "subtitle": "Manage your ORA experience",
     "stats": {
       "connected_one": "{{count}} connected",
       "connected_other": "{{count}} connected",

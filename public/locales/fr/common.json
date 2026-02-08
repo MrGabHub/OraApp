@@ -35,13 +35,15 @@
     "home": "Accueil",
     "progress": "Progression",
     "assistant": "Assistant",
-    "connections": "Connexions"
+    "friends": "Amis",
+    "connections": "Paramètres"
   },
   "navBar": {
     "home": "Vue d'ensemble",
     "progress": "Moments clés",
     "assistant": "Discussion & plan",
-    "connections": "Services"
+    "friends": "Amis",
+    "connections": "Paramètres"
   },
   "assistant": {
     "placeholder": "Pose ta question à ORA...",
@@ -241,9 +243,64 @@
       "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
+  "friends": {
+    "eyebrow": "Reseau Aura",
+    "title": "Amis",
+    "subtitle": "Ajoute des amis et partage ta disponibilite en toute discretion.",
+    "handleLabel": "Ton email",
+    "availability": {
+      "title": "Synchronisation dispo",
+      "desc": "Aura partage uniquement libre/occupe, jamais les details d'evenements.",
+      "connected": "Calendrier connecte",
+      "disconnected": "Calendrier non connecte",
+      "updated": "Mis a jour {{time}}",
+      "neverUpdated": "Aucune disponibilite publiee",
+      "autoSyncOn": "Auto-sync active",
+      "connectAction": "Connecter Google Calendar",
+      "sync": "Publier la dispo",
+      "syncing": "Publication...",
+      "connectPrompt": "Connecte Google Calendar pour publier ta dispo."
+    },
+    "search": {
+      "title": "Trouver un ami",
+      "desc": "Recherche par email.",
+      "placeholder": "email@exemple.com",
+      "action": "Rechercher",
+      "add": "Ajouter",
+      "noResult": "Aucun utilisateur trouve.",
+      "requestSent": "Demande envoyee.",
+      "alreadySent": "Demande en attente.",
+      "alreadyFriends": "Deja amis.",
+      "incoming": "Demande entrante.",
+      "invalidEmail": "Entre un email valide.",
+      "error": "Recherche impossible pour le moment."
+    },
+    "requests": {
+      "incoming": "Demandes recues",
+      "outgoing": "Demandes envoyees",
+      "none": "Aucune demande en attente.",
+      "noneSent": "Aucune demande envoyee.",
+      "requested": "Veut se connecter",
+      "pending": "En attente",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "cancel": "Annuler"
+    },
+    "list": {
+      "title": "Tes amis",
+      "empty": "Aucun ami pour le moment.",
+      "autoSync": "Auto-sync"
+    },
+    "status": {
+      "busy": "Occupe maintenant",
+      "free": "Libre maintenant",
+      "unknown": "Inconnu",
+      "stale": "Possiblement obsolet"
+    }
+  },
   "connections": {
-    "title": "Connexions",
-    "subtitle": "Gérez vos services connectés",
+    "title": "Paramètres",
+    "subtitle": "Gérez votre expérience ORA",
     "stats": {
       "connected_one": "{{count}} connecté",
       "connected_other": "{{count}} connectés",

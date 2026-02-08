@@ -16,6 +16,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
+import { buildDefaultHandle, normalizeEmail } from "../utils/identity";
 import {
   GOOGLE_CALENDAR_SCOPES,
   storeGoogleToken,
@@ -38,6 +39,8 @@ export type UserProfile = {
   uid: string;
   email?: string;
   displayName?: string;
+  handle?: string;
+  photoURL?: string;
   role?: string;
   roles: string[];
   preferences: UserPreferences;
@@ -113,6 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: (data?.email as string | undefined) ?? firebaseUser.email ?? undefined,
         displayName:
           (data?.displayName as string | undefined) ?? firebaseUser.displayName ?? undefined,
+        handle: (data?.handle as string | undefined) ?? undefined,
+        photoURL: (data?.photoURL as string | undefined) ?? firebaseUser.photoURL ?? undefined,
         role: roleField ?? roles[0],
         roles,
         preferences,
@@ -128,9 +133,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const ref = doc(db, "users", firebaseUser.uid);
       const snapshot = await getDoc(ref);
       if (!snapshot.exists()) {
+        const handle = buildDefaultHandle({
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName ?? undefined,
+          email: firebaseUser.email ?? undefined,
+        });
+        const emailLower = normalizeEmail(firebaseUser.email ?? undefined);
         const defaultData = {
           email: firebaseUser.email ?? null,
+          emailLower,
           displayName: firebaseUser.displayName ?? null,
+          photoURL: firebaseUser.photoURL ?? null,
+          handle,
+          handleLower: handle.toLowerCase(),
           role: "user",
           roles: ["user"],
           language: DEFAULT_LANGUAGE,
@@ -143,7 +158,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return parsedDefault;
       }
       const data = snapshot.data();
-      const parsed = parseProfile(firebaseUser, data);
+      const updates: Record<string, unknown> = {};
+      if (!data?.displayName && firebaseUser.displayName) {
+        updates.displayName = firebaseUser.displayName;
+      }
+      if (!data?.photoURL && firebaseUser.photoURL) {
+        updates.photoURL = firebaseUser.photoURL;
+      }
+      if (!data?.email && firebaseUser.email) {
+        updates.email = firebaseUser.email;
+      }
+      if (firebaseUser.email && !data?.emailLower) {
+        updates.emailLower = normalizeEmail(firebaseUser.email);
+      }
+      if (!data?.handle) {
+        const handle = buildDefaultHandle({
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName ?? undefined,
+          email: firebaseUser.email ?? undefined,
+        });
+        updates.handle = handle;
+        updates.handleLower = handle.toLowerCase();
+      } else if (data?.handle && !data?.handleLower) {
+        updates.handleLower = String(data.handle).toLowerCase();
+      }
+      const merged = Object.keys(updates).length > 0 ? { ...data, ...updates } : data;
+      if (Object.keys(updates).length > 0) {
+        await setDoc(ref, updates, { merge: true });
+      }
+      const parsed = parseProfile(firebaseUser, merged);
       setProfile(parsed);
       return parsed;
     },
