@@ -283,13 +283,16 @@
       "requested": "Veut se connecter",
       "pending": "En attente",
       "accept": "Accepter",
+      "acceptWithSync": "Accepter + sync",
+      "acceptWithoutSync": "Accepter sans sync",
       "decline": "Refuser",
       "cancel": "Annuler"
     },
     "list": {
       "title": "Tes amis",
       "empty": "Aucun ami pour le moment.",
-      "autoSync": "Auto-sync"
+      "autoSync": "Auto-sync",
+      "remove": "Supprimer"
     },
     "status": {
       "busy": "Occupe maintenant",

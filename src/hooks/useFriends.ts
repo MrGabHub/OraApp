@@ -279,14 +279,14 @@ export function useFriends() {
     return "sent" as const;
   }, [user]);
 
-  const acceptFriendRequest = useCallback(async (fromUid: string) => {
+  const acceptFriendRequest = useCallback(async (fromUid: string, enableAutoSync: boolean) => {
     if (!user) throw new Error("Not signed in.");
     const requestId = `${fromUid}_${user.uid}`;
     const requestRef = doc(db, "friendRequests", requestId);
     await updateDoc(requestRef, {
       status: "accepted",
       respondedAt: serverTimestamp(),
-      toAutoSync: true,
+      toAutoSync: enableAutoSync,
     });
   }, [user]);
 
@@ -308,6 +308,38 @@ export function useFriends() {
       respondedAt: serverTimestamp(),
       fromAutoSync: false,
     });
+  }, [user]);
+
+  const removeFriend = useCallback(async (friendUid: string) => {
+    if (!user) throw new Error("Not signed in.");
+    const fromRequestId = `${user.uid}_${friendUid}`;
+    const toRequestId = `${friendUid}_${user.uid}`;
+    const fromRef = doc(db, "friendRequests", fromRequestId);
+    const toRef = doc(db, "friendRequests", toRequestId);
+
+    const fromSnap = await safeGetDoc(fromRef);
+    if (fromSnap?.exists() && fromSnap.data()?.status === "accepted") {
+      await updateDoc(fromRef, {
+        status: "removed",
+        respondedAt: serverTimestamp(),
+        fromAutoSync: false,
+        toAutoSync: false,
+      });
+      return;
+    }
+
+    const toSnap = await safeGetDoc(toRef);
+    if (toSnap?.exists() && toSnap.data()?.status === "accepted") {
+      await updateDoc(toRef, {
+        status: "removed",
+        respondedAt: serverTimestamp(),
+        fromAutoSync: false,
+        toAutoSync: false,
+      });
+      return;
+    }
+
+    throw new Error("Friendship not found.");
   }, [user]);
 
   const toggleAutoSync = useCallback(async (friendUid: string, nextValue: boolean) => {
@@ -345,6 +377,7 @@ export function useFriends() {
     acceptFriendRequest,
     declineFriendRequest,
     cancelFriendRequest,
+    removeFriend,
     toggleAutoSync,
   };
 }

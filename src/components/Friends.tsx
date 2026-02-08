@@ -53,6 +53,7 @@ export default function Friends() {
     acceptFriendRequest,
     declineFriendRequest,
     cancelFriendRequest,
+    removeFriend,
     toggleAutoSync,
   } = useFriends();
   const { status: googleStatus, connect: connectGoogle, fetchEventsInRange } = useGoogleCalendar();
@@ -220,11 +221,13 @@ export default function Friends() {
     }
   }, [searchResult, sendFriendRequest, t]);
 
-  const handleAccept = useCallback(async (uid: string) => {
+  const handleAccept = useCallback(async (uid: string, enableAutoSync: boolean) => {
     setRequestActionError(null);
     try {
-      await acceptFriendRequest(uid);
-      await startBackgroundCalendarConsent();
+      await acceptFriendRequest(uid, enableAutoSync);
+      if (enableAutoSync) {
+        await startBackgroundCalendarConsent();
+      }
     } catch (err) {
       setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
     }
@@ -247,6 +250,15 @@ export default function Friends() {
       setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
     }
   }, [cancelFriendRequest, t]);
+
+  const handleRemoveFriend = useCallback(async (uid: string) => {
+    setRequestActionError(null);
+    try {
+      await removeFriend(uid);
+    } catch (err) {
+      setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
+    }
+  }, [removeFriend, t]);
 
   const renderUserLabel = (uid: string) => {
     const info = users[uid];
@@ -377,8 +389,11 @@ export default function Friends() {
                     <p className="friends-item__meta">{t("friends.requests.requested")}</p>
                   </div>
                   <div className="friends-item__actions">
-                    <button className="btn btn-primary" onClick={() => handleAccept(req.fromUid)}>
-                      <Check size={14} /> {t("friends.requests.accept")}
+                    <button className="btn btn-primary" onClick={() => handleAccept(req.fromUid, true)}>
+                      <Check size={14} /> {t("friends.requests.acceptWithSync")}
+                    </button>
+                    <button className="btn btn-ghost" onClick={() => handleAccept(req.fromUid, false)}>
+                      {t("friends.requests.acceptWithoutSync")}
                     </button>
                     <button className="btn btn-ghost" onClick={() => handleDecline(req.fromUid)}>
                       {t("friends.requests.decline")}
@@ -449,6 +464,14 @@ export default function Friends() {
                     </p>
                   </div>
                   <div className="friends-item__actions">
+                    <button
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        void handleRemoveFriend(friend.friendUid);
+                      }}
+                    >
+                      {t("friends.list.remove")}
+                    </button>
                     <button
                       className={`toggle ${friend.autoSync ? "on" : "off"}`}
                       onClick={() => {

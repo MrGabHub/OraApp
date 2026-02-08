@@ -283,13 +283,16 @@
       "requested": "Wants to connect",
       "pending": "Pending response",
       "accept": "Accept",
+      "acceptWithSync": "Accept + sync",
+      "acceptWithoutSync": "Accept without sync",
       "decline": "Decline",
       "cancel": "Cancel"
     },
     "list": {
       "title": "Your friends",
       "empty": "No friends yet.",
-      "autoSync": "Auto-sync"
+      "autoSync": "Auto-sync",
+      "remove": "Remove"
     },
     "status": {
       "busy": "Busy now",
