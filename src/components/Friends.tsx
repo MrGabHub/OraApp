@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useFriends, type PublicUser } from "../hooks/useFriends";
 import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
 import { buildAvailabilitySlots, formatDateKey, type AvailabilitySlot } from "../lib/availability";
-import { startBackgroundCalendarConsent } from "../lib/calendarConsent";
+import { requestCalendarConsentWithPopup } from "../lib/calendarConsent";
 import { db } from "../lib/firebase";
 import { formatRelativeTime } from "../utils/time";
 import "./friends.css";
@@ -224,10 +224,14 @@ export default function Friends() {
   const handleAccept = useCallback(async (uid: string, enableAutoSync: boolean) => {
     setRequestActionError(null);
     try {
-      await acceptFriendRequest(uid, enableAutoSync);
       if (enableAutoSync) {
-        await startBackgroundCalendarConsent();
+        const granted = await requestCalendarConsentWithPopup();
+        if (!granted) {
+          setRequestActionError("Consentement Google requis pour activer la sync.");
+          return;
+        }
       }
+      await acceptFriendRequest(uid, enableAutoSync);
     } catch (err) {
       setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
     }
@@ -476,7 +480,17 @@ export default function Friends() {
                       className={`toggle ${friend.autoSync ? "on" : "off"}`}
                       onClick={() => {
                         setRequestActionError(null);
-                        void toggleAutoSync(friend.friendUid, !friend.autoSync).catch((err) => {
+                        const nextValue = !friend.autoSync;
+                        void (async () => {
+                          if (nextValue) {
+                            const granted = await requestCalendarConsentWithPopup();
+                            if (!granted) {
+                              setRequestActionError("Consentement Google requis pour activer la sync.");
+                              return;
+                            }
+                          }
+                          await toggleAutoSync(friend.friendUid, nextValue);
+                        })().catch((err) => {
                           setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
                         });
                       }}
