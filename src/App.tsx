@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import Connections from "./components/Connections";
 import Home from "./components/Home";
 import Assistant from "./components/Assistant";
@@ -114,3 +114,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
