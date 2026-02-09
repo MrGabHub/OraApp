@@ -71,6 +71,7 @@ body,
 html,
 body {
   font-family: var(--font-ui);
+  overflow-x: hidden;
 }
 
 body {
@@ -109,6 +110,9 @@ textarea {
   align-items: center;
   gap: clamp(20px, 5vw, 36px);
   position: relative;
+  background:
+    radial-gradient(120% 78% at 50% 50%, color-mix(in srgb, #d0d0d0 58%, transparent), transparent 74%),
+    linear-gradient(180deg, #e6e6e6 0%, #dcdcdc 100%);
 }
 
 @supports (min-height: 100dvh) {
@@ -175,9 +179,103 @@ textarea {
 
 .app-main {
   flex: 1;
+  width: 100%;
+  display: block;
+  min-height: 0;
+}
+
+.app-carousel {
+  position: relative;
+  width: 100%;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  isolation: isolate;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+@supports (width: 100dvw) {
+  .app-carousel {
+    width: 100dvw;
+    margin-left: calc(50% - 50dvw);
+    margin-right: calc(50% - 50dvw);
+  }
+}
+
+#root {
+  overflow-x: clip;
+}
+
+.app-carousel.is-dragging {
+  cursor: grabbing;
+}
+
+.app-carousel.is-dragging,
+.app-carousel.is-dragging * {
+  user-select: none;
+}
+
+.app-carousel__track {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+.app-carousel__slide {
+  flex: 0 0 100vw;
+  min-width: 0;
+  width: 100vw;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.app-page-tile {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  padding-top: clamp(6px, 1vw, 12px);
+  padding-bottom: clamp(10px, 1.6vw, 18px);
+}
+
+.app-page-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 clamp(6px, 1vw, 12px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--divider);
+  background:
+    radial-gradient(circle at 8% 4%, color-mix(in srgb, var(--accent-ora) 12%, transparent), transparent 52%),
+    linear-gradient(150deg, color-mix(in srgb, var(--surface-main) 88%, transparent), var(--surface-main));
+  box-shadow: var(--shadow-soft);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@supports (min-height: 100dvh) {
+  .app-page-tile {
+    min-height: 100dvh;
+  }
+}
+
+.app-page-tile__inner {
+  position: relative;
+  z-index: 1;
   width: min(1100px, 100%);
-  display: grid;
-  gap: clamp(18px, 4vw, 28px);
+  margin: 0 auto;
+  padding-left: clamp(18px, 4vw, 36px);
+  padding-right: clamp(18px, 4vw, 36px);
+}
+
+.app-page-tile > * {
+  min-width: 0;
 }
 
 .glass-panel {
@@ -268,6 +366,11 @@ textarea {
 
 @media (max-width: 768px) {
   .app-container {
+    padding-left: clamp(12px, 5vw, 20px);
+    padding-right: clamp(12px, 5vw, 20px);
+  }
+
+  .app-page-tile__inner {
     padding-left: clamp(12px, 5vw, 20px);
     padding-right: clamp(12px, 5vw, 20px);
   }

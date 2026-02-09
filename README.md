@@ -31,6 +31,7 @@ GROQ powers the assistant API route at `/api/groq`. The front-end uses `VITE_GOO
 
 - `/api/groq` uses a Node serverless function with SSE piping for streaming responses.
 - The Assistant auto-scrolls and shows detailed error messages for easier debugging.
+- The main app now supports horizontal page carousel navigation (bottom-nav click + drag/swipe), with 3D transition and gesture conflict guards on interactive elements.
 
 ## Friends + background sync
 
