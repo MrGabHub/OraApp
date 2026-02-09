@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { requireUidFromBearer } from "./_lib/auth";
-import { getAppBaseUrl, handleOptions, json } from "./_lib/http";
-import { createOAuthState } from "./_lib/oauthState";
+import { requireUidFromBearer } from "./_lib/auth.js";
+import { getAppBaseUrl, handleOptions, json } from "./_lib/http.js";
+import { createOAuthState } from "./_lib/oauthState.js";
 
 export const config = { runtime: "nodejs20.x" } as const;
 

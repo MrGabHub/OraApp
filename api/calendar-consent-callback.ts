@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { adminDb } from "./_lib/firebaseAdmin";
-import { getAppBaseUrl } from "./_lib/http";
-import { verifyOAuthState } from "./_lib/oauthState";
+import { adminDb } from "./_lib/firebaseAdmin.js";
+import { getAppBaseUrl } from "./_lib/http.js";
+import { verifyOAuthState } from "./_lib/oauthState.js";
 
 export const config = { runtime: "nodejs20.x" } as const;
 

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { FieldValue } from "firebase-admin/firestore";
-import { buildAvailabilityFromBusy } from "./_lib/availability";
-import { adminDb } from "./_lib/firebaseAdmin";
-import { handleOptions, json } from "./_lib/http";
+import { buildAvailabilityFromBusy } from "./_lib/availability.js";
+import { adminDb } from "./_lib/firebaseAdmin.js";
+import { handleOptions, json } from "./_lib/http.js";
 
 export const config = { runtime: "nodejs20.x", maxDuration: 60 } as const;
 
