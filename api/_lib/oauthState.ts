@@ -4,6 +4,8 @@ type StatePayload = {
   uid: string;
   ts: number;
   nonce: string;
+  action?: "friend_share";
+  friendUid?: string;
 };
 
 function base64url(input: string): string {
@@ -18,11 +20,17 @@ function sign(input: string, secret: string): string {
   return crypto.createHmac("sha256", secret).update(input).digest("base64url");
 }
 
-export function createOAuthState(uid: string, secret: string): string {
+export function createOAuthState(
+  uid: string,
+  secret: string,
+  extra?: { action?: "friend_share"; friendUid?: string },
+): string {
   const payload: StatePayload = {
     uid,
     ts: Date.now(),
     nonce: crypto.randomBytes(12).toString("hex"),
+    action: extra?.action,
+    friendUid: extra?.friendUid,
   };
   const encoded = base64url(JSON.stringify(payload));
   const signature = sign(encoded, secret);

@@ -5,7 +5,10 @@ import { createOAuthState } from "./_lib/oauthState.js";
 
 export const config = { runtime: "nodejs20.x" } as const;
 
-const GOOGLE_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+const GOOGLE_SCOPE = [
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.acls",
+].join(" ");
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleOptions(req, res)) return;
@@ -23,9 +26,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const uid = await requireUidFromBearer(req);
+    const parsedBody =
+      typeof req.body === "string"
+        ? (JSON.parse(req.body || "{}") as { friendUid?: unknown })
+        : ((req.body || {}) as { friendUid?: unknown });
+    const friendUid = typeof parsedBody.friendUid === "string" && parsedBody.friendUid.trim()
+      ? parsedBody.friendUid.trim()
+      : undefined;
     const baseUrl = getAppBaseUrl(req);
     const redirectUri = `${baseUrl}/api/calendar-consent-callback`;
-    const state = createOAuthState(uid, stateSecret);
+    const state = createOAuthState(
+      uid,
+      stateSecret,
+      friendUid ? { action: "friend_share", friendUid } : undefined,
+    );
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
@@ -43,3 +57,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     json(res, 401, { error: error instanceof Error ? error.message : "Unauthorized" });
   }
 }
+

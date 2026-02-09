@@ -11,7 +11,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "./useAuth";
 import { db } from "../lib/firebase";
 
@@ -27,8 +27,8 @@ export type FriendEntry = {
   status: "accepted";
   createdAt: number | null;
   acceptedAt: number | null;
+  calendarSharedByFriend: boolean;
   visibility: FriendVisibility;
-  autoSync: boolean;
 };
 
 export type FriendRequest = {
@@ -38,8 +38,8 @@ export type FriendRequest = {
   status: "pending" | "accepted" | "declined" | "cancelled" | "canceled";
   createdAt: number | null;
   respondedAt: number | null;
-  fromAutoSync?: boolean;
-  toAutoSync?: boolean;
+  fromCalendarShared?: boolean;
+  toCalendarShared?: boolean;
 };
 
 export type PublicUser = {
@@ -77,8 +77,8 @@ function mapFriendRequest(id: string, data: any): FriendRequest {
     status: data?.status ?? "pending",
     createdAt: toMillis(data?.createdAt),
     respondedAt: toMillis(data?.respondedAt),
-    fromAutoSync: Boolean(data?.fromAutoSync),
-    toAutoSync: Boolean(data?.toAutoSync),
+    fromCalendarShared: Boolean(data?.fromCalendarShared),
+    toCalendarShared: Boolean(data?.toCalendarShared),
   } as FriendRequest;
 }
 
@@ -183,8 +183,7 @@ export function useFriends() {
     let toAccepted: FriendEntry[] = [];
 
     const toEntry = (request: FriendRequest): FriendEntry | null => {
-      const isRequester = request.fromUid === user.uid;
-      const friendUid = isRequester ? request.toUid : request.fromUid;
+      const friendUid = request.fromUid === user.uid ? request.toUid : request.fromUid;
       if (!friendUid) return null;
       return {
         requestId: request.id,
@@ -192,12 +191,13 @@ export function useFriends() {
         status: "accepted",
         createdAt: request.createdAt,
         acceptedAt: request.respondedAt,
+        calendarSharedByFriend:
+          request.fromUid === user.uid ? Boolean(request.toCalendarShared) : Boolean(request.fromCalendarShared),
         visibility: {
           showAvailability: true,
           showEventTitle: false,
           showEventType: false,
         },
-        autoSync: Boolean(isRequester ? request.fromAutoSync : request.toAutoSync),
       };
     };
 
@@ -273,20 +273,20 @@ export function useFriends() {
       status: "pending",
       createdAt: serverTimestamp(),
       respondedAt: null,
-      fromAutoSync: false,
-      toAutoSync: false,
+      fromCalendarShared: false,
+      toCalendarShared: false,
     });
     return "sent" as const;
   }, [user]);
 
-  const acceptFriendRequest = useCallback(async (fromUid: string, enableAutoSync: boolean) => {
+  const acceptFriendRequest = useCallback(async (fromUid: string) => {
     if (!user) throw new Error("Not signed in.");
     const requestId = `${fromUid}_${user.uid}`;
     const requestRef = doc(db, "friendRequests", requestId);
     await updateDoc(requestRef, {
       status: "accepted",
       respondedAt: serverTimestamp(),
-      toAutoSync: enableAutoSync,
+      toCalendarShared: false,
     });
   }, [user]);
 
@@ -296,7 +296,7 @@ export function useFriends() {
     await updateDoc(doc(db, "friendRequests", requestId), {
       status: "declined",
       respondedAt: serverTimestamp(),
-      toAutoSync: false,
+      toCalendarShared: false,
     });
   }, [user]);
 
@@ -306,7 +306,7 @@ export function useFriends() {
     await updateDoc(doc(db, "friendRequests", requestId), {
       status: "cancelled",
       respondedAt: serverTimestamp(),
-      fromAutoSync: false,
+      fromCalendarShared: false,
     });
   }, [user]);
 
@@ -322,8 +322,8 @@ export function useFriends() {
       await updateDoc(fromRef, {
         status: "removed",
         respondedAt: serverTimestamp(),
-        fromAutoSync: false,
-        toAutoSync: false,
+        fromCalendarShared: false,
+        toCalendarShared: false,
       });
       return;
     }
@@ -333,8 +333,8 @@ export function useFriends() {
       await updateDoc(toRef, {
         status: "removed",
         respondedAt: serverTimestamp(),
-        fromAutoSync: false,
-        toAutoSync: false,
+        fromCalendarShared: false,
+        toCalendarShared: false,
       });
       return;
     }
@@ -342,42 +342,16 @@ export function useFriends() {
     throw new Error("Friendship not found.");
   }, [user]);
 
-  const toggleAutoSync = useCallback(async (friendUid: string, nextValue: boolean) => {
-    if (!user) throw new Error("Not signed in.");
-    const fromRequestId = `${user.uid}_${friendUid}`;
-    const toRequestId = `${friendUid}_${user.uid}`;
-    const fromRef = doc(db, "friendRequests", fromRequestId);
-    const toRef = doc(db, "friendRequests", toRequestId);
-
-    const fromSnap = await safeGetDoc(fromRef);
-    if (fromSnap?.exists() && fromSnap.data()?.status === "accepted") {
-      await updateDoc(fromRef, { fromAutoSync: nextValue });
-      return;
-    }
-
-    const toSnap = await safeGetDoc(toRef);
-    if (toSnap?.exists() && toSnap.data()?.status === "accepted") {
-      await updateDoc(toRef, { toAutoSync: nextValue });
-      return;
-    }
-
-    throw new Error("Friendship not found.");
-  }, [user]);
-
-  const hasAutoSync = useMemo(() => friends.some((item) => item.autoSync), [friends]);
-
   return {
     incomingRequests,
     outgoingRequests,
     friends,
     users,
-    hasAutoSync,
     searchUsers,
     sendFriendRequest,
     acceptFriendRequest,
     declineFriendRequest,
     cancelFriendRequest,
     removeFriend,
-    toggleAutoSync,
   };
 }

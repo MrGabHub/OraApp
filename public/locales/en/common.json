@@ -1,4 +1,4 @@
-{
+﻿{
   "app": {
     "title": "ORA"
   },
@@ -33,14 +33,14 @@
   "navigation": {
     "ariaLabel": "Primary navigation",
     "home": "Home",
-    "progress": "Progress",
+    "progress": "Calendar",
     "assistant": "Assistant",
     "friends": "Friends",
     "connections": "Settings"
   },
   "navBar": {
     "home": "Today overview",
-    "progress": "Momentum",
+    "progress": "Calendar",
     "assistant": "Chat & plan",
     "friends": "Friends",
     "connections": "Settings"
@@ -173,7 +173,7 @@
     },
     "meta": {
       "disconnected": "Calendar not connected",
-      "loading": "Syncing your calendar…",
+      "loading": "Syncing your calendarâ€¦",
       "updated": "Updated {{time}}",
       "idle": "Waiting for the next sync"
     },
@@ -182,7 +182,7 @@
       "subtitle": "ORA tracks when you usually meet, focus, and wrap.",
       "avgStart": "First meeting around {{time}}",
       "load": "{{count}} meetings per day on average",
-      "focus": "Best focus window: {{day}} · {{range}}"
+      "focus": "Best focus window: {{day}} Â· {{range}}"
     },
     "suggestions": {
       "eyebrow": "Personal suggestion",
@@ -221,7 +221,7 @@
         "id": "generic-energy",
         "tone": "energy",
         "title": "Wrap with intent",
-        "body": "End your day by listing the top-three wins and tomorrow’s first move.",
+        "body": "End your day by listing the top-three wins and tomorrowâ€™s first move.",
         "action": "Start a wrap ritual"
       }
     ],
@@ -298,7 +298,9 @@
       "busy": "Busy now",
       "free": "Free now",
       "unknown": "Unknown",
-      "stale": "Possibly outdated"
+      "stale": "Possibly outdated",
+      "calendarShared": "Calendar sharing active",
+      "calendarNotShared": "Calendar sharing not enabled"
     }
   },
   "connections": {
@@ -374,3 +376,4 @@
     "days_ago_other": "{{count}} days ago"
   }
 }
+

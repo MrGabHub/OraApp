@@ -24,6 +24,8 @@ export type GoogleCalendarEvent = {
   isAllDay: boolean;
   location?: string;
   htmlLink?: string;
+  visibility?: "default" | "public" | "private" | "confidential";
+  transparency?: "opaque" | "transparent";
 };
 
 export type CreateEventInput = {
@@ -119,6 +121,8 @@ function mapGoogleEvent(raw: any): GoogleCalendarEvent | null {
     isAllDay,
     location: raw?.location || undefined,
     htmlLink: raw?.htmlLink || undefined,
+    visibility: raw?.visibility || "default",
+    transparency: raw?.transparency || "opaque",
   };
 }
 
@@ -191,6 +195,7 @@ async function fetchUpcomingEvents(accessToken: string): Promise<GoogleCalendarE
 async function fetchEventsInRangeWithToken(
   accessToken: string,
   range: { timeMin: string; timeMax: string },
+  calendarId = "primary",
 ): Promise<GoogleCalendarEvent[]> {
   const params = new URLSearchParams({
     timeMin: range.timeMin,
@@ -205,7 +210,8 @@ async function fetchEventsInRangeWithToken(
       if (tz) params.set("timeZone", tz);
     } catch {}
   }
-  const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params.toString()}`, {
+  const encodedCalendarId = encodeURIComponent(calendarId);
+  const resp = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodedCalendarId}/events?${params.toString()}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!resp.ok) {
@@ -234,7 +240,10 @@ export interface GoogleCalendarConnection {
   disconnect: () => void;
   refresh: () => Promise<void>;
   reloadEvents: () => Promise<GoogleCalendarEvent[]>;
-  fetchEventsInRange: (range: { timeMin: string; timeMax: string }) => Promise<GoogleCalendarEvent[]>;
+  fetchEventsInRange: (
+    range: { timeMin: string; timeMax: string },
+    options?: { calendarId?: string },
+  ) => Promise<GoogleCalendarEvent[]>;
   createEvent: (input: CreateEventInput, options?: { allowConflicts?: boolean }) => Promise<GoogleCalendarEvent>;
   checkConflicts: (range: { start: string; end?: string | null; isAllDay?: boolean }) => Promise<GoogleCalendarEvent[]>;
 }
@@ -552,10 +561,13 @@ export function useGoogleCalendar(): GoogleCalendarConnection {
   );
 
   const fetchEventsInRange = useCallback(
-    async (range: { timeMin: string; timeMax: string }) => {
+    async (
+      range: { timeMin: string; timeMax: string },
+      options?: { calendarId?: string },
+    ) => {
       const token = getAccessToken();
       try {
-        return await fetchEventsInRangeWithToken(token, range);
+        return await fetchEventsInRangeWithToken(token, range, options?.calendarId ?? "primary");
       } catch (err) {
         if (err instanceof GoogleApiError && err.status === 401) {
           disconnect({ clearError: false, keepFlag: true });

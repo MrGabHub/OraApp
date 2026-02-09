@@ -1,6 +1,10 @@
 import { auth } from "./firebase";
 
-export async function startBackgroundCalendarConsent(): Promise<void> {
+type ConsentRequestOptions = {
+  friendUid?: string;
+};
+
+export async function startBackgroundCalendarConsent(options: ConsentRequestOptions = {}): Promise<void> {
   const currentUser = auth.currentUser;
   if (!currentUser) {
     throw new Error("User is not authenticated.");
@@ -12,7 +16,7 @@ export async function startBackgroundCalendarConsent(): Promise<void> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${idToken}`,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ friendUid: options.friendUid }),
   });
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok || typeof data?.url !== "string") {
@@ -23,7 +27,7 @@ export async function startBackgroundCalendarConsent(): Promise<void> {
   window.location.assign(data.url);
 }
 
-export async function requestCalendarConsentWithPopup(): Promise<boolean> {
+export async function requestCalendarConsentWithPopup(options: ConsentRequestOptions = {}): Promise<boolean> {
   const currentUser = auth.currentUser;
   if (!currentUser) {
     throw new Error("User is not authenticated.");
@@ -36,7 +40,7 @@ export async function requestCalendarConsentWithPopup(): Promise<boolean> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${idToken}`,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ friendUid: options.friendUid }),
   });
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok || typeof data?.url !== "string") {

@@ -31,8 +31,8 @@ export default function BottomNav({ active, onChange }: Props) {
       },
       {
         key: "progress",
-        label: t("navigation.progress", "Progress"),
-        caption: t("navBar.progress", "Insights"),
+        label: t("navigation.progress", "Calendar"),
+        caption: t("navBar.progress", "Calendar"),
         icon: Sparkles,
       },
       {

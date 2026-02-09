@@ -1,4 +1,4 @@
-{
+﻿{
   "app": {
     "title": "ORA"
   },
@@ -7,9 +7,9 @@
     "connect_prompt": "Je veille sur votre temps.",
     "sign_in": "Entrer dans ORA",
     "single_sign_on": "Connexion via Google pour synchroniser votre agenda.",
-    "sign_out": "Déconnexion",
+    "sign_out": "DÃ©connexion",
     "login_title": "Connexion",
-    "register_title": "Créer un compte",
+    "register_title": "CrÃ©er un compte",
     "display_name": "Pseudo",
     "email": "E-mail",
     "password": "Mot de passe",
@@ -17,9 +17,9 @@
     "submit_register": "S'inscrire",
     "waiting": "Patiente...",
     "greeting": "Bonjour, {{name}}",
-    "roles": "Rôles : {{roles}}",
-    "switch_to_register": "Créer un compte",
-    "switch_to_login": "Déjà un compte ?",
+    "roles": "RÃ´les : {{roles}}",
+    "switch_to_register": "CrÃ©er un compte",
+    "switch_to_login": "DÃ©jÃ  un compte ?",
     "google": "Continuer avec Google",
     "or": "ou",
     "error": "Impossible de finaliser l'authentification.",
@@ -28,84 +28,84 @@
   "language": {
     "label": "Langue",
     "english": "Anglais",
-    "french": "Français"
+    "french": "FranÃ§ais"
   },
   "navigation": {
     "ariaLabel": "Navigation principale",
     "home": "Accueil",
-    "progress": "Progression",
+    "progress": "Calendrier",
     "assistant": "Assistant",
     "friends": "Amis",
-    "connections": "Paramètres"
+    "connections": "ParamÃ¨tres"
   },
   "navBar": {
     "home": "Vue d'ensemble",
-    "progress": "Moments clés",
+    "progress": "Calendrier",
     "assistant": "Discussion & plan",
     "friends": "Amis",
-    "connections": "Paramètres"
+    "connections": "ParamÃ¨tres"
   },
   "assistant": {
-    "placeholder": "Pose ta question à ORA...",
+    "placeholder": "Pose ta question Ã  ORA...",
     "sending": "...",
     "send": "Envoyer",
     "error": "Erreur : {{message}}",
     "header": {
       "eyebrow": "ORA Assistant",
-      "title": "Discute avec ORA pour orchestrer tes priorités",
-      "subtitle": "Demande un plan rapide, un résumé ou un rappel. ORA combine tes données pour des actions personnalisées."
+      "title": "Discute avec ORA pour orchestrer tes prioritÃ©s",
+      "subtitle": "Demande un plan rapide, un rÃ©sumÃ© ou un rappel. ORA combine tes donnÃ©es pour des actions personnalisÃ©es."
     },
     "prompts": {
       "planDay": {
-        "message": "Peux-tu organiser ma journée en regroupant mes réunions et blocs de focus ?",
-        "label": "Planifier ma journée"
+        "message": "Peux-tu organiser ma journÃ©e en regroupant mes rÃ©unions et blocs de focus ?",
+        "label": "Planifier ma journÃ©e"
       },
       "meeting": {
-        "message": "Aide-moi à préparer mon prochain rendez-vous : points clés, documents et suivi.",
-        "label": "Préparer un rendez-vous"
+        "message": "Aide-moi Ã  prÃ©parer mon prochain rendez-vous : points clÃ©s, documents et suivi.",
+        "label": "PrÃ©parer un rendez-vous"
       },
       "wrapUp": {
-        "message": "Résume ma journée et propose les actions à retenir pour demain.",
+        "message": "RÃ©sume ma journÃ©e et propose les actions Ã  retenir pour demain.",
         "label": "Bilan rapide"
       }
     },
     "eventSuggestion": {
-      "title": "Suggestion d'événement",
+      "title": "Suggestion d'Ã©vÃ©nement",
       "dismiss": "Ignorer",
       "location": "Lieu",
       "notes": "Notes",
-      "checkingConflicts": "Vérification des conflits dans votre agenda...",
-      "noConflicts": "Aucun conflit détecté pour cette plage.",
-      "conflictsTitle": "Conflits détectés :",
+      "checkingConflicts": "VÃ©rification des conflits dans votre agenda...",
+      "noConflicts": "Aucun conflit dÃ©tectÃ© pour cette plage.",
+      "conflictsTitle": "Conflits dÃ©tectÃ©s :",
       "connect": "Connecter Google Calendar",
       "connecting": "Connexion...",
-      "add": "Ajouter à l'agenda",
-      "creating": "Création...",
-      "force": "Créer malgré tout",
-      "success": "Événement ajouté à votre agenda.",
-      "successReply": "C'est noté ! J'ai ajouté ce créneau à votre calendrier.",
-      "conflictError": "Un événement est déjà prévu à ce moment.",
-      "invalidTime": "Je n'ai pas bien compris les dates proposées. Pourrais-tu les reformuler ?"
+      "add": "Ajouter Ã  l'agenda",
+      "creating": "CrÃ©ation...",
+      "force": "CrÃ©er malgrÃ© tout",
+      "success": "Ã‰vÃ©nement ajoutÃ© Ã  votre agenda.",
+      "successReply": "C'est notÃ© ! J'ai ajoutÃ© ce crÃ©neau Ã  votre calendrier.",
+      "conflictError": "Un Ã©vÃ©nement est dÃ©jÃ  prÃ©vu Ã  ce moment.",
+      "invalidTime": "Je n'ai pas bien compris les dates proposÃ©es. Pourrais-tu les reformuler ?"
     }
   },
   "tutorial": {
-    "intro": "Bonjour, moi c'est ORA ! Je suis là pour t'accompagner. Clique de nouveau sur moi quand tu es prêt à commencer.",
+    "intro": "Bonjour, moi c'est ORA ! Je suis lÃ  pour t'accompagner. Clique de nouveau sur moi quand tu es prÃªt Ã  commencer.",
     "dismiss": "Compris !",
-    "reset": "Réinitialiser le tutoriel"
+    "reset": "RÃ©initialiser le tutoriel"
   },
   "home": {
     "header": {
       "title": "Aujourd'hui",
-      "subtitle": "Priorités et événements à venir"
+      "subtitle": "PrioritÃ©s et Ã©vÃ©nements Ã  venir"
     },
     "quickAdd": {
-      "title": "Ajouter un événement",
+      "title": "Ajouter un Ã©vÃ©nement",
       "fields": {
         "title": "Titre",
-        "titlePlaceholder": "Réunion d'équipe",
-        "starts": "Début",
+        "titlePlaceholder": "RÃ©union d'Ã©quipe",
+        "starts": "DÃ©but",
         "ends": "Fin",
-        "allDay": "Toute la journée",
+        "allDay": "Toute la journÃ©e",
         "location": "Lieu",
         "locationPlaceholder": "Bureau, lien de visio...",
         "notes": "Notes",
@@ -116,90 +116,90 @@
         "label": "Ajouter au calendrier"
       },
       "messages": {
-        "success": "Événement ajouté à Google Calendar.",
-        "error": "Impossible d'ajouter l'événement."
+        "success": "Ã‰vÃ©nement ajoutÃ© Ã  Google Calendar.",
+        "error": "Impossible d'ajouter l'Ã©vÃ©nement."
       },
       "validation": {
-        "invalidStartDate": "Sélectionnez une date de début valide.",
-        "invalidEndDate": "Sélectionnez une heure de fin valide.",
-        "endDateBeforeStart": "La date de fin doit être identique ou postérieure au début.",
-        "endBeforeStart": "L'heure de fin doit être postérieure au début."
+        "invalidStartDate": "SÃ©lectionnez une date de dÃ©but valide.",
+        "invalidEndDate": "SÃ©lectionnez une heure de fin valide.",
+        "endDateBeforeStart": "La date de fin doit Ãªtre identique ou postÃ©rieure au dÃ©but.",
+        "endBeforeStart": "L'heure de fin doit Ãªtre postÃ©rieure au dÃ©but."
       },
       "defaults": {
-        "title": "Événement sans titre"
+        "title": "Ã‰vÃ©nement sans titre"
       },
-      "connectPrompt": "Connectez Google Calendar pour ajouter des événements ici.",
+      "connectPrompt": "Connectez Google Calendar pour ajouter des Ã©vÃ©nements ici.",
       "connectButton": {
         "default": "Connecter",
         "connecting": "Connexion..."
       }
     },
     "nextEvent": {
-      "title": "Prochain événement",
-      "loading": "Chargement des événements...",
+      "title": "Prochain Ã©vÃ©nement",
+      "loading": "Chargement des Ã©vÃ©nements...",
       "today": "Aujourd'hui",
-      "empty": "Aucun événement à venir dans votre agenda.",
-      "connectPrompt": "Connectez Google Calendar pour afficher votre prochain événement.",
+      "empty": "Aucun Ã©vÃ©nement Ã  venir dans votre agenda.",
+      "connectPrompt": "Connectez Google Calendar pour afficher votre prochain Ã©vÃ©nement.",
       "openInCalendar": "Ouvrir dans Google Calendar"
     },
     "upcoming": {
-      "title": "Événements à venir",
-      "loading": "Chargement des événements...",
+      "title": "Ã‰vÃ©nements Ã  venir",
+      "loading": "Chargement des Ã©vÃ©nements...",
       "nothingElse": "Rien d'autre en vue.",
       "clear": "Votre agenda est libre pour l'instant.",
-      "connectPrompt": "Connectez Google Calendar pour lister vos événements à venir.",
+      "connectPrompt": "Connectez Google Calendar pour lister vos Ã©vÃ©nements Ã  venir.",
       "open": "Ouvrir"
     },
     "sync": {
       "title": "Synchronisation du calendrier",
-      "signedInAs": "Connecté en tant que {{email}}.",
-      "signedInFallback": "Connecté avec un compte Google.",
-      "eventsUpdated": "Événements mis à jour {{time}}",
-      "eventsNotLoaded": "Événements pas encore chargés",
-      "calendarChecked": "Calendrier vérifié {{time}}",
+      "signedInAs": "ConnectÃ© en tant que {{email}}.",
+      "signedInFallback": "ConnectÃ© avec un compte Google.",
+      "eventsUpdated": "Ã‰vÃ©nements mis Ã  jour {{time}}",
+      "eventsNotLoaded": "Ã‰vÃ©nements pas encore chargÃ©s",
+      "calendarChecked": "Calendrier vÃ©rifiÃ© {{time}}",
       "refreshing": "Actualisation...",
-      "refresh": "Actualiser les événements",
-      "connectPrompt": "Connectez Google Calendar pour garder ce tableau de bord à jour."
+      "refresh": "Actualiser les Ã©vÃ©nements",
+      "connectPrompt": "Connectez Google Calendar pour garder ce tableau de bord Ã  jour."
     }
   },
   "progress": {
     "header": {
       "eyebrow": "Suggestions intelligentes",
       "title": "ORA anticipe le rythme de ta semaine",
-      "subtitle": "Ces recommandations s'appuient sur tes habitudes et sur l'agenda à venir pour équilibrer focus, énergie et réunions."
+      "subtitle": "Ces recommandations s'appuient sur tes habitudes et sur l'agenda Ã  venir pour Ã©quilibrer focus, Ã©nergie et rÃ©unions."
     },
     "actions": {
       "connect": "Connecter le calendrier"
     },
     "meta": {
-      "disconnected": "Calendrier non connecté",
-      "loading": "Synchronisation en cours…",
-      "updated": "Mis à jour {{time}}",
+      "disconnected": "Calendrier non connectÃ©",
+      "loading": "Synchronisation en coursâ€¦",
+      "updated": "Mis Ã  jour {{time}}",
       "idle": "En attente de la prochaine synchro"
     },
     "habits": {
       "title": "Ton rythme actuel",
-      "subtitle": "ORA observe quand tu rencontres, te concentres et termines la journée.",
-      "avgStart": "Première réunion vers {{time}}",
-      "load": "{{count}} réunions par jour en moyenne",
-      "focus": "Meilleur créneau focus : {{day}} · {{range}}"
+      "subtitle": "ORA observe quand tu rencontres, te concentres et termines la journÃ©e.",
+      "avgStart": "PremiÃ¨re rÃ©union vers {{time}}",
+      "load": "{{count}} rÃ©unions par jour en moyenne",
+      "focus": "Meilleur crÃ©neau focus : {{day}} Â· {{range}}"
     },
     "suggestions": {
-      "eyebrow": "Suggestion personnalisée",
+      "eyebrow": "Suggestion personnalisÃ©e",
       "focusBlock": {
-        "title": "Réserve un créneau profond",
+        "title": "RÃ©serve un crÃ©neau profond",
         "body": "{{day}} entre {{range}} est encore libre. Transforme ces {{duration}} en travail profond.",
         "action": "Planifier un bloc focus"
       },
       "balanceDay": {
         "title": "Ajoute un peu d'air",
-        "body": "{{day}} compte déjà {{count}} réunions. Déplace-en une pour protéger ton énergie.",
-        "action": "Réorganiser la journée"
+        "body": "{{day}} compte dÃ©jÃ  {{count}} rÃ©unions. DÃ©place-en une pour protÃ©ger ton Ã©nergie.",
+        "action": "RÃ©organiser la journÃ©e"
       },
       "wrap": {
-        "title": "Protège ta soirée",
-        "body": "Tu termines vers {{time}} le {{day}}. Prépare tes suivis plus tôt pour pouvoir décrocher à l'heure.",
-        "action": "Préparer le rituel de fin"
+        "title": "ProtÃ¨ge ta soirÃ©e",
+        "body": "Tu termines vers {{time}} le {{day}}. PrÃ©pare tes suivis plus tÃ´t pour pouvoir dÃ©crocher Ã  l'heure.",
+        "action": "PrÃ©parer le rituel de fin"
       }
     },
     "genericSuggestions": [
@@ -207,33 +207,33 @@
         "id": "generic-focus",
         "tone": "focus",
         "title": "Bloque un sprint focus",
-        "body": "Réserve 90 minutes avant midi pour ta priorité stratégique.",
-        "action": "Réserver le créneau"
+        "body": "RÃ©serve 90 minutes avant midi pour ta prioritÃ© stratÃ©gique.",
+        "action": "RÃ©server le crÃ©neau"
       },
       {
         "id": "generic-balance",
         "tone": "balance",
         "title": "Ajoute des respirations",
-        "body": "Garde 10 minutes entre chaque duo de réunions pour noter les actions.",
+        "body": "Garde 10 minutes entre chaque duo de rÃ©unions pour noter les actions.",
         "action": "Ajouter des pauses"
       },
       {
         "id": "generic-energy",
         "tone": "energy",
-        "title": "Clôture avec intention",
-        "body": "Termine la journée en listant trois avancées et ton premier geste de demain.",
+        "title": "ClÃ´ture avec intention",
+        "body": "Termine la journÃ©e en listant trois avancÃ©es et ton premier geste de demain.",
         "action": "Commencer le rituel"
       }
     ],
     "offlineSuggestions": [
       {
-        "title": "Connecte Google Calendar pour débloquer les nudges en direct.",
-        "body": "ORA surveille la forme de ta semaine et suggère où te concentrer, quand souffler et comment clôturer.",
+        "title": "Connecte Google Calendar pour dÃ©bloquer les nudges en direct.",
+        "body": "ORA surveille la forme de ta semaine et suggÃ¨re oÃ¹ te concentrer, quand souffler et comment clÃ´turer.",
         "action": "Connecter maintenant"
       },
       {
         "title": "Synchronise tes habitudes automatiquement.",
-        "body": "Une fois connecté, ORA détecte les motifs récurrents comme les matinées libres ou les mardis chargés.",
+        "body": "Une fois connectÃ©, ORA dÃ©tecte les motifs rÃ©currents comme les matinÃ©es libres ou les mardis chargÃ©s.",
         "action": "Activer la synchro"
       }
     ],
@@ -298,46 +298,48 @@
       "busy": "Occupe maintenant",
       "free": "Libre maintenant",
       "unknown": "Inconnu",
-      "stale": "Possiblement obsolet"
+      "stale": "Possiblement obsolet",
+      "calendarShared": "Partage calendrier actif",
+      "calendarNotShared": "Partage calendrier non active"
     }
   },
   "connections": {
-    "title": "Paramètres",
-    "subtitle": "Gérez votre expérience ORA",
+    "title": "ParamÃ¨tres",
+    "subtitle": "GÃ©rez votre expÃ©rience ORA",
     "stats": {
-      "connected_one": "{{count}} connecté",
-      "connected_other": "{{count}} connectés",
+      "connected_one": "{{count}} connectÃ©",
+      "connected_other": "{{count}} connectÃ©s",
       "available_one": "{{count}} disponible",
       "available_other": "{{count}} disponibles"
     },
     "google": {
-      "description": "Synchronisez tous vos événements et réunions",
-      "connectedAs": "Connecté en tant que {{email}}",
-      "connected": "Connecté",
-      "lastSync": "Dernière synchro : {{time}}"
+      "description": "Synchronisez tous vos Ã©vÃ©nements et rÃ©unions",
+      "connectedAs": "ConnectÃ© en tant que {{email}}",
+      "connected": "ConnectÃ©",
+      "lastSync": "DerniÃ¨re synchro : {{time}}"
     },
     "status": {
-      "connected": "Connecté",
+      "connected": "ConnectÃ©",
       "error": "Erreur {{detail}}",
-      "disabled": "Bientôt disponible",
+      "disabled": "BientÃ´t disponible",
       "loading": "Connexion...",
-      "available": "Non connecté"
+      "available": "Non connectÃ©"
     },
     "tooltip": {
       "disabled": "Pas encore disponible",
-      "connected": "Désactiver",
+      "connected": "DÃ©sactiver",
       "available": "Activer"
     },
     "reconnect": "Reconnecter",
     "add": "Ajouter une connexion",
-    "iconLabel": "Icône {{name}}"
+    "iconLabel": "IcÃ´ne {{name}}"
   },
   "avatar": {
     "controls": {
       "neutral": "Neutre",
       "happy": "Souriant",
       "sad": "Triste",
-      "angry": "Fâché",
+      "angry": "FÃ¢chÃ©",
       "skeptic": "Sceptique",
       "off": "OFF/ON"
     }
@@ -345,18 +347,18 @@
   "general": {
     "connect": "Connecter",
     "connecting": "Connexion...",
-    "connected": "Connecté",
-    "notConnected": "Non connecté",
+    "connected": "ConnectÃ©",
+    "notConnected": "Non connectÃ©",
     "notAvailable": "Pas disponible",
-    "comingSoon": "Bientôt disponible",
+    "comingSoon": "BientÃ´t disponible",
     "enable": "Activer",
-    "disable": "Désactiver",
+    "disable": "DÃ©sactiver",
     "reconnect": "Reconnecter",
     "open": "Ouvrir",
     "dismiss": "Fermer"
   },
   "time": {
-    "just_now": "à l'instant",
+    "just_now": "Ã  l'instant",
     "minute_ago": "il y a 1 minute",
     "minutes_ago_one": "il y a {{count}} minute",
     "minutes_ago_other": "il y a {{count}} minutes",
@@ -368,3 +370,4 @@
     "days_ago_other": "il y a {{count}} jours"
   }
 }
+

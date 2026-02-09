@@ -1,42 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Mail, Search, UserPlus, Users } from "lucide-react";
-import { doc, getDoc, onSnapshot, serverTimestamp, writeBatch } from "firebase/firestore";
+import { Mail, Search, UserPlus, Users } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useFriends, type PublicUser } from "../hooks/useFriends";
-import { useGoogleCalendar } from "../hooks/useGoogleCalendar";
-import { buildAvailabilitySlots, formatDateKey, type AvailabilitySlot } from "../lib/availability";
+import { useGoogleCalendar, type GoogleCalendarEvent } from "../hooks/useGoogleCalendar";
 import { requestCalendarConsentWithPopup } from "../lib/calendarConsent";
-import { db } from "../lib/firebase";
 import { formatRelativeTime } from "../utils/time";
 import "./friends.css";
 
-type AvailabilitySnapshot = {
-  state: "free" | "busy" | "unknown" | "stale";
+type FriendPresence = {
+  state: "free" | "busy" | "unknown";
   updatedAt: number | null;
 };
 
-const STALE_MS = 36 * 60 * 60 * 1000;
-const AVAILABILITY_DAYS = 7;
-
-function resolveNowSlot(slots: AvailabilitySlot[] | undefined, now: Date): "free" | "busy" | "unknown" {
-  if (!slots || slots.length === 0) return "unknown";
-  const nowTime = now.getTime();
-  const match = slots.find((slot) => {
-    const start = new Date(slot.start).getTime();
-    const end = new Date(slot.end).getTime();
-    return nowTime >= start && nowTime < end;
-  });
-  return match?.state ?? "unknown";
+function toEpoch(value: string): number | null {
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
-function toMillis(value: any): number | null {
-  if (!value) return null;
-  if (typeof value === "number") return value;
-  if (value instanceof Date) return value.getTime();
-  if (typeof value.toMillis === "function") return value.toMillis();
-  if (typeof value.seconds === "number") return value.seconds * 1000;
-  return null;
+function resolveBusyNow(events: GoogleCalendarEvent[], nowMs: number): "free" | "busy" {
+  for (const event of events) {
+    const startMs = toEpoch(event.start);
+    const endMs = toEpoch(event.end ?? event.start);
+    if (startMs === null || endMs === null) continue;
+    if (nowMs >= startMs && nowMs < endMs && event.transparency !== "transparent") {
+      return "busy";
+    }
+  }
+  return "free";
 }
 
 export default function Friends() {
@@ -47,15 +38,14 @@ export default function Friends() {
     outgoingRequests,
     friends,
     users,
-    hasAutoSync,
     searchUsers,
     sendFriendRequest,
     acceptFriendRequest,
     declineFriendRequest,
     cancelFriendRequest,
     removeFriend,
-    toggleAutoSync,
   } = useFriends();
+
   const { status: googleStatus, connect: connectGoogle, fetchEventsInRange } = useGoogleCalendar();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,115 +53,75 @@ export default function Friends() {
   const [searchStatus, setSearchStatus] = useState<"idle" | "loading" | "error" | "done">("idle");
   const [searchMessage, setSearchMessage] = useState<string | null>(null);
   const [requestActionError, setRequestActionError] = useState<string | null>(null);
-
-  const [publishError, setPublishError] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
-  const [friendAvailability, setFriendAvailability] = useState<Record<string, AvailabilitySnapshot>>({});
-  const autoSyncRef = useRef(false);
+  const [friendPresence, setFriendPresence] = useState<Record<string, FriendPresence>>({});
 
   const isConnected = googleStatus === "connected";
+
   const isAlreadyFriend = searchResult ? friends.some((friend) => friend.friendUid === searchResult.uid) : false;
   const hasOutgoing = searchResult ? outgoingRequests.some((req) => req.toUid === searchResult.uid) : false;
   const hasIncoming = searchResult ? incomingRequests.some((req) => req.fromUid === searchResult.uid) : false;
 
-  const refreshLastUpdated = useCallback(async () => {
-    if (!user) return;
-    const todayKey = formatDateKey(new Date());
-    const snapshot = await getDoc(doc(db, "availability", user.uid, "days", todayKey));
-    if (!snapshot.exists()) {
-      setLastUpdatedAt(null);
+  const refreshFriendPresence = useCallback(async () => {
+    if (!user || !isConnected) {
+      setFriendPresence({});
       return;
     }
-    setLastUpdatedAt(toMillis(snapshot.data()?.updatedAt));
-  }, [user]);
+
+    const now = new Date();
+    const dayStart = new Date(now);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(now);
+    dayEnd.setHours(23, 59, 59, 999);
+    const nowMs = now.getTime();
+
+    const results = await Promise.all(
+      friends.map(async (friend) => {
+        const friendUser = users[friend.friendUid];
+        const calendarId = friendUser?.email?.trim().toLowerCase();
+        if (!calendarId) {
+          return [friend.friendUid, { state: "unknown", updatedAt: null } as FriendPresence] as const;
+        }
+
+        try {
+          const events = await fetchEventsInRange(
+            {
+              timeMin: dayStart.toISOString(),
+              timeMax: dayEnd.toISOString(),
+            },
+            { calendarId },
+          );
+          return [
+            friend.friendUid,
+            {
+              state: resolveBusyNow(events, nowMs),
+              updatedAt: Date.now(),
+            } as FriendPresence,
+          ] as const;
+        } catch (error) {
+          console.warn("Failed to read friend calendar", friend.friendUid, error);
+          return [friend.friendUid, { state: "unknown", updatedAt: null } as FriendPresence] as const;
+        }
+      }),
+    );
+
+    const next: Record<string, FriendPresence> = {};
+    for (const [uid, presence] of results) {
+      next[uid] = presence;
+    }
+    setFriendPresence(next);
+  }, [fetchEventsInRange, friends, isConnected, user, users]);
 
   useEffect(() => {
-    void refreshLastUpdated();
-  }, [refreshLastUpdated]);
-
-  const syncAvailability = useCallback(async () => {
-    if (!user) return;
-    if (!isConnected) {
-      setPublishError(t("friends.availability.connectPrompt"));
-      return;
-    }
-    setPublishError(null);
-    try {
-      const start = new Date();
-      const end = new Date();
-      end.setDate(end.getDate() + AVAILABILITY_DAYS);
-      const events = await fetchEventsInRange({ timeMin: start.toISOString(), timeMax: end.toISOString() });
-      const days = buildAvailabilitySlots({ events, startDate: start, days: AVAILABILITY_DAYS, slotMinutes: 30 });
-      const batch = writeBatch(db);
-      const updatedAt = serverTimestamp();
-      Object.entries(days).forEach(([dayKey, slots]) => {
-        const ref = doc(db, "availability", user.uid, "days", dayKey);
-        batch.set(ref, { slots, updatedAt }, { merge: true });
-      });
-      await batch.commit();
-      setLastUpdatedAt(Date.now());
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setPublishError(message);
-    }
-  }, [fetchEventsInRange, isConnected, t, user]);
+    void refreshFriendPresence();
+  }, [refreshFriendPresence]);
 
   useEffect(() => {
-    if (!user || !isConnected) return;
-    if (!hasAutoSync) return;
-    const cooldown = 6 * 60 * 60 * 1000;
-    if (lastUpdatedAt && Date.now() - lastUpdatedAt < cooldown) return;
-    if (autoSyncRef.current) return;
-    autoSyncRef.current = true;
-    void syncAvailability().finally(() => {
-      autoSyncRef.current = false;
-    });
-  }, [hasAutoSync, isConnected, lastUpdatedAt, syncAvailability, user]);
-
-  useEffect(() => {
-    if (!friends.length) {
-      setFriendAvailability({});
-      return;
-    }
-    const todayKey = formatDateKey(new Date());
-    const unsubscribers = friends.map((friend) => {
-      const ref = doc(db, "availability", friend.friendUid, "days", todayKey);
-      return onSnapshot(
-        ref,
-        (snapshot) => {
-          if (!snapshot.exists()) {
-            setFriendAvailability((prev) => ({
-              ...prev,
-              [friend.friendUid]: { state: "unknown", updatedAt: null },
-            }));
-            return;
-          }
-          const data = snapshot.data();
-          const updatedAt = toMillis(data?.updatedAt);
-          const now = new Date();
-          const state = resolveNowSlot(data?.slots as AvailabilitySlot[] | undefined, now);
-          const snapshotState: AvailabilitySnapshot = updatedAt && Date.now() - updatedAt > STALE_MS
-            ? { state: "stale", updatedAt }
-            : { state: state === "unknown" ? "unknown" : state, updatedAt };
-          setFriendAvailability((prev) => ({
-            ...prev,
-            [friend.friendUid]: snapshotState,
-          }));
-        },
-        (error) => {
-          console.warn("Failed to load friend availability", error);
-          setFriendAvailability((prev) => ({
-            ...prev,
-            [friend.friendUid]: { state: "unknown", updatedAt: null },
-          }));
-        },
-      );
-    });
-
-    return () => {
-      unsubscribers.forEach((unsub) => unsub());
-    };
-  }, [friends]);
+    if (!isConnected || friends.length === 0) return;
+    const timer = window.setInterval(() => {
+      void refreshFriendPresence();
+    }, 2 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [friends.length, isConnected, refreshFriendPresence]);
 
   const handleSearch = useCallback(async () => {
     const cleaned = searchTerm.trim();
@@ -221,54 +171,74 @@ export default function Friends() {
     }
   }, [searchResult, sendFriendRequest, t]);
 
-  const handleAccept = useCallback(async (uid: string, enableAutoSync: boolean) => {
-    setRequestActionError(null);
-    try {
-      if (enableAutoSync) {
-        const granted = await requestCalendarConsentWithPopup();
+  const handleAccept = useCallback(
+    async (uid: string) => {
+      setRequestActionError(null);
+      try {
+        await acceptFriendRequest(uid);
+        const granted = await requestCalendarConsentWithPopup({ friendUid: uid });
         if (!granted) {
-          setRequestActionError("Consentement Google requis pour activer la sync.");
-          return;
+          setRequestActionError(
+            "Ami accepte, mais consentement Google non finalise. Relance l'acceptation pour activer le partage calendrier.",
+          );
         }
+      } catch (err) {
+        setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
       }
-      await acceptFriendRequest(uid, enableAutoSync);
-    } catch (err) {
-      setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
-    }
-  }, [acceptFriendRequest, t]);
+    },
+    [acceptFriendRequest, t],
+  );
 
-  const handleDecline = useCallback(async (uid: string) => {
-    setRequestActionError(null);
-    try {
-      await declineFriendRequest(uid);
-    } catch (err) {
-      setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
-    }
-  }, [declineFriendRequest, t]);
+  const handleDecline = useCallback(
+    async (uid: string) => {
+      setRequestActionError(null);
+      try {
+        await declineFriendRequest(uid);
+      } catch (err) {
+        setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
+      }
+    },
+    [declineFriendRequest, t],
+  );
 
-  const handleCancel = useCallback(async (uid: string) => {
-    setRequestActionError(null);
-    try {
-      await cancelFriendRequest(uid);
-    } catch (err) {
-      setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
-    }
-  }, [cancelFriendRequest, t]);
+  const handleCancel = useCallback(
+    async (uid: string) => {
+      setRequestActionError(null);
+      try {
+        await cancelFriendRequest(uid);
+      } catch (err) {
+        setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
+      }
+    },
+    [cancelFriendRequest, t],
+  );
 
-  const handleRemoveFriend = useCallback(async (uid: string) => {
-    setRequestActionError(null);
-    try {
-      await removeFriend(uid);
-    } catch (err) {
-      setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
-    }
-  }, [removeFriend, t]);
+  const handleRemoveFriend = useCallback(
+    async (uid: string) => {
+      setRequestActionError(null);
+      try {
+        await removeFriend(uid);
+      } catch (err) {
+        setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
+      }
+    },
+    [removeFriend, t],
+  );
 
-  const renderUserLabel = (uid: string) => {
-    const info = users[uid];
-    if (!info) return uid.slice(0, 6);
-    return info.displayName || info.handle || info.email || uid.slice(0, 6);
-  };
+  const renderUserLabel = useCallback(
+    (uid: string) => {
+      const info = users[uid];
+      if (!info) return uid.slice(0, 6);
+      return info.displayName || info.handle || info.email || uid.slice(0, 6);
+    },
+    [users],
+  );
+
+  const availabilitySummary = useMemo(() => {
+    if (!isConnected) return t("friends.availability.connectPrompt");
+    if (friends.length === 0) return t("friends.requests.none");
+    return t("friends.availability.connected");
+  }, [friends.length, isConnected, t]);
 
   return (
     <section className="friends">
@@ -301,17 +271,11 @@ export default function Friends() {
           </div>
           <p className="friends-card__desc">{t("friends.availability.desc")}</p>
           <div className="friends-card__meta">
-            <span>
-              {lastUpdatedAt
-                ? t("friends.availability.updated", { time: formatRelativeTime(lastUpdatedAt, t) })
-                : t("friends.availability.neverUpdated")}
-            </span>
-            {hasAutoSync && <span className="friends-card__pill">{t("friends.availability.autoSyncOn")}</span>}
+            <span>{availabilitySummary}</span>
           </div>
-          {publishError && <p className="friends-card__error">{publishError}</p>}
           <div className="friends-card__actions">
             {isConnected ? (
-              <p className="friends-card__desc">{t("friends.availability.autoSyncOn")}</p>
+              <p className="friends-card__desc">{t("friends.availability.connected")}</p>
             ) : (
               <button className="btn btn-primary" onClick={connectGoogle}>
                 {t("friends.availability.connectAction")}
@@ -393,13 +357,10 @@ export default function Friends() {
                     <p className="friends-item__meta">{t("friends.requests.requested")}</p>
                   </div>
                   <div className="friends-item__actions">
-                    <button className="btn btn-primary" onClick={() => handleAccept(req.fromUid, true)}>
-                      <Check size={14} /> {t("friends.requests.acceptWithSync")}
+                    <button className="btn btn-primary" onClick={() => void handleAccept(req.fromUid)}>
+                      {t("friends.requests.accept")}
                     </button>
-                    <button className="btn btn-ghost" onClick={() => handleAccept(req.fromUid, false)}>
-                      {t("friends.requests.acceptWithoutSync")}
-                    </button>
-                    <button className="btn btn-ghost" onClick={() => handleDecline(req.fromUid)}>
+                    <button className="btn btn-ghost" onClick={() => void handleDecline(req.fromUid)}>
                       {t("friends.requests.decline")}
                     </button>
                   </div>
@@ -426,7 +387,7 @@ export default function Friends() {
                     <p className="friends-item__meta">{t("friends.requests.pending")}</p>
                   </div>
                   <div className="friends-item__actions">
-                    <button className="btn btn-ghost" onClick={() => handleCancel(req.toUid)}>
+                    <button className="btn btn-ghost" onClick={() => void handleCancel(req.toUid)}>
                       {t("friends.requests.cancel")}
                     </button>
                   </div>
@@ -447,56 +408,30 @@ export default function Friends() {
         ) : (
           <div className="friends-list">
             {friends.map((friend) => {
-              const snapshot = friendAvailability[friend.friendUid];
-              const status = snapshot?.state ?? "unknown";
-              const updatedAt = snapshot?.updatedAt ?? null;
+              const presence = friendPresence[friend.friendUid] ?? { state: "unknown", updatedAt: null };
               return (
                 <div key={friend.friendUid} className="friends-item">
                   <div>
                     <p className="friends-item__name">{renderUserLabel(friend.friendUid)}</p>
-                    <p className={`friends-item__meta status-${status}`}>
-                      {status === "busy"
+                    <p className={`friends-item__meta status-${presence.state}`}>
+                      {presence.state === "busy"
                         ? t("friends.status.busy")
-                        : status === "free"
+                        : presence.state === "free"
                         ? t("friends.status.free")
-                        : status === "stale"
-                        ? t("friends.status.stale")
                         : t("friends.status.unknown")}
-                      {updatedAt && (
-                        <span className="friends-item__updated">{formatRelativeTime(updatedAt, t)}</span>
+                      {presence.updatedAt && (
+                        <span className="friends-item__updated">{formatRelativeTime(presence.updatedAt, t)}</span>
                       )}
+                    </p>
+                    <p className="friends-item__meta">
+                      {friend.calendarSharedByFriend
+                        ? t("friends.status.calendarShared")
+                        : t("friends.status.calendarNotShared")}
                     </p>
                   </div>
                   <div className="friends-item__actions">
-                    <button
-                      className="btn btn-ghost"
-                      onClick={() => {
-                        void handleRemoveFriend(friend.friendUid);
-                      }}
-                    >
+                    <button className="btn btn-ghost" onClick={() => void handleRemoveFriend(friend.friendUid)}>
                       {t("friends.list.remove")}
-                    </button>
-                    <button
-                      className={`toggle ${friend.autoSync ? "on" : "off"}`}
-                      onClick={() => {
-                        setRequestActionError(null);
-                        const nextValue = !friend.autoSync;
-                        void (async () => {
-                          if (nextValue) {
-                            const granted = await requestCalendarConsentWithPopup();
-                            if (!granted) {
-                              setRequestActionError("Consentement Google requis pour activer la sync.");
-                              return;
-                            }
-                          }
-                          await toggleAutoSync(friend.friendUid, nextValue);
-                        })().catch((err) => {
-                          setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
-                        });
-                      }}
-                    >
-                      <span className="toggle-thumb" />
-                      <span>{t("friends.list.autoSync")}</span>
                     </button>
                   </div>
                 </div>
@@ -508,3 +443,4 @@ export default function Friends() {
     </section>
   );
 }
+
