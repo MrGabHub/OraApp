@@ -325,7 +325,15 @@
       "unknown": "Unknown",
       "stale": "Possibly outdated",
       "calendarShared": "Calendar sharing active",
-      "calendarNotShared": "Calendar sharing not enabled"
+      "calendarNotShared": "Calendar sharing not enabled",
+      "youCalendarShared": "Your calendar is shared",
+      "youCalendarNotShared": "Your calendar is not shared",
+      "friendSharesLabel": "Friend",
+      "youShareLabel": "You",
+      "shortYes": "yes",
+      "shortNo": "no",
+      "friendSharesExplicit": "Shared by friend: {{value}}",
+      "youShareExplicit": "Shared by you: {{value}}"
     }
   },
   "connections": {

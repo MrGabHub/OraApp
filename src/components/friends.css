@@ -194,6 +194,41 @@
   gap: 8px;
 }
 
+.friends-item__share-badges {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.share-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--divider);
+  color: var(--text-secondary);
+  background: var(--surface-main);
+}
+
+.share-badge.on {
+  color: var(--text-primary);
+  background: var(--success-soft);
+  border-color: var(--success-soft);
+}
+
+.share-badge.off {
+  background: var(--surface-main);
+}
+
+.share-badge__label {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .friends-item__updated {
   color: var(--text-secondary);
 }

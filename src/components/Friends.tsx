@@ -44,6 +44,7 @@ export default function Friends() {
     declineFriendRequest,
     cancelFriendRequest,
     removeFriend,
+    checkOwnCalendarShareWithFriend,
   } = useFriends();
 
   const { status: googleStatus, connect: connectGoogle, fetchEventsInRange } = useGoogleCalendar();
@@ -187,8 +188,14 @@ export default function Friends() {
       setRequestActionError(null);
       try {
         await acceptFriendRequest(uid);
-        const granted = await requestCalendarConsentWithPopup({ friendUid: uid });
-        if (!granted) {
+        const popupGranted = await requestCalendarConsentWithPopup({ friendUid: uid });
+        if (popupGranted) {
+          return;
+        }
+        // Fallback: some browsers block postMessage/close signals although consent succeeded.
+        await new Promise((resolve) => window.setTimeout(resolve, 1200));
+        const storedShare = await checkOwnCalendarShareWithFriend(uid);
+        if (!storedShare) {
           setRequestActionError(
             "Ami accepte, mais consentement Google non finalise. Relance l'acceptation pour activer le partage calendrier.",
           );
@@ -197,7 +204,7 @@ export default function Friends() {
         setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
       }
     },
-    [acceptFriendRequest, t],
+    [acceptFriendRequest, checkOwnCalendarShareWithFriend, t],
   );
 
   const handleDecline = useCallback(
@@ -434,11 +441,26 @@ export default function Friends() {
                         <span className="friends-item__updated">{formatRelativeTime(presence.updatedAt, t)}</span>
                       )}
                     </p>
-                    <p className="friends-item__meta">
-                      {friend.calendarSharedByFriend
-                        ? t("friends.status.calendarShared")
-                        : t("friends.status.calendarNotShared")}
-                    </p>
+                    <div className="friends-item__share-badges">
+                      <span className={`share-badge ${friend.calendarSharedByFriend ? "on" : "off"}`}>
+                        <span className="share-badge__label">
+                          {t("friends.status.friendSharesExplicit", {
+                            value: friend.calendarSharedByFriend
+                              ? t("friends.status.shortYes")
+                              : t("friends.status.shortNo"),
+                          })}
+                        </span>
+                      </span>
+                      <span className={`share-badge ${friend.calendarSharedByYou ? "on" : "off"}`}>
+                        <span className="share-badge__label">
+                          {t("friends.status.youShareExplicit", {
+                            value: friend.calendarSharedByYou
+                              ? t("friends.status.shortYes")
+                              : t("friends.status.shortNo"),
+                          })}
+                        </span>
+                      </span>
+                    </div>
                   </div>
                   <div className="friends-item__actions">
                     <button className="btn btn-ghost" onClick={() => void handleRemoveFriend(friend.friendUid)}>

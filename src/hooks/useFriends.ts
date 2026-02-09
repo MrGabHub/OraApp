@@ -28,6 +28,7 @@ export type FriendEntry = {
   createdAt: number | null;
   acceptedAt: number | null;
   calendarSharedByFriend: boolean;
+  calendarSharedByYou: boolean;
   visibility: FriendVisibility;
 };
 
@@ -193,6 +194,8 @@ export function useFriends() {
         acceptedAt: request.respondedAt,
         calendarSharedByFriend:
           request.fromUid === user.uid ? Boolean(request.toCalendarShared) : Boolean(request.fromCalendarShared),
+        calendarSharedByYou:
+          request.fromUid === user.uid ? Boolean(request.fromCalendarShared) : Boolean(request.toCalendarShared),
         visibility: {
           showAvailability: true,
           showEventTitle: false,
@@ -342,6 +345,22 @@ export function useFriends() {
     throw new Error("Friendship not found.");
   }, [user]);
 
+  const checkOwnCalendarShareWithFriend = useCallback(async (friendUid: string) => {
+    if (!user) throw new Error("Not signed in.");
+
+    const requestA = await safeGetDoc(doc(db, "friendRequests", `${user.uid}_${friendUid}`));
+    if (requestA?.exists() && requestA.data()?.status === "accepted" && Boolean(requestA.data()?.fromCalendarShared)) {
+      return true;
+    }
+
+    const requestB = await safeGetDoc(doc(db, "friendRequests", `${friendUid}_${user.uid}`));
+    if (requestB?.exists() && requestB.data()?.status === "accepted" && Boolean(requestB.data()?.toCalendarShared)) {
+      return true;
+    }
+
+    return false;
+  }, [user]);
+
   return {
     incomingRequests,
     outgoingRequests,
@@ -353,5 +372,6 @@ export function useFriends() {
     declineFriendRequest,
     cancelFriendRequest,
     removeFriend,
+    checkOwnCalendarShareWithFriend,
   };
 }

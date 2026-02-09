@@ -7,6 +7,26 @@ export const SUPPORTED_LANGUAGES = ["fr", "en"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: SupportedLanguage = "fr";
 export const LOCAL_STORAGE_LANGUAGE_KEY = "ora-language";
+const LOCALES_VERSION = "2026-02-09-utf8-fix-3";
+
+function maybeRepairMojibake(value: string): string {
+  if (!/[ÃÂâ]/.test(value)) return value;
+  const bytes = Uint8Array.from(Array.from(value).map((ch) => ch.charCodeAt(0) & 0xff));
+  const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  const bad = (input: string) => (input.match(/[ÃÂâ]/g) || []).length;
+  return bad(decoded) < bad(value) ? decoded : value;
+}
+
+function deepRepair(input: unknown): unknown {
+  if (typeof input === "string") return maybeRepairMojibake(input);
+  if (Array.isArray(input)) return input.map((item) => deepRepair(item));
+  if (input && typeof input === "object") {
+    return Object.fromEntries(
+      Object.entries(input as Record<string, unknown>).map(([key, value]) => [key, deepRepair(value)]),
+    );
+  }
+  return input;
+}
 
 if (!i18n.isInitialized) {
   i18n
@@ -27,7 +47,8 @@ if (!i18n.isInitialized) {
         caches: ["localStorage"],
       },
       backend: {
-        loadPath: "/locales/{{lng}}/{{ns}}.json",
+        loadPath: `/locales/{{lng}}/{{ns}}.json?v=${LOCALES_VERSION}`,
+        parse: (data: string) => deepRepair(JSON.parse(data)),
       },
       react: {
         useSuspense: true,
