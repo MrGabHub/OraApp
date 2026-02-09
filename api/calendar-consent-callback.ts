@@ -6,8 +6,12 @@ import { verifyOAuthState } from "./_lib/oauthState.js";
 
 export const config = { runtime: "nodejs20.x" } as const;
 
-function htmlResult(ok: boolean, message: string): string {
+function htmlResult(ok: boolean, message: string, baseUrl: string, friendUid?: string): string {
   const safe = message.replace(/[<>&]/g, "");
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const redirectUrl = `${normalizedBaseUrl}/?tab=friends&calendarConsent=${ok ? "ok" : "error"}`;
+  const safeRedirectUrl = redirectUrl.replace(/"/g, "&quot;");
+  const safeFriendUid = (friendUid ?? "").replace(/"/g, "");
   return `<!doctype html>
 <html>
 <head><meta charset="utf-8"><title>Aura Calendar Consent</title></head>
@@ -15,7 +19,16 @@ function htmlResult(ok: boolean, message: string): string {
   <h3>${ok ? "Consentement enregistre" : "Echec du consentement"}</h3>
   <p>${safe}</p>
   <script>
-    if (window.opener) { window.opener.postMessage({ type: "aura-calendar-consent", ok: ${ok ? "true" : "false"} }, "*"); window.close(); }
+    (function () {
+      var payload = { type: "aura-calendar-consent", ok: ${ok ? "true" : "false"}, friendUid: "${safeFriendUid}" };
+      try { localStorage.setItem("aura-calendar-consent-result", JSON.stringify(payload)); } catch (e) {}
+      if (window.opener) {
+        try { window.opener.postMessage(payload, "*"); } catch (e) {}
+        window.setTimeout(function () { try { window.close(); } catch (e) {} }, 200);
+        return;
+      }
+      window.location.replace("${safeRedirectUrl}");
+    })();
   </script>
 </body>
 </html>`;
@@ -82,10 +95,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  const baseUrl = getAppBaseUrl(req);
+
   const code = typeof req.query.code === "string" ? req.query.code : "";
   const state = typeof req.query.state === "string" ? req.query.state : "";
   if (!code || !state) {
-    res.status(400).send(htmlResult(false, "Parametres OAuth manquants."));
+    res.status(400).send(htmlResult(false, "Parametres OAuth manquants.", baseUrl));
     return;
   }
 
@@ -93,13 +108,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim();
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim();
   if (!stateSecret || !clientId || !clientSecret) {
-    res.status(500).send(htmlResult(false, "Configuration OAuth serveur incomplete."));
+    res.status(500).send(htmlResult(false, "Configuration OAuth serveur incomplete.", baseUrl));
     return;
   }
 
   try {
     const payload = verifyOAuthState(state, stateSecret);
-    const baseUrl = getAppBaseUrl(req);
     const redirectUri = `${baseUrl}/api/calendar-consent-callback`;
 
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -185,7 +199,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { merge: true },
     );
 
-    res.status(200).send(htmlResult(true, "La synchronisation automatique est activee."));
+    res
+      .status(200)
+      .send(htmlResult(true, "La synchronisation automatique est activee.", baseUrl, payload.friendUid));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Consent flow failed.";
     if (isTokenRevokedError(message)) {
@@ -203,6 +219,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Ignore fallback update errors and return the original consent error.
       }
     }
-    res.status(400).send(htmlResult(false, message));
+    res.status(400).send(htmlResult(false, message, baseUrl));
   }
 }

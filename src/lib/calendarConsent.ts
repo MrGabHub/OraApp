@@ -5,6 +5,16 @@ type ConsentRequestOptions = {
   preopenedPopup?: Window | null;
 };
 
+export type ConsentResult = "granted" | "redirecting" | "cancelled";
+
+function shouldUseRedirectConsentFlow(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent || "";
+  const isIosDevice = /iPad|iPhone|iPod/.test(ua);
+  const isMobileWebKit = /Mobile\/\w+/.test(ua) && /AppleWebKit/.test(ua);
+  return isIosDevice || isMobileWebKit;
+}
+
 export async function startBackgroundCalendarConsent(options: ConsentRequestOptions = {}): Promise<void> {
   const currentUser = auth.currentUser;
   if (!currentUser) {
@@ -28,7 +38,9 @@ export async function startBackgroundCalendarConsent(options: ConsentRequestOpti
   window.location.assign(data.url);
 }
 
-export async function requestCalendarConsentWithPopup(options: ConsentRequestOptions = {}): Promise<boolean> {
+export async function requestCalendarConsentWithPopup(
+  options: ConsentRequestOptions = {},
+): Promise<ConsentResult> {
   const currentUser = auth.currentUser;
   if (!currentUser) {
     throw new Error("User is not authenticated.");
@@ -48,7 +60,12 @@ export async function requestCalendarConsentWithPopup(options: ConsentRequestOpt
     throw new Error(data?.error || "Unable to start calendar consent.");
   }
 
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return "cancelled";
+
+  if (shouldUseRedirectConsentFlow()) {
+    window.location.assign(data.url);
+    return "redirecting";
+  }
 
   const popup =
     options.preopenedPopup && !options.preopenedPopup.closed
@@ -57,14 +74,14 @@ export async function requestCalendarConsentWithPopup(options: ConsentRequestOpt
   if (!popup) {
     // iOS/Safari can block delayed popup opening after async work; fallback to same tab.
     window.location.assign(data.url);
-    return false;
+    return "redirecting";
   }
   popup.location.href = data.url;
 
-  return await new Promise<boolean>((resolve) => {
+  return await new Promise<ConsentResult>((resolve) => {
     let done = false;
 
-    const finish = (value: boolean) => {
+    const finish = (value: ConsentResult) => {
       if (done) return;
       done = true;
       window.removeEventListener("message", onMessage);
@@ -76,17 +93,17 @@ export async function requestCalendarConsentWithPopup(options: ConsentRequestOpt
     const onMessage = (event: MessageEvent) => {
       const payload = event.data as { type?: string; ok?: boolean } | null;
       if (!payload || payload.type !== "aura-calendar-consent") return;
-      finish(Boolean(payload.ok));
+      finish(payload.ok ? "granted" : "cancelled");
     };
 
     const closedCheck = window.setInterval(() => {
       if (popup.closed) {
-        finish(false);
+        finish("cancelled");
       }
     }, 400);
 
     const timeout = window.setTimeout(() => {
-      finish(false);
+      finish("cancelled");
     }, 5 * 60 * 1000);
 
     window.addEventListener("message", onMessage);

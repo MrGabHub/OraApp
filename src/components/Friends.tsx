@@ -32,6 +32,9 @@ function resolveBusyNow(events: GoogleCalendarEvent[], nowMs: number): "free" | 
 
 function preopenConsentPopup(): Window | null {
   if (typeof window === "undefined") return null;
+  const ua = window.navigator.userAgent || "";
+  const isIos = /iPad|iPhone|iPod/.test(ua) || (/Mobile\/\w+/.test(ua) && /AppleWebKit/.test(ua));
+  if (isIos) return null;
   return window.open("", "aura-calendar-consent", "width=520,height=740");
 }
 
@@ -194,11 +197,11 @@ export default function Friends() {
       const preopenedPopup = preopenConsentPopup();
       try {
         await acceptFriendRequest(uid);
-        const popupGranted = await requestCalendarConsentWithPopup({
+        const consentResult = await requestCalendarConsentWithPopup({
           friendUid: uid,
           preopenedPopup,
         });
-        if (popupGranted) {
+        if (consentResult === "granted" || consentResult === "redirecting") {
           return;
         }
         // Fallback: some browsers block postMessage/close signals although consent succeeded.
@@ -260,11 +263,11 @@ export default function Friends() {
       setRequestActionError(null);
       const preopenedPopup = preopenConsentPopup();
       try {
-        const popupGranted = await requestCalendarConsentWithPopup({
+        const consentResult = await requestCalendarConsentWithPopup({
           friendUid: uid,
           preopenedPopup,
         });
-        if (popupGranted) {
+        if (consentResult === "granted" || consentResult === "redirecting") {
           return;
         }
         // Some browsers block popup close/postMessage; verify from Firestore after a short delay.
