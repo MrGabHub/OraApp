@@ -113,6 +113,10 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "robots.txt"],
+        workbox: {
+          // Never serve the SPA fallback for serverless API routes.
+          navigateFallbackDenylist: [/^\/api\//],
+        },
         manifest: {
           name: "OraApp",
           short_name: "Ora",
