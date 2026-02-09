@@ -3,9 +3,12 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
 type ServiceAccountLike = {
-  projectId: string;
-  clientEmail: string;
-  privateKey: string;
+  projectId?: string;
+  clientEmail?: string;
+  privateKey?: string;
+  project_id?: string;
+  client_email?: string;
+  private_key?: string;
 };
 
 function readServiceAccount(): ServiceAccountLike | null {
@@ -13,10 +16,16 @@ function readServiceAccount(): ServiceAccountLike | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as ServiceAccountLike;
+    const projectId = parsed.projectId ?? parsed.project_id;
+    const clientEmail = parsed.clientEmail ?? parsed.client_email;
+    const privateKey = parsed.privateKey ?? parsed.private_key;
+    if (!projectId || !clientEmail || !privateKey) {
+      return null;
+    }
     return {
-      projectId: parsed.projectId,
-      clientEmail: parsed.clientEmail,
-      privateKey: parsed.privateKey?.replace(/\\n/g, "\n"),
+      projectId,
+      clientEmail,
+      privateKey: privateKey.replace(/\\n/g, "\n"),
     };
   } catch {
     return null;
@@ -28,7 +37,11 @@ function getOrInitApp() {
   const serviceAccount = readServiceAccount();
   if (serviceAccount) {
     return initializeApp({
-      credential: cert(serviceAccount),
+      credential: cert({
+        projectId: serviceAccount.projectId!,
+        clientEmail: serviceAccount.clientEmail!,
+        privateKey: serviceAccount.privateKey!,
+      }),
     });
   }
   return initializeApp({
