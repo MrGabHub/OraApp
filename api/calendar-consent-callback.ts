@@ -89,6 +89,21 @@ async function ensureFriendShareAcl(ownerAccessToken: string, friendEmail: strin
   );
 }
 
+async function tryReciprocalShare(ownerUid: string, targetEmail: string): Promise<boolean> {
+  const tokenSnap = await adminDb.collection("calendarTokens").doc(ownerUid).get();
+  const refreshToken = tokenSnap.exists ? (tokenSnap.data()?.refreshToken as string | undefined) : undefined;
+  if (!refreshToken) return false;
+
+  try {
+    const ownerAccessToken = await refreshAccessToken(refreshToken);
+    await ensureFriendShareAcl(ownerAccessToken, targetEmail);
+    return true;
+  } catch (error) {
+    console.warn("Reciprocal share failed", ownerUid, error);
+    return false;
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
     res.status(405).send("Method not allowed");
@@ -173,21 +188,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const ownerAccessToken = accessToken ?? (await refreshAccessToken(effectiveRefresh));
       await ensureFriendShareAcl(ownerAccessToken, friendEmail);
 
-      if (requestA.exists && requestA.data()?.status === "accepted") {
-        await requestA.ref.set(
-          {
-            fromCalendarShared: true,
-          },
-          { merge: true },
-        );
-      } else if (requestB.exists && requestB.data()?.status === "accepted") {
-        await requestB.ref.set(
-          {
-            toCalendarShared: true,
-          },
-          { merge: true },
-        );
+      let requestRef = requestA.ref;
+      let ownShareField: "fromCalendarShared" | "toCalendarShared" = "fromCalendarShared";
+      let reciprocalShareField: "fromCalendarShared" | "toCalendarShared" = "toCalendarShared";
+      if (!(requestA.exists && requestA.data()?.status === "accepted")) {
+        requestRef = requestB.ref;
+        ownShareField = "toCalendarShared";
+        reciprocalShareField = "fromCalendarShared";
       }
+
+      const currentUser = await adminDb.collection("users").doc(payload.uid).get();
+      const currentUserEmail = currentUser.data()?.email as string | undefined;
+      const reciprocalShared =
+        typeof currentUserEmail === "string" && currentUserEmail.trim().length > 0
+          ? await tryReciprocalShare(payload.friendUid, currentUserEmail)
+          : false;
+
+      await requestRef.set(
+        {
+          [ownShareField]: true,
+          ...(reciprocalShared ? { [reciprocalShareField]: true } : {}),
+        },
+        { merge: true },
+      );
     }
 
     await adminDb.collection("users").doc(payload.uid).set(
