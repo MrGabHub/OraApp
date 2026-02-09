@@ -317,7 +317,8 @@
       "title": "Tes amis",
       "empty": "Aucun ami pour le moment.",
       "autoSync": "Auto-sync",
-      "remove": "Supprimer"
+      "remove": "Supprimer",
+      "enableShare": "Partager mon calendrier"
     },
     "status": {
       "busy": "Occupé maintenant",
@@ -332,8 +333,9 @@
       "youShareLabel": "Toi",
       "shortYes": "oui",
       "shortNo": "non",
-      "friendSharesExplicit": "Partag\u00e9 par l'ami : {{value}}",
-      "youShareExplicit": "Partag\u00e9 par toi : {{value}}"
+      "friendSharesExplicit": "Partagé par l'ami : {{value}}",
+      "youShareExplicit": "Partagé par toi : {{value}}",
+      "shareNotCompleted": "Ami accepté, mais le consentement Google n'est pas encore terminé. Réessaie."
     }
   },
   "connections": {
@@ -365,7 +367,13 @@
     },
     "reconnect": "Reconnecter",
     "add": "Ajouter une connexion",
-    "iconLabel": "Icône {{name}}"
+    "iconLabel": "Icône {{name}}",
+    "services": {
+      "gmail": "Extraire des événements et rappels depuis les e-mails (bientôt)",
+      "whatsapp": "Recevoir des rappels depuis les messages chat (bientôt)",
+      "instagram": "Suivre événements et rencontres sociales (bientôt)",
+      "sms": "Analyser les rendez-vous depuis les SMS (bientôt)"
+    }
   },
   "avatar": {
     "controls": {

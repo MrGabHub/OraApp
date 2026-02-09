@@ -317,6 +317,7 @@
       "title": "Your friends",
       "empty": "No friends yet.",
       "autoSync": "Auto-sync",
+      "enableShare": "Share my calendar",
       "remove": "Remove"
     },
     "status": {
@@ -333,7 +334,8 @@
       "shortYes": "yes",
       "shortNo": "no",
       "friendSharesExplicit": "Shared by friend: {{value}}",
-      "youShareExplicit": "Shared by you: {{value}}"
+      "youShareExplicit": "Shared by you: {{value}}",
+      "shareNotCompleted": "Friend accepted, but Google consent is not completed yet. Try again."
     }
   },
   "connections": {

@@ -243,6 +243,27 @@ export default function Friends() {
     [removeFriend, t],
   );
 
+  const handleEnableOwnShare = useCallback(
+    async (uid: string) => {
+      setRequestActionError(null);
+      try {
+        const popupGranted = await requestCalendarConsentWithPopup({ friendUid: uid });
+        if (popupGranted) {
+          return;
+        }
+        // Some browsers block popup close/postMessage; verify from Firestore after a short delay.
+        await new Promise((resolve) => window.setTimeout(resolve, 1200));
+        const storedShare = await checkOwnCalendarShareWithFriend(uid);
+        if (!storedShare) {
+          setRequestActionError(t("friends.status.shareNotCompleted"));
+        }
+      } catch (err) {
+        setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
+      }
+    },
+    [checkOwnCalendarShareWithFriend, t],
+  );
+
   const renderUserLabel = useCallback(
     (uid: string) => {
       const info = users[uid];
@@ -463,6 +484,11 @@ export default function Friends() {
                     </div>
                   </div>
                   <div className="friends-item__actions">
+                    {!friend.calendarSharedByYou && (
+                      <button className="btn btn-primary" onClick={() => void handleEnableOwnShare(friend.friendUid)}>
+                        {t("friends.list.enableShare")}
+                      </button>
+                    )}
                     <button className="btn btn-ghost" onClick={() => void handleRemoveFriend(friend.friendUid)}>
                       {t("friends.list.remove")}
                     </button>
