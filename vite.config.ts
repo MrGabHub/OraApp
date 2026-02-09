@@ -85,8 +85,28 @@ export default defineConfig(({ mode }) => {
   if (!process.env.GROQ_API_KEY) {
     process.env.GROQ_API_KEY = (env.GROQ_API_KEY || env.VITE_GROQ_API_KEY || "").trim();
   }
+  const devApiOrigin = (env.VITE_DEV_API_ORIGIN || "https://ora-app-beta.vercel.app").trim();
 
   return {
+    server: {
+      proxy: {
+        "/api/calendar-consent-start": {
+          target: devApiOrigin,
+          changeOrigin: true,
+          secure: true,
+        },
+        "/api/calendar-consent-callback": {
+          target: devApiOrigin,
+          changeOrigin: true,
+          secure: true,
+        },
+        "/api/calendar-sync": {
+          target: devApiOrigin,
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
     plugins: [
       react(),
       devGroqProxy as any,
