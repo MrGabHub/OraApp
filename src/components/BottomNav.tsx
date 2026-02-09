@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
-import { Home, MessageCircle, Settings, Sparkles, Users } from "lucide-react";
+import { CalendarDays, Home, MessageCircle, Settings, Users } from "lucide-react";
 import "./bottom-nav.css";
 
 export type TabKey = "home" | "progress" | "assistant" | "friends" | "connections";
@@ -33,7 +33,7 @@ export default function BottomNav({ active, onChange }: Props) {
         key: "progress",
         label: t("navigation.progress", "Calendar"),
         caption: t("navBar.progress", "Calendar"),
-        icon: Sparkles,
+        icon: CalendarDays,
       },
       {
         key: "assistant",

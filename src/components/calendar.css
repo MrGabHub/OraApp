@@ -3,6 +3,18 @@
   gap: clamp(16px, 3vw, 24px);
 }
 
+.calendar-view__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
 .calendar-view__header h2 {
   margin: 0;
   font-size: clamp(1.4rem, 3.6vw, 1.9rem);
@@ -129,6 +141,77 @@
   gap: 14px;
 }
 
+.calendar-side {
+  display: grid;
+  gap: 14px;
+}
+
+.calendar-sources {
+  display: grid;
+  gap: 12px;
+}
+
+.calendar-sources__header {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-sources__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.calendar-sources__bulk-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.calendar-sources__list {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-source {
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-source input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.calendar-source__name {
+  font-size: 0.9rem;
+}
+
+.calendar-source__status {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  border: 1px solid var(--divider);
+}
+
+.calendar-source__status.is-ok {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-main));
+}
+
+.calendar-source__status.is-missing {
+  border-color: color-mix(in srgb, var(--error) 35%, transparent);
+  background: color-mix(in srgb, var(--error) 12%, var(--surface-main));
+}
+
+.calendar-source.is-missing {
+  opacity: 0.9;
+}
+
 .calendar-events h3 {
   margin: 0;
   font-size: 1rem;
@@ -194,4 +277,9 @@
 
 .chip--privacy {
   border-color: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.chip--owner {
+  border-color: color-mix(in srgb, var(--accent-primary) 22%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--surface-main));
 }

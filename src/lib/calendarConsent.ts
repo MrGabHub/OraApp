@@ -2,6 +2,7 @@ import { auth } from "./firebase";
 
 type ConsentRequestOptions = {
   friendUid?: string;
+  preopenedPopup?: Window | null;
 };
 
 export async function startBackgroundCalendarConsent(options: ConsentRequestOptions = {}): Promise<void> {
@@ -49,10 +50,16 @@ export async function requestCalendarConsentWithPopup(options: ConsentRequestOpt
 
   if (typeof window === "undefined") return false;
 
-  const popup = window.open(data.url, "aura-calendar-consent", "width=520,height=740");
+  const popup =
+    options.preopenedPopup && !options.preopenedPopup.closed
+      ? options.preopenedPopup
+      : window.open("", "aura-calendar-consent", "width=520,height=740");
   if (!popup) {
-    throw new Error("Popup bloque. Autorise les popups pour continuer.");
+    // iOS/Safari can block delayed popup opening after async work; fallback to same tab.
+    window.location.assign(data.url);
+    return false;
   }
+  popup.location.href = data.url;
 
   return await new Promise<boolean>((resolve) => {
     let done = false;

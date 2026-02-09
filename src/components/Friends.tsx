@@ -30,6 +30,11 @@ function resolveBusyNow(events: GoogleCalendarEvent[], nowMs: number): "free" | 
   return "free";
 }
 
+function preopenConsentPopup(): Window | null {
+  if (typeof window === "undefined") return null;
+  return window.open("", "aura-calendar-consent", "width=520,height=740");
+}
+
 export default function Friends() {
   const { t } = useTranslation();
   const { user, profile } = useAuth();
@@ -186,9 +191,13 @@ export default function Friends() {
   const handleAccept = useCallback(
     async (uid: string) => {
       setRequestActionError(null);
+      const preopenedPopup = preopenConsentPopup();
       try {
         await acceptFriendRequest(uid);
-        const popupGranted = await requestCalendarConsentWithPopup({ friendUid: uid });
+        const popupGranted = await requestCalendarConsentWithPopup({
+          friendUid: uid,
+          preopenedPopup,
+        });
         if (popupGranted) {
           return;
         }
@@ -201,6 +210,9 @@ export default function Friends() {
           );
         }
       } catch (err) {
+        if (preopenedPopup && !preopenedPopup.closed) {
+          preopenedPopup.close();
+        }
         setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
       }
     },
@@ -246,8 +258,12 @@ export default function Friends() {
   const handleEnableOwnShare = useCallback(
     async (uid: string) => {
       setRequestActionError(null);
+      const preopenedPopup = preopenConsentPopup();
       try {
-        const popupGranted = await requestCalendarConsentWithPopup({ friendUid: uid });
+        const popupGranted = await requestCalendarConsentWithPopup({
+          friendUid: uid,
+          preopenedPopup,
+        });
         if (popupGranted) {
           return;
         }
@@ -258,6 +274,9 @@ export default function Friends() {
           setRequestActionError(t("friends.status.shareNotCompleted"));
         }
       } catch (err) {
+        if (preopenedPopup && !preopenedPopup.closed) {
+          preopenedPopup.close();
+        }
         setRequestActionError(err instanceof Error ? err.message : t("friends.search.error"));
       }
     },

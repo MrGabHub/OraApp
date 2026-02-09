@@ -246,6 +246,14 @@
   "calendar": {
     "title": "Calendar view",
     "subtitle": "See your monthly events and their availability.",
+    "syncedCalendarsTitle": "Synced calendars",
+    "showAll": "Show all",
+    "hideAllFriends": "Hide friends",
+    "calendarUnavailable": "Unavailable",
+    "calendarAvailable": "Active",
+    "owner": "Calendar: {{name}}",
+    "ownerYou": "You",
+    "friendsUnavailable": "Some friend calendars are unavailable: {{names}}",
     "connectRequired": "Connect your Google Calendar to display the monthly view.",
     "connect": "Connect Google Calendar",
     "prevMonth": "Previous month",
@@ -411,3 +419,4 @@
     "days_ago_other": "{{count}} days ago"
   }
 }
+

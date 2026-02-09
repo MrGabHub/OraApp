@@ -246,6 +246,14 @@
   "calendar": {
     "title": "Vue calendrier",
     "subtitle": "Visualise tes événements du mois et leur disponibilité.",
+    "syncedCalendarsTitle": "Calendriers synchronisés",
+    "showAll": "Tout afficher",
+    "hideAllFriends": "Masquer les amis",
+    "calendarUnavailable": "Non disponible",
+    "calendarAvailable": "Actif",
+    "owner": "Calendrier : {{name}}",
+    "ownerYou": "Toi",
+    "friendsUnavailable": "Certains calendriers amis sont indisponibles : {{names}}",
     "connectRequired": "Connecte ton Google Calendar pour afficher la vue mensuelle.",
     "connect": "Connecter Google Calendar",
     "prevMonth": "Mois précédent",
@@ -317,8 +325,7 @@
       "title": "Tes amis",
       "empty": "Aucun ami pour le moment.",
       "autoSync": "Auto-sync",
-      "remove": "Supprimer",
-      "enableShare": "Partager mon calendrier"
+      "remove": "Supprimer"
     },
     "status": {
       "busy": "Occupé maintenant",
@@ -333,9 +340,8 @@
       "youShareLabel": "Toi",
       "shortYes": "oui",
       "shortNo": "non",
-      "friendSharesExplicit": "Partagé par l'ami : {{value}}",
-      "youShareExplicit": "Partagé par toi : {{value}}",
-      "shareNotCompleted": "Ami accepté, mais le consentement Google n'est pas encore terminé. Réessaie."
+      "friendSharesExplicit": "Partag\u00e9 par l'ami : {{value}}",
+      "youShareExplicit": "Partag\u00e9 par toi : {{value}}"
     }
   },
   "connections": {
@@ -367,13 +373,7 @@
     },
     "reconnect": "Reconnecter",
     "add": "Ajouter une connexion",
-    "iconLabel": "Icône {{name}}",
-    "services": {
-      "gmail": "Extraire des événements et rappels depuis les e-mails (bientôt)",
-      "whatsapp": "Recevoir des rappels depuis les messages chat (bientôt)",
-      "instagram": "Suivre événements et rencontres sociales (bientôt)",
-      "sms": "Analyser les rendez-vous depuis les SMS (bientôt)"
-    }
+    "iconLabel": "Icône {{name}}"
   },
   "avatar": {
     "controls": {
@@ -411,3 +411,4 @@
     "days_ago_other": "il y a {{count}} jours"
   }
 }
+

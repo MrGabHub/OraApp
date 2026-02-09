@@ -2,7 +2,7 @@
 import Connections from "./components/Connections";
 import Home from "./components/Home";
 import Assistant from "./components/Assistant";
-import Progress from "./components/Progress";
+import Calendar from "./components/Calendar";
 import Friends from "./components/Friends";
 import BottomNav, { type TabKey } from "./components/BottomNav";
 import AuthRequiredScreen from "./components/auth/AuthRequiredScreen";
@@ -96,7 +96,7 @@ function AppShell() {
       )}
       <main className="app-main" ref={mainRef}>
         {tab === "home" && <Home />}
-        {tab === "progress" && <Progress />}
+        {tab === "progress" && <Calendar />}
         {tab === "assistant" && <Assistant />}
         {tab === "friends" && <Friends />}
         {tab === "connections" && <Connections />}
