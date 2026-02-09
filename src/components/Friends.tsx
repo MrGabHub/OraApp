@@ -76,6 +76,10 @@ export default function Friends() {
 
     const results = await Promise.all(
       friends.map(async (friend) => {
+        if (!friend.calendarSharedByFriend) {
+          return [friend.friendUid, { state: "unknown", updatedAt: null } as FriendPresence] as const;
+        }
+
         const friendUser = users[friend.friendUid];
         const calendarId = friendUser?.email?.trim().toLowerCase();
         if (!calendarId) {
@@ -98,7 +102,14 @@ export default function Friends() {
             } as FriendPresence,
           ] as const;
         } catch (error) {
-          console.warn("Failed to read friend calendar", friend.friendUid, error);
+          const isNotFound =
+            typeof error === "object" &&
+            error !== null &&
+            "status" in error &&
+            (error as { status?: number }).status === 404;
+          if (!isNotFound) {
+            console.warn("Failed to read friend calendar", friend.friendUid, error);
+          }
           return [friend.friendUid, { state: "unknown", updatedAt: null } as FriendPresence] as const;
         }
       }),

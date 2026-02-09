@@ -243,18 +243,43 @@
       "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
+  "calendar": {
+    "title": "Vue calendrier",
+    "subtitle": "Visualise tes événements du mois et leur disponibilité.",
+    "connectRequired": "Connecte ton Google Calendar pour afficher la vue mensuelle.",
+    "connect": "Connecter Google Calendar",
+    "prevMonth": "Mois précédent",
+    "nextMonth": "Mois suivant",
+    "loading": "Chargement...",
+    "emptyDay": "Aucun événement ce jour.",
+    "allDay": "Toute la journée",
+    "free": "Libre",
+    "busy": "Occupé",
+    "public": "Public",
+    "private": "Privé",
+    "default": "Par défaut",
+    "weekday": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam",
+      "sun": "Dim"
+    }
+  },
   "friends": {
-    "eyebrow": "Reseau Aura",
+    "eyebrow": "Réseau Aura",
     "title": "Amis",
-    "subtitle": "Ajoute des amis et partage ta disponibilite en toute discretion.",
+    "subtitle": "Ajoute des amis et partage ta disponibilité en toute discrétion.",
     "handleLabel": "Ton email",
     "availability": {
       "title": "Synchronisation dispo",
-      "desc": "Aura partage uniquement libre/occupe, jamais les details d'evenements.",
-      "connected": "Calendrier connecte",
-      "disconnected": "Calendrier non connecte",
-      "updated": "Mis a jour {{time}}",
-      "neverUpdated": "Aucune disponibilite publiee",
+      "desc": "Aura partage uniquement libre/occupé, jamais les détails d'événements.",
+      "connected": "Calendrier connecté",
+      "disconnected": "Calendrier non connecté",
+      "updated": "Mis à jour {{time}}",
+      "neverUpdated": "Aucune disponibilité publiée",
       "autoSyncOn": "Auto-sync active",
       "connectAction": "Connecter Google Calendar",
       "sync": "Publier la dispo",
@@ -267,19 +292,19 @@
       "placeholder": "email@exemple.com",
       "action": "Rechercher",
       "add": "Ajouter",
-      "noResult": "Aucun utilisateur trouve.",
-      "requestSent": "Demande envoyee.",
+      "noResult": "Aucun utilisateur trouvé.",
+      "requestSent": "Demande envoyée.",
       "alreadySent": "Demande en attente.",
-      "alreadyFriends": "Deja amis.",
+      "alreadyFriends": "Déjà amis.",
       "incoming": "Demande entrante.",
       "invalidEmail": "Entre un email valide.",
       "error": "Recherche impossible pour le moment."
     },
     "requests": {
-      "incoming": "Demandes recues",
-      "outgoing": "Demandes envoyees",
+      "incoming": "Demandes reçues",
+      "outgoing": "Demandes envoyées",
       "none": "Aucune demande en attente.",
-      "noneSent": "Aucune demande envoyee.",
+      "noneSent": "Aucune demande envoyée.",
       "requested": "Veut se connecter",
       "pending": "En attente",
       "accept": "Accepter",
@@ -295,12 +320,12 @@
       "remove": "Supprimer"
     },
     "status": {
-      "busy": "Occupe maintenant",
+      "busy": "Occupé maintenant",
       "free": "Libre maintenant",
       "unknown": "Inconnu",
-      "stale": "Possiblement obsolet",
+      "stale": "Possiblement obsolète",
       "calendarShared": "Partage calendrier actif",
-      "calendarNotShared": "Partage calendrier non active"
+      "calendarNotShared": "Partage calendrier non activé"
     }
   },
   "connections": {
@@ -358,7 +383,7 @@
     "dismiss": "Fermer"
   },
   "time": {
-    "just_now": "Ã  l'instant",
+    "just_now": "à l'instant",
     "minute_ago": "il y a 1 minute",
     "minutes_ago_one": "il y a {{count}} minute",
     "minutes_ago_other": "il y a {{count}} minutes",

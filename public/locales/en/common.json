@@ -243,6 +243,31 @@
       "hoursAndMinutes": "{{hours}} h {{minutes}} min"
     }
   },
+  "calendar": {
+    "title": "Calendar view",
+    "subtitle": "See your monthly events and their availability.",
+    "connectRequired": "Connect your Google Calendar to display the monthly view.",
+    "connect": "Connect Google Calendar",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "loading": "Loading...",
+    "emptyDay": "No events on this day.",
+    "allDay": "All day",
+    "free": "Free",
+    "busy": "Busy",
+    "public": "Public",
+    "private": "Private",
+    "default": "Default",
+    "weekday": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
   "friends": {
     "eyebrow": "Aura network",
     "title": "Friends",
