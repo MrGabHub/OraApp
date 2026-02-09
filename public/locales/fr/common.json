@@ -332,8 +332,8 @@
       "youShareLabel": "Toi",
       "shortYes": "oui",
       "shortNo": "non",
-      "friendSharesExplicit": "Partag? par l'ami : {{value}}",
-      "youShareExplicit": "Partag? par toi : {{value}}"
+      "friendSharesExplicit": "Partag\u00e9 par l'ami : {{value}}",
+      "youShareExplicit": "Partag\u00e9 par toi : {{value}}"
     }
   },
   "connections": {

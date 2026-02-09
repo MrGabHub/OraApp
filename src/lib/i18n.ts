@@ -7,7 +7,7 @@ export const SUPPORTED_LANGUAGES = ["fr", "en"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: SupportedLanguage = "fr";
 export const LOCAL_STORAGE_LANGUAGE_KEY = "ora-language";
-const LOCALES_VERSION = "2026-02-09-utf8-fix-3";
+const LOCALES_VERSION = "2026-02-09-utf8-fix-4";
 
 function maybeRepairMojibake(value: string): string {
   if (!/[ÃÂâ]/.test(value)) return value;
